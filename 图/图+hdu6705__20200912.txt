@@ -1,0 +1,132 @@
+/*
+http://acm.hdu.edu.cn/showproblem.php?pid=6705
+path
+Time Limit: 2000/2000 MS (Java/Others)    Memory Limit: 65536/65536 K (Java/Others)
+Total Submission(s): 3066    Accepted Submission(s): 731
+Problem Description
+You have a directed weighted graph with n vertexes and m edges. The value of a path is the sum of the weight of the edges you passed. Note that you can pass any edge any times and every time you pass it you will gain the weight.
+
+Now there are q queries that you need to answer. Each of the queries is about the k-th minimum value of all the paths.
+ 
+
+Input
+The input consists of multiple test cases, starting with an integer t (1≤t≤100), denoting the number of the test cases.
+The first line of each test case contains three positive integers n,m,q. (1≤n,m,q≤5∗104)
+
+Each of the next m lines contains three integers ui,vi,wi, indicating that the i−th edge is from ui to vi and weighted wi.(1≤ui,vi≤n,1≤wi≤109)
+
+Each of the next q lines contains one integer k as mentioned above.(1≤k≤5∗104)
+
+It's guaranteed that Σn ,Σm, Σq,Σmax(k)≤2.5∗105 and max(k) won't exceed the number of paths in the graph.
+*/
+
+#include <iostream>
+#include <queue>
+#include <vector>
+#include <algorithm>
+#define re register
+#define MAXN 50005
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+using namespace std;
+typedef long long ll;
+//dis, to
+typedef pair<ll,int> P;
+
+struct Node{
+    int nw, to, id;
+    ll dis;
+    bool operator < (const Node &v)const{
+        return dis > v.dis;
+    }
+};
+
+vector<P> node[MAXN];
+priority_queue<Node> que;
+int n, m, q, maxAsk, ask[MAXN];
+ll ans[MAXN];
+
+void init(){
+    for(int i = 1 ; i <= n ; ++i)
+        node[i].clear();
+    while(!que.empty())
+        que.pop();
+    maxAsk = 0;
+}
+
+void DFS(){
+    int nk = 0;
+    while(!que.empty()){
+        Node u = que.top(); que.pop();
+        //printf("%d-->%d pop out, dis = %d\n",u.nw,u.to,u.dis);
+        Node t;
+        ans[++nk] = u.dis;
+        if(nk>=maxAsk)
+            break;
+		//加入nw的下一条边
+        if(u.id+1<node[u.nw].size()){
+            t.id = u.id + 1;
+            t.dis = u.dis - node[u.nw][u.id].first + node[u.nw][u.id+1].first;
+            t.to = node[u.nw][u.id+1].second;
+            t.nw = u.nw;
+            que.push(t);
+        }
+		//继续前进
+        if(node[u.to].size()){
+            t.id = 0;
+            t.dis = u.dis + node[u.to][0].first;
+            t.nw = u.to;
+            t.to = node[u.to][0].second;
+            que.push(t);
+        }
+    }
+}
+
+int main(){
+    int t = read();
+    while(t--){
+        n = read();
+        m = read();
+        q = read();
+        init();
+        int u, v, w;
+        for(re int i = 1 ; i <= m ; ++i){
+            u = read();
+            v = read();
+            w = read();
+			//distance, to
+			//用vector存图,方便先读最小边
+            node[u].push_back({w,v});
+        }
+        for(re int i = 1 ; i <= n ; ++i){
+            if(node[i].size()){
+                sort(node[i].begin(),node[i].end());
+				//将最小边加入优先队列
+                que.push({i,node[i][0].second,0,node[i][0].first});
+            }
+        }
+        for(re int i = 1 ; i <= q ; ++i){
+            ask[i] = read();
+            maxAsk = max(maxAsk,ask[i]);
+        }
+        DFS();
+        for(re int i = 1 ; i <= q ; ++i){
+            printf("%lld\n",ans[ask[i]]);
+        }
+    }
+    return 0;
+}

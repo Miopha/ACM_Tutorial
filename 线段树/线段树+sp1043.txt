@@ -1,0 +1,108 @@
+/*
+https://www.spoj.com/problems/GSS1/
+GSS1 - Can you answer these queries I
+#tree
+You are given a sequence A[1], A[2], ..., A[N] . ( |A[i]| ≤ 15007 , 1 ≤ N ≤ 50000 ). A query is defined as follows:
+Query(x,y) = Max { a[i]+a[i+1]+...+a[j] ; x ≤ i ≤ j ≤ y }.
+Given M queries, your program must output the results of these queries.
+
+Input
+The first line of the input file contains the integer N.
+In the second line, N numbers follow.
+The third line contains the integer M.
+M lines follow, where line i contains 2 numbers xi and yi.
+Output
+Your program should output the results of the M queries, one query per line.
+*/
+
+/*
+ * 猫树,build时求出最大子区间和和包含端点的最大子区间和
+ */
+ 
+#include <iostream>
+#include <cstdio>
+#define re register
+#define MAXN 200005
+
+using namespace std;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+// p[a][b], 最大子区间和, 其中a是区间所在的树层数,b代表[b,mid]或[mid+1,b](取决小于等于mid还是大于)区间的子区间最大和
+// s[a][b], 包含端点的最大子区间和, 同上
+// 2^16 > 50000
+int N, data[MAXN], p[17][MAXN], s[17][MAXN], pos[MAXN];
+int M, lg2[MAXN<<2];
+
+inline void build(int node, int l, int r, int d){
+    if(l==r){
+        pos[l] = node;
+        return ;
+    }
+	// pre, 从mid向左开始的子段和
+	// sum, 从mid向左开始包含端点的子段和
+    int mid = (l+r)>>1, left_node = node<<1, right_node = node<<1|1, pre, sum;
+    p[d][mid] = s[d][mid] = pre = sum = data[mid];
+	// 子段和小于0就舍弃
+    pre = max(pre,0);
+	// mid-1 向左开始遍历
+    for(re int i = mid - 1 ; i >= l ; --i){
+        pre += data[i];
+        sum += data[i];
+        p[d][i] = max(p[d][i+1],pre);
+        s[d][i] = max(s[d][i+1],sum);
+        pre = max(pre,0);
+    }
+	// pre, 从mid+1向右开始的子段和
+	// sum, 从mid+1向右开始包含端点的区间和
+    p[d][mid+1] = s[d][mid+1] = pre = sum = data[mid+1];
+    pre = max(pre,0);
+	// mid+1 向右开始遍历
+    for(re int i = mid + 2 ; i <= r ; ++i){
+        pre += data[i];
+        sum += data[i];
+        p[d][i] = max(p[d][i-1],pre);
+        s[d][i] = max(s[d][i-1],sum);
+        pre = max(pre,0);
+    }
+    build(left_node,l,mid,d+1);
+    build(right_node,mid+1,r,d+1);
+}
+
+inline int query(int l, int r){
+    if(l==r) return data[l];
+	// 它们的LCA所在的层数
+    int d = lg2[pos[l]] - lg2[pos[l] ^ pos[r]];
+	// mid左边的最大子区间和/mid+1右边的最大子区间和/包含端点的最大子区间和相加
+    return max(max(p[d][l],p[d][r]),s[d][l]+s[d][r]);
+}
+
+int main(){
+    N = read();
+    int len = 2;
+    while(len<N) len<<=1;
+    for(re int i = 2, l = len<<1 ; i <= l  ; ++i)
+        lg2[i] = lg2[i>>1] + 1;
+    for(re int i = 1 ; i <= N ; ++i)
+        data[i] = read();
+	// 保证区间长度为1的节点在同一层
+    build(1,1,len,1);
+    for(re int i = read() ; i ; --i){
+        int l = read(), r = read();
+        printf("%d\n",query(l,r));
+    }
+    return 0;
+}

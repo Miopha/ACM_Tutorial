@@ -1,0 +1,92 @@
+/*
+https://www.acwing.com/problem/content/description/1209/
+1207. 大臣的旅费
+很久以前，T王国空前繁荣。
+
+为了更好地管理国家，王国修建了大量的快速路，用于连接首都和王国内的各大城市。
+
+为节省经费，T国的大臣们经过思考，制定了一套优秀的修建方案，使得任何一个大城市都能从首都直接或者通过其他大城市间接到达。
+
+同时，如果不重复经过大城市，从首都到达每个大城市的方案都是唯一的。
+
+J是T国重要大臣，他巡查于各大城市之间，体察民情。
+
+所以，从一个城市马不停蹄地到另一个城市成了J最常做的事情。
+
+他有一个钱袋，用于存放往来城市间的路费。
+
+聪明的J发现，如果不在某个城市停下来修整，在连续行进过程中，他所花的路费与他已走过的距离有关，在走第x千米到第x+1千米这一千米中（x是整数），他花费的路费是x+10这么多。也就是说走1千米花费11，走2千米要花费23。
+
+J大臣想知道：他从某一个城市出发，中间不休息，到达另一个城市，所有可能花费的路费中最多是多少呢？
+
+输入格式
+输入的第一行包含一个整数 n，表示包括首都在内的T王国的城市数。
+
+城市从 1 开始依次编号，1 号城市为首都。
+
+接下来 n−1 行，描述T国的高速路（T国的高速路一定是 n−1 条）。
+
+每行三个整数 Pi,Qi,Di，表示城市 Pi 和城市 Qi 之间有一条双向高速路，长度为 Di 千米。
+
+输出格式
+输出一个整数，表示大臣J最多花费的路费是多少。
+
+数据范围
+1≤n≤105,
+1≤Pi,Qi≤n,
+1≤Di≤1000
+*/
+
+#include <cstdio>
+
+using namespace std;
+typedef long long ll;
+const int MAXN = 100005;
+
+int tot, head[MAXN];
+
+struct Edge{
+	int u, to, val, next;
+}G[MAXN<<1];
+
+inline void addEdge(int u, int v, int w){
+	G[++tot].u = u;
+	G[tot].to = v;
+	G[tot].val = w;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+int n, pt;
+bool vis[MAXN];
+ll d;
+
+inline void diameter(int np, ll dis){
+	if(dis>d){
+		d = dis;
+		pt = np;
+	}
+	vis[np] = true;
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(!vis[to]){
+			diameter(to,dis+G[i].val);
+		}
+	}
+}
+
+int main(){
+	scanf("%d",&n);
+	for(int i = 1, u, v, w ; i < n ; ++i){
+		scanf("%d %d %d",&u,&v,&w);
+		// w = (21 + w) * w / 2;
+		addEdge(u,v,w);
+		addEdge(v,u,w);
+		// printf("w=%d\n",w);
+	}
+	diameter(1,0);
+	for(int i = 1 ; i <= n ; ++i) vis[i] = false;
+	diameter(pt,0);
+	printf("%lld\n",(21+d)*d/2);
+	return 0;
+}

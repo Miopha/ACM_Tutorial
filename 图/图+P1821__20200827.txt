@@ -1,0 +1,116 @@
+/*
+https://www.luogu.com.cn/problem/P1821
+题目描述
+寒假到了，n 头牛都要去参加一场在编号为 x 的牛的农场举行的派对，农场之间有 m 条有向路，每条路都有一定的长度。
+
+每头牛参加完派对后都必须回家，无论是去参加派对还是回家，每头牛都会选择最短路径，求这 n 头牛的最短路径（一个来回）中最长的一条路径长度。
+
+输入格式
+第一行有三个整数，分别表示牛的数量 n，道路数 m 和派对农场编号 x。
+接下来 m 行，每行三个整数 u, v, w，表示存在一条由 u 通向 v 的长度为 w 的道路。
+
+输出格式
+输出一行一个整数表示答案。
+*/
+
+/*
+ * 先从终点走一遍spfa求得回去最小距离
+ * 再从各点spfa走到终点求得参加派对最小距离
+ */
+ 
+//package P1821;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+	
+	static int n, x, m, ans, toEnd[];
+	static ArrayList<Edge> node[];
+
+	public static void main(String[] args) throws IOException {
+		StreamTokenizer st = new StreamTokenizer(new BufferedReader(new InputStreamReader(System.in)));
+		st.nextToken(); n = (int)st.nval;
+		st.nextToken(); m = (int)st.nval;
+		st.nextToken(); x = (int)st.nval;
+		init();
+		int u, v, w;
+		for(int i = 1 ; i <= m ; ++i) {
+			st.nextToken(); u = (int)st.nval;
+			st.nextToken(); v = (int)st.nval;
+			st.nextToken(); w = (int)st.nval;
+			node[u].add(new Edge(v,w));
+		}
+		pre();
+		for(int i = 1 ; i <= n ; ++i) {
+			if(i!=x) {
+				//System.out.println(spfa(i)+toEnd[i]);
+				ans = Math.max(ans,spfa(i)+toEnd[i]);
+			}
+		}
+		System.out.println(ans);
+	}
+	
+	public static void pre() {
+		Queue<Integer> q = new LinkedList<Integer>();
+		boolean vis[] = new boolean[n+1];
+		q.add(x);
+		vis[x] = true;
+		while(!q.isEmpty()) {
+			int cur = q.poll();
+			vis[cur] = false;
+			for(int i = 0 ; i < node[cur].size() ; ++i) {
+				Edge aft = node[cur].get(i);
+				if(toEnd[aft.to]>toEnd[cur]+aft.val) {
+					toEnd[aft.to]=toEnd[cur]+aft.val;
+					if(!vis[aft.to]) {
+						q.add(aft.to);
+					}
+				}
+			}
+		}
+	}
+	
+	public static int spfa(int start) {
+		Queue<Integer> q = new LinkedList<Integer>();
+		int dis[] = new int[n+1];
+		boolean vis[] = new boolean[n+1];
+		Arrays.fill(dis,Integer.MAX_VALUE>>1);
+		q.add(start);
+		vis[start] = true;
+		dis[start] = 0;
+		while(!q.isEmpty()) {
+			int cur = q.poll();
+			vis[cur] = false;
+			for(int i = 0 ; i < node[cur].size() ; ++i) {
+				Edge aft = node[cur].get(i);
+				if(dis[aft.to]>dis[cur]+aft.val) {
+					dis[aft.to]=dis[cur]+aft.val;
+					if(!vis[aft.to]) {
+						q.add(aft.to);
+					}
+				}
+			}
+		}
+		return dis[x];
+	}
+	
+	public static void init() {
+		toEnd = new int[n+1];
+		Arrays.fill(toEnd,Integer.MAX_VALUE>>1);
+		toEnd[x] = 0;
+		node = new ArrayList[n+1];
+		for(int i = 1 ; i <= n ; ++i)
+			node[i] =  new ArrayList<Edge>();
+		ans = Integer.MIN_VALUE;
+	}
+
+}
+
+class Edge{
+	int to, val;
+	public Edge(int to, int val) {
+		this.to = to;
+		this.val = val;
+	}
+}

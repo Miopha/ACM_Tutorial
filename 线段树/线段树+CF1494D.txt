@@ -1,0 +1,131 @@
+/*
+https://codeforces.com/contest/1493/problem/D
+D. GCD of an Array
+time limit per test2.5 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You are given an array a of length n. You are asked to process q queries of the following format: given integers i and x, multiply ai by x.
+
+After processing each query you need to output the greatest common divisor (GCD) of all elements of the array a.
+
+Since the answer can be too large, you are asked to output it modulo 109+7.
+
+Input
+The first line contains two integers — n and q (1≤n,q≤2⋅105).
+
+The second line contains n integers a1,a2,…,an (1≤ai≤2⋅105) — the elements of the array a before the changes.
+
+The next q lines contain queries in the following format: each line contains two integers i and x (1≤i≤n, 1≤x≤2⋅105).
+
+Output
+Print q lines: after processing each query output the GCD of all elements modulo 109+7 on a separate line.
+*/
+
+/*
+ * gcd 的一个质因子个数是每个数该质因子个数中的最小值，所以当每个位置都有相同质因数的时候，对答案的贡献就是乘与这个质因数
+ * 是否是质数可以通过线性筛预处理出来
+ * 我们对于每个质数开一个线段树，存储每个位置的质因数出现次数，push up的时候取min，那么每次query就容易判断这次是否对答案有贡献（看[1,n]的节点的值是否变化）
+ */
+
+#include <cstdio>
+#include <algorithm>
+
+using namespace std;
+const int MAXN = 200005, MAXP = 1e7+5, MOD = 1e9+7;
+typedef long long ll;
+
+struct Node {
+	int w, ls, rs;
+	Node(ll a=0, ll b=0, ll c=0) : w(a), ls(b), rs(c) {}
+	~Node() {}
+}t[MAXP];
+
+ll ans;
+int n, q, a[MAXN], primes[MAXN], cnt, rt[MAXN], pcnt;
+bool isPrime[MAXN];
+
+void sieve(){ // liner sieve
+	for(int i = 2 ; i <= 2e5 ; ++i) isPrime[i] = true;
+	for(int i = 2 ; i <= 2e5 ; ++i){
+		if(isPrime[i]) primes[++cnt] = i;
+		for(int j = 1 ; j <= cnt && 1ll * i * primes[j] <= 2e5 ; ++j){
+			isPrime[i*primes[j]] = false;
+			if(!(i%primes[j])) break;
+		}
+	}
+}
+
+inline void add(int &rt, int l, int r, int pos, int val){
+	if(!rt) rt = ++pcnt;
+	if(l==r){
+		t[rt].w += val;
+		return ;
+	}
+	int mid = (l+r)>>1;
+	if(pos <= mid) add(t[rt].ls,l,mid,pos,val);
+	else add(t[rt].rs,mid+1,r,pos,val);
+	t[rt].w=min(t[t[rt].ls].w,t[t[rt].rs].w);
+	
+}
+
+int qpow(ll x, ll n, int p){
+	ll res = 1;
+	while(n){
+		if(n&1) res = res * x % p;
+		x = x * x % p;
+		n >>= 1;
+	}
+	return res % p;
+}
+
+int main(){
+	for(int i = 0 ; i <= 1e7 ; ++i) t[i].w = 0;
+	sieve();
+	scanf("%d %d",&n,&q);
+	for(int i = 1, num ; i <= n ; ++i){
+		scanf("%d",&num);
+		// printf("i=%d\n",i);
+		for(int j = 1 ; j <= cnt ; ++j){
+			if(1ll*primes[j]*primes[j]>num) break;
+			int tot = 0;
+			while(!(num%primes[j])) num /= primes[j], ++tot;
+			if(tot){
+				add(rt[j],1,n,i,tot);
+			}
+			if(num==1) break;
+		}
+		if(num!=1){
+			int pos = lower_bound(primes+1,primes+1+cnt,num) - primes;
+			add(rt[pos],1,n,i,1);
+		}
+	}
+	ans = 1;
+	for(int i = 1 ; i <= cnt ; ++i){
+		if(rt[i]) ans = ans * qpow(primes[i],t[rt[i]].w,MOD) % MOD;
+	}
+	for(int i = 1, pos, x ; i <= q ; ++i){
+		scanf("%d %d",&pos,&x);
+		for(int j = 1 ; j <= cnt ; ++j){
+			if(1ll*primes[j]*primes[j]>x) break;
+			int tot = 0;
+			while(!(x%primes[j])) x /= primes[j], ++tot;
+			if(tot){
+				int before = t[rt[j]].w;
+				add(rt[j],1,n,pos,tot);
+				int delta = t[rt[j]].w - before;
+				if(delta) ans = ans * qpow(primes[j],delta,MOD) % MOD;
+			}
+			if(x==1) break;
+		}
+		
+		if(x^1){
+			int ppos = lower_bound(primes+1,primes+1+cnt,x) - primes, before = t[rt[ppos]].w;
+			add(rt[ppos],1,n,pos,1);
+			int delta = t[rt[ppos]].w - before;
+			if(delta) ans = ans * qpow(x,delta,MOD) % MOD;
+		}
+		printf("%d\n",ans);
+	}
+	return 0;
+}

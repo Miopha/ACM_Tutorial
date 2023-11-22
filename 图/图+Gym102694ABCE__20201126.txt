@@ -1,0 +1,525 @@
+/*
+https://codeforces.com/gym/102694/problem/A
+*/
+
+/*
+ * 两次DFS求树的直径
+ */
+ 
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <string.h>
+#include <algorithm>
+#include <cmath>
+#define pb push_back
+#define cl clear
+#define MAXN 300005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int head[MAXN], tot;
+
+struct Edge{
+    int u, to, next;
+}G[MAXN<<1];
+
+inline void addEdge(int u, int v){
+    G[++tot].u = u;
+    G[tot].to = v;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+int n, dis, node;
+
+void DFS(int x, int fat, int d){
+	if(d>dis){
+		dis = d;
+		node = x;
+	}
+	for(int i = head[x], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(to^fat){
+			DFS(to,x,d+1);
+		}
+	}
+}
+
+void solve(){
+	n = read();
+	for(int i = 1, u, v ; i < n ; ++i){
+		u = read();
+		v = read();
+		addEdge(u,v);
+		addEdge(v,u);
+	}
+	DFS(1,0,0);
+	DFS(node,0,0);
+	printf("%d\n",dis*3);
+}
+
+int main(){
+    int t = 1;
+    // t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://codeforces.com/gym/102694/problem/B
+*/
+
+/*
+ * 找出直径最两边的点
+ * 如果是直径最两边的点, 加上n+1点的时候直径+1
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <string.h>
+#include <algorithm>
+#include <cmath>
+#define pb push_back
+#define cl clear
+#define MAXN 300005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int head[MAXN], tot;
+
+struct Edge{
+    int u, to, next;
+}G[MAXN<<1];
+
+inline void addEdge(int u, int v){
+    G[++tot].u = u;
+    G[tot].to = v;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+int n, dis, node[MAXN<<1], cnt;
+bool a[MAXN];
+
+void DFS(int x, int fat, int d){
+	// printf("x=%d\n",x);
+	if(d>dis){
+		dis = d;
+		node[1] = x;
+		cnt = 1;
+	}else if(d==dis){
+		node[++cnt] = x;
+	}
+	for(int i = head[x], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(to^fat){
+			DFS(to,x,d+1);
+		}
+	}
+}
+
+void solve(){
+	n = read();
+	for(int i = 1, u, v ; i < n ; ++i){
+		u = read();
+		v = read();
+		addEdge(u,v);
+		addEdge(v,u);
+	}
+	DFS(1,0,0);
+	for(int i = 1 ; i <= cnt ; ++i){
+		a[node[i]] = true; 
+	}
+	DFS(node[1],0,0);
+	for(int i = 1 ; i <= cnt ; ++i){
+		a[node[i]] = true;
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		if(a[i]){
+			printf("%d\n",dis+1);
+		}else{
+			printf("%d\n",dis);
+		}
+	}
+}
+
+int main(){
+    int t = 1;
+    // t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://codeforces.com/gym/102694/problem/C
+C. Sloth Naptime
+time limit per test5 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+As probably know, sloths live on trees. Accordingly, David has a pet sloth which he lets play on his unweighted trees when he solves programming problems. Occasionally, David will notice that his sloth is located on a particular node a in the tree, and ask it to move to some other node b.
+
+Of course, the sloth is as well-intentioned as can be, but alas, it only has enough energy to move across at most c edges. If the sloth needs to cross fewer than c edges to get to node b, it will get there and then take a nap. Otherwise, it will get as close as possible before it retires and hangs idly awaiting further digestion.
+
+Where will the sloth end up? Also, since this happens quite often, David would like you to answer q queries, each one of the similar form.
+
+Input
+The first line will contain a single integer n, the number of nodes in the tree. The following n−1 lines will contain two integers u and v, describing the edges in the tree. These edges will form a tree.
+
+After that, there will be a single line containing an integer q, the number of times David will motivate his sloth to move. q lines follow, each containing three integers a, b, and c: the node the sloth starts on, the node David asks the sloth to move to, and the energy the sloth has when starting.
+
+1≤n,q≤3∗105
+1≤a,b,c,u,v≤n
+Output
+For each query, output a single integer: the id of the node that the sloth must sleep at.
+*/
+
+/*
+ * 最短的路径a->LCA(a,b)->b，求LCA的时候求出a->LCA和LCA->b的路程，路程之和小于等于c直接输出b
+ * 路程之和大于的时候分两种情况：
+ * ①a->LCA路上体力不够，再次模拟a向上跳即可
+ * ②LCA->b路上体力不够，将体力修改成c=bc-c+ac再模拟b向上跳
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <string.h>
+#include <algorithm>
+#include <cmath>
+#define pb push_back
+#define cl clear
+#define MAXN 300005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int head[MAXN], tot;
+
+struct Edge{
+    int u, to, next;
+}G[MAXN<<1];
+
+inline void addEdge(int u, int v){
+    G[++tot].u = u;
+    G[tot].to = v;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+// 2^19 = 524288
+int n, q, a, b, c, ac, bc, lg2[MAXN], depth[MAXN], f[MAXN][20];
+
+void swap(int *a, int *b){
+    int tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+inline void DFS(int cur, int fat){
+    depth[cur] = depth[fat]  + 1;
+    f[cur][0] = fat;
+    for(int i = 1 ; i <= lg2[depth[cur]] ; ++i){
+        f[cur][i] = f[f[cur][i-1]][i-1];
+    }
+    for(int i = head[cur] ; i ; i = G[i].next){
+        if(G[i].to^fat){
+            DFS(G[i].to,cur);
+        }
+    }
+}
+
+// a, b
+int LCA(int x, int y){
+	ac = bc = 0;
+	bool sw = false;
+    if(depth[x]<depth[y]){
+    	swap(&x,&y);
+    	sw = true;
+	}
+    for(int i = 19 ; i >= 0 ; --i)
+        if(depth[y]<=depth[f[x][i]]){
+        	ac += 1 << i;
+            x = f[x][i];
+        }
+    if(x==y){
+    	if(sw) swap(&ac,&bc);
+    	return x;
+	}
+    for(int i = 19 ; i >= 0 ; --i){
+        if(f[x][i]!=f[y][i]){
+        	ac += 1 << i;
+        	bc += 1 << i;
+            x = f[x][i];
+            y = f[y][i];
+        }
+    }
+    ++ac;
+    ++bc;
+    if(sw) swap(&ac,&bc);
+    return f[x][0];
+}
+
+void solve(){
+	n = read();
+	for(int i = 2 ; i <= n ; ++i)
+		lg2[i] = lg2[i-1] + (1<<(lg2[i-1]+1)==i);
+	for(int i = 1, u, v ; i < n ; ++i){
+		u = read();
+		v = read();
+		addEdge(u,v);
+		addEdge(v,u);
+	}
+	DFS(1,0);
+	q = read();
+	for(int i = 1 ; i <= q ; ++i){
+		a = read();
+		b = read();
+		c = read();
+		LCA(a,b);
+		if(ac+bc<=c){ 
+			printf("%d\n",b);
+		}else if(ac>c){ // exhausted before reaching LCA
+		    int ans = a, d = 0;
+		    while(c){
+		    	if(c&1) ans = f[ans][d];
+		    	c >>= 1;
+		    	++d;
+			}
+			printf("%d\n",ans);
+		}else{ // exhausted after reaching LCA
+			c = bc - c + ac;
+		    int ans = b, d = 0;
+		    while(c){
+		    	if(c&1) ans = f[ans][d];
+		    	c >>= 1;
+		    	++d;
+			}
+			printf("%d\n",ans);
+		}
+	}
+}
+
+int main(){
+    int t = 1;
+    // t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://codeforces.com/gym/102694/problem/E
+E. Filthy Rich Trees
+time limit per test4 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You may have heard the saying "money doesn't grow on trees." Obviously, whoever came up with it stunk at both botany and programming. You've learned that creating trees which grow obscene amounts of money is so trivial, that it's left as an exercise to the reader. Time for the real challenge: profiting off your invention!
+
+You have rooted your money-tree at node 1, and each node has a specified moola value. The amount of money that some subtree rooted at node x will produce is equal to the product of the moola values of all nodes in x's subtree. Initially, all nodes will have a moola value of 1.
+
+Now, q times, one of two things happen, given to you in the form of "t x y":
+
+If t=1, you give node x a special fertilizer which sets its moola value to y.
+
+If t=2, a customer comes in and asks "how many times more valuable is subtree x than subtree y"? Formally, what is the value of subtree x divided by the value of subtree y. Also, you don't like printing massive numbers, so subtree x is more than 109 times greater than subtree y, only print "1000000000".
+
+Input
+The first line will contain a single integer n, the number of nodes in the tree. n−1 lines follow, each containing two different integers, describing the edges of the tree. Additional constraint on input: these edges will form a tree.
+
+After that there will be a single integer q: the number of queries. q line follow, each of the form txy, as described above.
+
+1≤n,q≤3∗105
+1≤t≤2
+1≤x,y≤n
+Output
+For each query of type 2, print a single line with one real number: how many times more valuable subtree x is than subtree y. HOWEVER, if this value is >= 109, then print just 1000000000 instead.
+
+Your answer will be accepted if your answers to all queries have absolute or relative error of at most 10−6.
+*/
+
+
+/* 
+ * 如果按正常存储value会轻松上几十数位
+ * 可以考虑用对数存储
+ * 1操作 在对数上操作 a*b = ln(a) + ln(b) a/b = ln(a) - ln(b)
+ * 2操作 求倍数关系 从对数还原到小数 a/b = e^(ln(a)-ln(b))
+ * 在树上更新值时间复杂度最坏为O(n)
+ * 所以可以用树状数组存储节点信息，修改和查询都是O(logn)
+ * 注意输出>=1e9的时候输出也要10位小数(卡了很久)
+ */ 
+ 
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <string.h>
+#include <algorithm>
+#include <cmath>
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#define pb push_back
+#define cl clear
+#define MAXN 300005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int head[MAXN], tot;
+
+struct Edge{
+    int u, to, next;
+}G[MAXN<<1];
+
+inline void addEdge(int u, int v){
+    G[++tot].u = u;
+    G[tot].to = v;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+P seg[MAXN];
+int n, q;
+double tree[MAXN], valOfNode[MAXN];
+
+int DFS(int x, int counter, int fat){
+	seg[x].first = counter;
+	for(int i = head[x], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(to^fat){
+			counter = DFS(to,counter+1,x);
+		}
+	}
+	return seg[x].second = counter;
+}
+
+inline int lowbit(int x){
+	return x & -x;
+}
+
+void update(int x, double val){
+	while(x<=n){
+		tree[x] += val;
+		x += lowbit(x);
+	}
+}
+
+double sum(int x){
+	double res = 0;
+	while(x>=1){
+		res += tree[x];
+		x -= lowbit(x);
+	}
+	return res;
+}
+
+void solve(){
+	n = read();
+	for(int i = 1, u, v ; i < n ; ++i){
+		u = read(); v = read();
+		addEdge(u,v); addEdge(v,u);
+	}
+	DFS(1,1,0);
+	q = read();
+	for(int i = 1, t, x, y ; i <= q ; ++i){
+		t = read(); x = read(); y = read();
+		if(t&1){
+			double val = log(y) - valOfNode[x];
+			update(seg[x].first,val);
+			valOfNode[x] = log(y);
+		}else{
+			double a = sum(seg[x].second) - sum(seg[x].first-1);
+			double b = sum(seg[y].second) - sum(seg[y].first-1);
+			double ans = exp(a-b);
+			if(ans>=1e9) printf("%.10lf\n",1e9);
+			else printf("%.10lf\n",ans);
+		}
+	}
+}
+
+int main(){
+    int t = 1;
+    // t = read();
+    while(t--) solve();
+    return 0;
+}
+

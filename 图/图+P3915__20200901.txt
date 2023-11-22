@@ -1,0 +1,85 @@
+/*
+https://www.luogu.com.cn/problem/P3915
+题目描述
+给出N个点的树和K，问能否把树划分成N/K个连通块，且每个连通块的点数都是K。
+
+输入格式
+第1 行，1 个整数T，表示数据组数。接下来T组数据，对于每组数据：
+
+第1 行，2 个整数N ,K。
+
+接下来N−1行，每行2个整数Ai,Bi ，表示边Ai,Bi 。点用1,2,⋯,N 编号。
+
+输出格式
+对于每组数据，输出YES或NO。
+*/
+
+/*
+ * 点数量不是K的倍数肯定输出NO
+ * DFS求每个点的size,大于K的就划分(size-=K)并计数
+ * 剪掉正好N/K个块输出YES否则输出NO
+ */
+ 
+//package P3915;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+
+	static ArrayList<Integer> node[];
+	static int N, K, cnt, size[];
+	
+	public static void main(String[] args) throws IOException {
+		StreamTokenizer st = new StreamTokenizer(new BufferedReader(new InputStreamReader(System.in)));
+		st.nextToken(); int T = (int)st.nval;
+		StringBuilder ans = new StringBuilder();
+		while(T-->0) {
+			st.nextToken(); N = (int)st.nval;
+			st.nextToken(); K = (int)st.nval;
+			init();
+			int u, v;
+			for(int i = 1 ; i < N ; ++i) {
+				st.nextToken(); u = (int)st.nval;
+				st.nextToken(); v = (int)st.nval;
+				node[u].add(v);
+				node[v].add(u);
+			}
+			if(N%K!=0) {
+				ans.append("NO\n");
+				continue;
+			}
+			DFS(1,0);
+			if(cnt==N/K)
+				ans.append("YES\n");
+			else
+				ans.append("NO\n");
+			//System.out.println(Arrays.toString(size));
+		}
+		System.out.print(ans.toString());
+	}
+	
+	public static void DFS(int x, int fat) {
+		for(int i = 0 ; i < node[x].size() ; ++i) {
+			int aft = node[x].get(i);
+			if(aft==fat) continue;
+			DFS(aft,x);
+			size[x] += size[aft];
+		}
+		while(size[x]>=K) {
+			size[x] -= K;
+			++cnt;
+		}
+	}
+	
+	public static void init() {
+		node = new ArrayList[N+1];
+		for(int i = 1 ; i <= N ; ++i) {
+			node[i] = new ArrayList<Integer>();
+		}
+		size = new int[N+1];
+		Arrays.fill(size,1);
+		cnt = 0;
+	}
+
+}

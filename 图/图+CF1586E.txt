@@ -1,0 +1,151 @@
+/*
+https://codeforces.com/contest/1586/problem/E
+E. Moment of Bloom
+time limit per test3 seconds
+memory limit per test512 megabytes
+inputstandard input
+outputstandard output
+She does her utmost to flawlessly carry out a person's last rites and preserve the world's balance of yin and yang.
+
+Hu Tao, being the little prankster she is, has tried to scare you with this graph problem! You are given a connected undirected graph of n nodes with m edges. You also have q queries. Each query consists of two nodes a and b.
+
+Initially, all edges in the graph have a weight of 0. For each query, you must choose a simple path starting from a and ending at b. Then you add 1 to every edge along this path. Determine if it's possible, after processing all q queries, for all edges in this graph to have an even weight. If so, output the choice of paths for each query.
+
+If it is not possible, determine the smallest number of extra queries you could add to make it possible. It can be shown that this number will not exceed 1018 under the given constraints.
+
+A simple path is defined as any path that does not visit a node more than once.
+
+An edge is said to have an even weight if its value is divisible by 2.
+
+Input
+The first line contains two integers n and m (2≤n≤3⋅105, n−1≤m≤min(n(n−1)2,3⋅105)).
+
+Each of the next m lines contains two integers x and y (1≤x,y≤n, x≠y) indicating an undirected edge between node x and y. The input will not contain self-loops or duplicate edges, and the provided graph will be connected.
+
+The next line contains a single integer q (1≤q≤3⋅105).
+
+Each of the next q lines contains two integers a and b (1≤a,b≤n,a≠b), the description of each query.
+
+It is guaranteed that nq≤3⋅105.
+
+Output
+If it is possible to force all edge weights to be even, print "YES" on the first line, followed by 2q lines indicating the choice of path for each query in the same order the queries are given. For each query, the first line should contain a single integer x: the number of nodes in the chosen path. The next line should then contain x spaced separated integers pi indicating the path you take (p1=a,px=b and all numbers should fall between 1 and n). This path cannot contain duplicate nodes and must be a valid simple path in the graph.
+
+If it is impossible to force all edge weights to be even, print "NO" on the first line and the minimum number of added queries on the second line.
+*/
+
+/*
+ * 先在图中生成一棵树，那么两点的路径就是唯一的，所以点在xy对中出现偶数次时他们的路径也经过偶数次
+ * ①没有点出现奇数次的情况为YES，DFS找路径即可，时间复杂度O(nq)
+ * ②出现奇数次的情况为YES，需要增加奇数次数/2条路径
+ */
+ 
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <cmath>
+#include <algorithm>
+#include <iostream>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 300005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int head[MAXN], tot;
+
+struct Edge{
+	int to, next;
+}G[MAXN<<1];
+
+inline void addEdge(int u, int v){
+	G[++tot].to = v;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+int n, m, fat[MAXN], q, a[MAXN], b[MAXN], vis[MAXN], cnt;
+
+int ffind(int x){
+	if(fat[x]==x) return x;
+	return fat[x] = ffind(fat[x]);
+}
+
+inline bool DFS(int np, int fat, int target, int depth){
+	if(np==target){
+		printf("%d\n",depth);
+		return true;
+	}
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(to==fat) continue;
+		if(DFS(to,np,target,depth+1)){
+			printf("%d ",to);
+			return true;
+		}
+	}
+	return false;
+}
+
+void solve(){
+	n = read();
+	m = read();
+	for(int i = 1 ; i <= n ; ++i) fat[i] = i;
+	for(int i = 1, u, v, pu, pv ; i <= m ; ++i){
+		u = read();
+		v = read();
+		pu = ffind(u);
+		pv = ffind(v);
+		if(pu!=pv){
+			fat[pu] = v;
+			addEdge(u,v);
+			addEdge(v,u);
+		}
+	}
+	q = read();
+	for(int i = 1 ; i <= q ; ++i){
+		a[i] = read();
+		b[i] = read();
+		++vis[a[i]];
+		++vis[b[i]];
+	}
+	for(int i = 1 ; i <= n ; ++i) cnt += vis[i] & 1;
+	if(!cnt){
+		puts("YES");
+		for(int i = 1 ; i <= q ; ++i){
+			DFS(b[i],0,a[i],1);
+			printf("%d\n",b[i]);
+		}
+	}else{
+		printf("NO\n%d\n",cnt>>1);
+	}
+}
+
+int main(){
+    int t = 1;
+    // t = read();
+    while(t--) solve();
+    return 0;
+}

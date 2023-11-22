@@ -1,0 +1,125 @@
+/*
+https://www.luogu.com.cn/problem/UVA10129
+题意翻译
+输入n(n≤100000)个单词，是否可以把所有这些单词排成一个序列，使得每个单词的第一个字母可上一个单词的最后一个字母相同（例如acm,malform,mouse）。每个单词最多包含1000个小写字母。输入中可以有重复的单词。
+*/
+
+/*
+ * 把单词首位字母看做起点，末尾字母看成结尾，每个单词就可以看成有向边，那么问题有解的时候，图中会存在一个结点出发走出一条道路，每条边恰好进过一次（欧拉路径）
+ * 有向图中存在欧拉路径的条件：①图是连通的 ②每个节点入度和出度差不大于1 ③最多有两个节点出度不等于入度，且其中一个点的出度恰好比入度大一（起点），另外一个点的入度恰好比出度大一（出点）
+ */ 
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <string.h>
+#include <algorithm>
+#include <cmath>
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#define pb push_back
+#define cl clear
+#define MAXN 30
+#define MAXM 100005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int head[MAXN], tot;
+
+struct Edge{
+    int u, to, next;
+}G[MAXM];
+
+inline void addEdge(int u, int v){
+    G[++tot].u = u;
+    G[tot].to = v;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+int n, in[27], out[27], cnt;
+char s[1005];
+bool hasNode[27], vis[27];
+
+inline void DFS(int s){
+	vis[s] = true;
+	for(int i = head[s], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(!vis[to]){
+			DFS(to);
+		}
+	}
+}
+
+void solve(){
+	n = read();
+	cnt = tot = 0;
+	memset(in,0,sizeof(in));
+	memset(out,0,sizeof(out));
+	for(int i = 0 ; i < 26 ; ++i) hasNode[i] = vis[i] = head[i] = 0;
+	for(int i = 1, u, v ; i <= n ; ++i){
+		cin>>s+1;
+		u = s[1]-'a';
+		v = s[strlen(s+1)]-'a';
+		addEdge(u,v);
+		hasNode[u] = hasNode[v] = true;
+		++out[u];
+		++in[v];
+	}
+	// 是否连通？ 
+	for(int i = 0 ; i < 26 ; ++i){
+		if(hasNode[i]){
+			DFS(i);
+			break;
+		}
+	}
+	for(int i = 0 ; i < 26 ; ++i){
+		if(vis[i]^hasNode[i]){
+			printf("The door cannot be opened.\n");
+			return ;
+		}
+	}
+	// 条件② 
+	int start = 0, end = 0;
+	for(int i = 0 ; i < 26 ; ++i){
+		if(in[i]+1==out[i]) ++start;
+		else if(in[i]-1==out[i]) ++end;
+		else if(abs(in[i]-out[i])>1){
+			printf("The door cannot be opened.\n");
+			return ;
+		}
+	}
+	// 条件③ 
+	if(start>1||end>1){
+		printf("The door cannot be opened.\n");	
+	}else{
+		printf("Ordering is possible.\n");
+	}
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}

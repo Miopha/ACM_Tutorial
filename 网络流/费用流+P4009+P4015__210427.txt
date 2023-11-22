@@ -1,0 +1,382 @@
+/*
+https://www.luogu.com.cn/problem/P4009
+题目描述
+给定一个 N \times NN×N 的方形网格，设其左上角为起点◎，坐标(1,1)(1,1)，XX 轴向右为正， YY 轴向下为正，每个方格边长为 11 ，如图所示。
+
+
+
+一辆汽车从起点◎出发驶向右下角终点▲，其坐标为 (N,N)(N,N)。
+
+在若干个网格交叉点处，设置了油库，可供汽车在行驶途中加油。汽车在行驶过程中应遵守如下规则:
+
+汽车只能沿网格边行驶，装满油后能行驶 KK 条网格边。出发时汽车已装满油，在起点与终点处不设油库。
+
+汽车经过一条网格边时，若其 XX 坐标或 YY 坐标减小，则应付费用 BB ，否则免付费用。
+
+汽车在行驶过程中遇油库则应加满油并付加油费用 AA。
+
+在需要时可在网格点处增设油库，并付增设油库费用 CC(不含加油费用AA )。
+
+N,K,A,B,CN,K,A,B,C 均为正整数， 且满足约束: 2\leq N\leq 100,2 \leq K \leq 102≤N≤100,2≤K≤10。
+
+设计一个算法，求出汽车从起点出发到达终点所付的最小费用。
+
+输入格式
+文件的第一行是 N,K,A,B,CN,K,A,B,C 的值。
+
+第二行起是一个N\times NN×N 的 0-10−1 方阵,每行 NN 个值,至 N+1N+1 行结束。
+
+方阵的第 ii 行第 jj 列处的值为 11 表示在网格交叉点 (i,j)(i,j) 处设置了一个油库,为 00 时表示未设油库。各行相邻两个数以空格分隔。
+
+输出格式
+程序运行结束时,输出最小费用。
+*/
+
+/*
+ * 建k层图，第i层表示有i格汽油
+ * 所以i层的坐标连接i-1层的相邻坐标，费用为0
+ * 因为走到加油站的时候是强制加油的，所以直接连到k层的相同坐标，费用为a
+ * 关于增设油库的操作，直接在除k层每一坐标加上连接到k层的相同坐标的边，费用为a+c
+ * 然后求最小费用可行流
+ * 做到最后感觉直接SPFA就行。。
+ */
+
+#include <queue>
+#include <cstdio>
+#include <iostream>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+
+using namespace std;
+typedef long long ll;
+const int MAXN = 105, MAXK = 11;
+const ll INFL = 0x3f3f3f3f3f3f3f3f;
+
+int head[MAXN][MAXN][MAXK], tot = 1;
+
+struct Edge{
+	int x, y, k, dx, dy, dk, next;
+	ll cost, flow;
+}G[10000005];
+
+struct node{
+	int x, y, k;
+	node(int _x, int _y, int _k){
+		x = _x;
+		y = _y;
+		k = _k;
+	};
+};
+
+inline void addEdge(int ux, int uy, int uk, int vx, int vy, int vk, int c, ll f){
+	G[++tot].x = ux;
+	G[tot].y = uy;
+	G[tot].k = uk;
+	G[tot].dx = vx;
+	G[tot].dy = vy;
+	G[tot].dk = vk;
+	G[tot].cost = c;
+	G[tot].flow = f;
+	G[tot].next = head[ux][uy][uk];
+	head[ux][uy][uk] = tot;
+}
+
+inline void addFlow(int ux, int uy, int uk, int vx, int vy, int vk, int c, ll f = INFL){
+	addEdge(ux,uy,uk,vx,vy,vk,c,f);
+	addEdge(vx,vy,vk,ux,uy,uk,-c,0);
+}
+
+int n, k, a, b, c, mp[MAXN][MAXN];
+ll dis[MAXN][MAXN][MAXK], flow[MAXN][MAXN][MAXK], mnCost;
+bool inq[MAXN][MAXN][MAXK];
+
+// s, 1, 1, k
+// t, n+1, n+1, 1
+
+void SPFA(){
+	for(int i = 0 ; i <= n + 1 ; ++i)
+		for(int j = 0 ; j <= n + 1 ; ++j)
+			for(int kk = 0 ; kk <= k ; ++kk)
+				dis[i][j][kk] = flow[i][j][kk] = INFL;
+	deque<node> dq;
+	dis[1][1][k] = 0;
+	dq.push_front(node(1,1,k));
+	inq[1][1][k] = true;
+	while(!dq.empty()){
+		node np = dq.front(); dq.pop_front();
+		inq[np.x][np.y][np.k] = false;
+		for(int i = head[np.x][np.y][np.k] ; i ; i = G[i].next){
+			
+			if(G[i].flow<=0) continue;
+			if(dis[G[i].dx][G[i].dy][G[i].dk] > dis[np.x][np.y][np.k] + G[i].cost){
+				dis[G[i].dx][G[i].dy][G[i].dk] = dis[np.x][np.y][np.k]+G[i].cost;
+				flow[G[i].dx][G[i].dy][G[i].dk] = min(flow[np.x][np.y][np.k],G[i].flow);
+				// last[G[i].dx][G[i].dy][G[i].dk] = 
+				if(!inq[G[i].dx][G[i].dy][G[i].dk]){
+					inq[G[i].dx][G[i].dy][G[i].dk] = true;
+					if(dq.empty()||dis[dq.front().x][dq.front().y][dq.front().k]>dis[G[i].dx][G[i].dy][G[i].dk])dq.push_front(node(G[i].dx,G[i].dy,G[i].dk));
+					else dq.push_back(node(G[i].dx,G[i].dy,G[i].dk));
+				}
+			}
+		}
+	}
+}
+
+void MCMF(){
+	mnCost = INFL;
+	SPFA();
+	for(int i = 0 ; i <= k ; ++i) mnCost = min(mnCost,dis[n][n][i]);
+}
+
+int main(){
+	scanf("%d %d %d %d %d",&n,&k,&a,&b,&c);
+	for(int i = 1 ; i <= n ; ++i)
+		for(int j = 1 ; j <= n ; ++j)
+			scanf("%d",&mp[i][j]);
+	for(int x = 1 ; x <= n ; ++x){
+		for(int y = 1 ; y <= n ; ++y){
+			if(mp[x][y]){
+				for(int i = 0 ; i < k ; ++i){
+					addFlow(x,y,i,x,y,k,a,1);
+				}
+				if(x^1) addFlow(x,y,k,x-1,y,k-1,b,1);
+				if(x^n) addFlow(x,y,k,x+1,y,k-1,0,1);
+				if(y^1) addFlow(x,y,k,x,y-1,k-1,b,1);
+				if(y^n) addFlow(x,y,k,x,y+1,k-1,0,1);
+			}else{
+				for(int i = k ; i ; --i){
+					if(x^1) addFlow(x,y,i,x-1,y,i-1,b,1);
+					if(x^n) addFlow(x,y,i,x+1,y,i-1,0,1);
+					if(y^1) addFlow(x,y,i,x,y-1,i-1,b,1);
+					if(y^n) addFlow(x,y,i,x,y+1,i-1,0,1);
+					if(i^k) addFlow(x,y,i,x,y,k,c+a,1);
+				}
+				addFlow(x,y,0,x,y,k,c+a,1);
+			}
+		}
+	}
+	
+	// for(int i = 0 ; i <= k ; ++i) addFlow(n,n,i,n+1,n+1,1,0,1);
+	
+	MCMF();
+	
+	cout<<mnCost<<endl;
+	return 0;
+}
+
+/*
+https://www.luogu.com.cn/problem/P4015
+题目描述
+WW 公司有 mm 个仓库和 nn 个零售商店。第 ii 个仓库有 a_ia 
+i
+​	
+  个单位的货物；第 jj 个零售商店需要 b_jb 
+j
+​	
+  个单位的货物。
+
+货物供需平衡，即\sum\limits_{i=1}^{m}a_i=\sum\limits_{j=1}^{n}b_j 
+i=1
+∑
+m
+​	
+ a 
+i
+​	
+ = 
+j=1
+∑
+n
+​	
+ b 
+j
+​	
+ 。
+
+从第 ii 个仓库运送每单位货物到第 jj 个零售商店的费用为 c_{ij}c 
+ij
+​	
+ ​​ 。
+
+试设计一个将仓库中所有货物运送到零售商店的运输方案，使总运输费用最少。
+
+输入格式
+第 11 行有 22 个正整数 mm 和 nn，分别表示仓库数和零售商店数。
+
+接下来的一行中有 mm 个正整数 a_ia 
+i
+​	
+ ，表示第 ii 个仓库有 a_ia 
+i
+​	
+ 个单位的货物。
+
+再接下来的一行中有 nn 个正整数 b_jb 
+j
+​	
+ ，表示第 jj 个零售商店需要 b_jb 
+j
+​	
+  个单位的货物。
+
+接下来的 mm 行，每行有 nn 个整数，表示从第 ii 个仓库运送每单位货物到第 jj 个零售商店的费用 c_{ij}c 
+ij
+​	
+ 。
+
+输出格式
+两行分别输出最小运输费用和最大运输费用。
+*/
+
+/*
+ * 超源连仓库，商店连超汇，容量为存储量，费用为0
+ * 仓库连接每个商店，容量为INF，费用为cij
+ * 然后跑最小费用最大流和最大费用最大流求出答案
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <queue>
+
+using namespace std;
+typedef long long ll;
+const ll INFL = 0x3f3f3f3f3f3f3f3f;
+const int MAXN = 5005, MAXM = 50005;
+
+int head[MAXN], tot = 1;
+
+struct Edge{
+	int u, to, cost, next;
+	ll flow;
+}G[MAXM<<1];
+
+inline void addEdge(int u, int v, int c, int f){
+	G[++tot].u = u;
+	G[tot].to = v;
+	G[tot].cost = c;
+	G[tot].flow = f;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+inline void addFlow(int u, int v, int c, ll f = INFL){
+	addEdge(u,v,c,f);
+	addEdge(v,u,-c,0);
+}
+
+int a[MAXN], b[MAXN];
+int n, m, s = 0, t = 201, last[MAXM<<1], pre[MAXN];
+deque<int> dq;
+bool inq[MAXN];
+ll dis[MAXN], flow[MAXN], mxFlow, mnCost, mxCost;
+
+bool SPFA1(int s, int t){
+	for(int i = 0 ; i <= t ; ++i) dis[i] = flow[i] = INFL;
+	dis[s] = 0;
+	dq.push_front(s);
+	inq[s] = true;
+	while(!dq.empty()){
+		int np = dq.front(); dq.pop_front();
+		inq[np] = false;
+		for(int i = head[np], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(G[i].flow>0&&(dis[to]>dis[np]+G[i].cost)){
+				dis[to] = dis[np]+G[i].cost;
+				flow[to] = min(flow[np],G[i].flow);
+				last[to] = i;
+				pre[to] = np;
+				if(!inq[to]){
+					inq[to] = true;
+					if(dq.empty()||dis[to]<=dis[dq.front()]) dq.push_front(to);
+					else dq.push_back(to);
+				}
+			}
+		}
+	}
+	return (dis[t] ^ INFL);
+}
+
+void MCMF1(int s, int t){
+	mxFlow = 0;
+	while(SPFA1(s,t)){
+		mxFlow += flow[t];
+		mnCost += flow[t] * dis[t];
+		int np = t;
+		while(np^s){
+			G[last[np]].flow -= flow[t];
+			G[last[np]^1].flow += flow[t];
+			np = pre[np];
+		}
+	}
+}
+
+bool SPFA2(int s, int t){
+	for(int i = 0 ; i <= t ; ++i) flow[i] = INFL;
+	for(int i = 0 ; i <= t ; ++i) dis[i] = -INFL;
+	dis[s] = 0;
+	dq.push_front(s);
+	inq[s] = true;
+	while(!dq.empty()){
+		int np = dq.front(); dq.pop_front();
+		inq[np] = false;
+		for(int i = head[np], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(G[i].flow>0&&(dis[to]<dis[np]+G[i].cost)){
+				dis[to] = dis[np]+G[i].cost;
+				flow[to] = min(flow[np],G[i].flow);
+				last[to] = i;
+				pre[to] = np;
+				if(!inq[to]){
+					inq[to] = true;
+					if(dq.empty()||dis[to]<=dis[dq.front()]) dq.push_front(to);
+					else dq.push_back(to);
+				}
+			}
+		}
+	}
+	return (dis[t] ^ -INFL);
+}
+
+void MCMF2(int s, int t){
+	while(SPFA2(s,t)){
+		mxFlow += flow[t];
+		mxCost += flow[t] * dis[t];
+		int np = t;
+		while(np^s){
+			G[last[np]].flow -= flow[t];
+			G[last[np]^1].flow += flow[t];
+			np = pre[np];
+		}
+	}
+}
+
+int main(){
+	scanf("%d %d",&m,&n);
+	for(int i = 1 ; i <= m ; ++i){
+		scanf("%d",&a[i]);
+		addFlow(s,i,0,a[i]);
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		scanf("%d",&b[i]);
+		addFlow(i+m,t,0,b[i]);
+	}
+	for(int i = 1, c ; i <= m ; ++i){
+		for(int j = 1 ; j <= n ; ++j){
+			scanf("%d",&c);
+			addFlow(i,j+m,c,INFL);
+		}
+	}
+	
+	MCMF1(s,t);
+	
+	cout<<mnCost<<endl;
+	
+	for(int i = 3 ; i <= tot ; i += 2){
+		G[i-1].flow += G[i].flow;
+		G[i].flow = 0;
+	}
+	
+	MCMF2(s,t);
+	
+	cout<<mxCost<<endl;
+	return 0;
+}

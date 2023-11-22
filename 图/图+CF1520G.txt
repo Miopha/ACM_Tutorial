@@ -1,0 +1,94 @@
+/*
+https://codeforces.com/problemset/problem/1520/G
+G. To Go Or Not To Go?
+time limit per test3 seconds
+memory limit per test512 megabytes
+inputstandard input
+outputstandard output
+Dima overslept the alarm clock, which was supposed to raise him to school.
+
+Dima wonders if he will have time to come to the first lesson. To do this, he needs to know the minimum time it will take him to get from home to school.
+
+The city where Dima lives is a rectangular field of n×m size. Each cell (i,j) on this field is denoted by one number aij:
+
+The number −1 means that the passage through the cell is prohibited;
+The number 0 means that the cell is free and Dima can walk though it.
+The number x (1≤x≤109) means that the cell contains a portal with a cost of x. A cell with a portal is also considered free.
+From any portal, Dima can go to any other portal, while the time of moving from the portal (i,j) to the portal (x,y) corresponds to the sum of their costs aij+axy.
+
+In addition to moving between portals, Dima can also move between unoccupied cells adjacent to one side in time w. In particular, he can enter a cell with a portal and not use it.
+
+Initially, Dima is in the upper-left cell (1,1), and the school is in the lower right cell (n,m).
+
+Input
+The first line contains three integers n, m and w (2≤n,m≤2⋅103, 1≤w≤109), where n and m are city size, w is time during which Dima moves between unoccupied cells.
+
+The next n lines each contain m numbers (−1≤aij≤109) — descriptions of cells.
+
+It is guaranteed that the cells (1,1) and (n,m) are free.
+
+Output
+Output the minimum time it will take for Dima to get to school. If he cannot get to school at all, then output "-1".
+*/
+
+/*
+ * 只用一次protal传送或者不用，直接bfs
+ */
+
+#include <queue>
+#include <cstdio>
+#include <algorithm>
+#include <set>
+#define mp make_pair
+
+using namespace std;
+typedef pair<int,int> P;
+typedef long long ll;
+const int MAXN = 2005, INF = 0x3f3f3f3f;
+const ll INFL = 0x3f3f3f3f3f3f3f3f;
+
+int n, m, w, graph[MAXN][MAXN];
+int disToDima[MAXN][MAXN], disToSchool[MAXN][MAXN];
+int dir[4][2] = {{1,0},{0,1},{-1,0},{0,-1}};
+ll ans, protal1 = INFL, protal2 = INFL;
+set<P> portal;
+
+void bfs(int x, int y, int dis[MAXN][MAXN]){
+	queue<P> q;
+	q.push(mp(x,y));
+	dis[x][y] = 0;
+	while(!q.empty()){
+		P np = q.front(); q.pop();
+		for(int i = 0, dx, dy ; i <= 3 ; ++i){
+			dx = np.first + dir[i][0];
+			dy = np.second + dir[i][1];
+			if(x>n||y>m||x<1||y<1||(dis[dx][dy]^INF)||graph[dx][dy]==-1) continue;
+			dis[dx][dy] = dis[np.first][np.second] + 1;
+			q.push(mp(dx,dy));
+		}
+	}
+}
+
+int main(){
+	scanf("%d %d %d",&n,&m,&w);
+	for(int i = 1 ; i <= n ; ++i)
+		for(int j = 1 ; j <= m ; ++j){
+			scanf("%d",&graph[i][j]);
+			disToDima[i][j] = disToSchool[i][j] = INF;
+			if(graph[i][j]^-1&&graph[i][j]) portal.insert(mp(i,j));
+		}
+	bfs(1,1,disToDima);
+	bfs(n,m,disToSchool);
+	if(disToDima[n][m]^INF) ans = 1ll * disToDima[n][m] * w;
+	else ans = INFL;
+	for(P it : portal){
+		int x = it.first, y = it.second;
+		// printf("x=%d y=%d\n",x,y);
+		if(disToDima[x][y]^INF) protal1 = min(protal1,1ll*disToDima[x][y]*w+graph[x][y]);
+		if(disToSchool[x][y]^INF) protal2 = min(protal2,1ll*disToSchool[x][y]*w+graph[x][y]);
+	}
+	// printf("%lld %lld %lld\n",ans,protal1,protal2);
+	if(ans==INFL&&(protal1==INFL||protal2==INFL)) puts("-1");
+	else printf("%lld\n",min(ans,protal1+protal2));
+	return 0;
+}

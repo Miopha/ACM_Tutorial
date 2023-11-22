@@ -1,0 +1,87 @@
+/*
+https://www.luogu.com.cn/problem/P1330
+题目描述
+曹是一只爱刷街的老曹，暑假期间，他每天都欢快地在阳光大学的校园里刷街。河蟹看到欢快的曹，感到不爽。河蟹决定封锁阳光大学，不让曹刷街。
+
+阳光大学的校园是一张由 nn 个点构成的无向图，nn 个点之间由 mm 条道路连接。每只河蟹可以对一个点进行封锁，当某个点被封锁后，与这个点相连的道路就被封锁了，曹就无法在这些道路上刷街了。非常悲剧的一点是，河蟹是一种不和谐的生物，当两只河蟹封锁了相邻的两个点时，他们会发生冲突。
+
+询问：最少需要多少只河蟹，可以封锁所有道路并且不发生冲突。
+
+输入格式
+第一行两个正整数，表示节点数和边数。 接下来 mm 行，每行两个整数 u,vu,v，表示点 uu 到点 vv 之间有道路相连。
+
+输出格式
+仅一行如果河蟹无法封锁所有道路，则输出 Impossible，否则输出一个整数，表示最少需要多少只河蟹。
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <queue>
+#include <algorithm>
+
+using namespace std;
+const int MAXN = 10005, MAXM = 100005;
+
+int head[MAXN], tot;
+
+struct Edge{
+	int to, nxt;
+}G[MAXM<<1];
+
+inline void addEdge(int u, int v){
+	G[++tot].to = v;
+	G[tot].nxt = head[u];
+	head[u] = tot;
+}
+
+queue<int> q;
+int n, m, ans;
+// 0, uncolored
+// 1, black
+// 2, white
+int vis[MAXN];
+
+int main(){
+	scanf("%d %d",&n,&m);
+	for(int i = 1, u, v ; i <= m ; ++i){
+		scanf("%d %d",&u,&v);
+		addEdge(u,v);
+		addEdge(v,u);
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		if(!vis[i]){
+			int black = 0, white = 0;
+			q.push(i);
+			while(!q.empty()){
+				int np = q.front(); q.pop();
+				for(int j = head[np], to ; j ; j = G[j].nxt){
+					to = G[j].to;
+					if(vis[to]) continue;
+					q.push(to);
+				}
+				if(!black){
+					vis[np] = black = true;
+				}else{
+					int color = 0;
+					for(int j = head[np], to ; j ; j = G[j].nxt){
+						to = G[j].to;
+						if(!vis[to]) continue;
+						if(!color){
+							color = ((vis[to]&1)?2:1);
+						}else if(color^((vis[to]&1)?2:1)){
+							puts("Impossible");
+							return 0;
+						}
+					}
+					vis[np] = color;
+					if(color==1) ++black;
+					else if(color==2) ++white;
+				}
+			}
+			ans += min(black,white);
+		}
+		
+	}
+	cout<<ans<<endl;
+	return 0;
+}

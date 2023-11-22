@@ -1,0 +1,83 @@
+/*
+https://www.luogu.com.cn/problem/P2814
+题目背景
+现代的人对于本家族血统越来越感兴趣。
+
+题目描述
+给出充足的父子关系，请你编写程序找到某个人的最早的祖先。
+
+输入格式
+输入由多行组成，首先是一系列有关父子关系的描述，其中每一组父子关系中父亲只有一行，儿子可能有若干行，用 #name 的形式描写一组父子关系中的父亲的名字，用 +name 的形式描写一组父子关系中的儿子的名字；接下来用 ?name 的形式表示要求该人的最早的祖先；最后用单独的一个 $ 表示文件结束。
+
+输出格式
+按照输入文件的要求顺序，求出每一个要找祖先的人的祖先，格式为：本人的名字 + 一个空格 + 祖先的名字 + 回车。
+*/
+
+/*
+ * 构建一个儿子指向父亲的有向图，每次询问时只需要尽可能向上找即可
+ * 用map存储<名字,号码>(构建图时用),数组存储names[号码]=名字(询问时用)
+ */
+
+//package P2814;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+	
+	final static int MAXN = 50005;
+	static Map<String,Integer> numbers;
+	static ArrayList<Integer> node[];
+	static int cnt;
+	static String names[], cmd, anc;
+	
+	public static void main(String[] args) throws IOException {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+		init();
+		StringBuilder ans = new StringBuilder();
+		cmd = br.readLine();
+		while(!cmd.equals("$")) {
+			//System.out.println(numbers);
+			if(cmd.charAt(0)=='#') {
+				anc = cmd.substring(1,cmd.length());
+				add(anc);
+			}else if(cmd.charAt(0)=='+') {
+				String son = cmd.substring(1,cmd.length());
+				add(son);
+				node[numbers.get(son)].add(numbers.get(anc));
+			}else {
+				String query = cmd.substring(1,cmd.length());
+				int num = sol(numbers.get(query));
+				ans.append(query).append(" ").append(names[num]).append("\n");
+			}
+			cmd = br.readLine();
+		}
+		out.print(ans.toString());
+		out.flush();
+	}
+	
+	public static void init() {
+		node = new ArrayList[MAXN];
+		for(int i = 1 ; i <= 50000 ; ++i)
+			node[i] = new ArrayList<Integer>();
+		names = new String[MAXN];
+		numbers = new HashMap<String,Integer>();
+		cnt = 0;
+	}
+	
+	public static void add(String name) {
+		if(!numbers.containsKey(name)) {
+			names[++cnt] = name;
+			numbers.put(name,cnt);
+		}
+	}
+	
+	public static int sol(int x) {
+		while(node[x].size()!=0) {
+			x = node[x].get(0);
+		}
+		return x;
+	}
+
+}

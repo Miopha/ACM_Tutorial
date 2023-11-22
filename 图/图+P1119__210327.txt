@@ -1,0 +1,87 @@
+/*
+https://www.luogu.com.cn/problem/P1119
+题目描述
+给出BB地区的村庄数NN，村庄编号从00到N-1N−1，和所有MM条公路的长度，公路是双向的。并给出第ii个村庄重建完成的时间t_it 
+i
+​	
+ ，你可以认为是同时开始重建并在第t_it 
+i
+​	
+ 天重建完成，并且在当天即可通车。若t_it 
+i
+​	
+ 为00则说明地震未对此地区造成损坏，一开始就可以通车。之后有QQ个询问(x, y, t)(x,y,t)，对于每个询问你要回答在第tt天，从村庄xx到村庄y的最短路径长度为多少。如果无法找到从xx村庄到yy村庄的路径，经过若干个已重建完成的村庄，或者村庄xx或村庄yy在第t天仍未重建完成 ，则需要返回-1−1。
+
+输入格式
+第一行包含两个正整数N,MN,M，表示了村庄的数目与公路的数量。
+
+第二行包含NN个非负整数t_0, t_1,…, t_{N-1}t 
+0
+​	
+ ,t 
+1
+​	
+ ,…,t 
+N−1
+​	
+ ，表示了每个村庄重建完成的时间，数据保证了t_0 ≤ t_1 ≤ … ≤ t_{N-1}t 
+0
+​	
+ ≤t 
+1
+​	
+ ≤…≤t 
+N−1
+​	
+ 。
+
+接下来MM行，每行33个非负整数i, j, wi,j,w，ww为不超过1000010000的正整数，表示了有一条连接村庄ii与村庄jj的道路，长度为ww，保证i≠ji
+
+=j，且对于任意一对村庄只会存在一条道路。
+
+接下来一行也就是M+3M+3行包含一个正整数QQ，表示QQ个询问。
+
+接下来QQ行，每行33个非负整数x, y, tx,y,t，询问在第tt天，从村庄xx到村庄yy的最短路径长度为多少，数据保证了tt是不下降的。
+
+输出格式
+共QQ行，对每一个询问(x, y, t)(x,y,t)输出对应的答案，即在第tt天，从村庄xx到村庄yy的最短路径长度为多少。如果在第t天无法找到从xx村庄到yy村庄的路径，经过若干个已重建完成的村庄，或者村庄x或村庄yy在第tt天仍未修复完成，则输出-1−1。
+*/
+
+#include <cstdio>
+#include <cstring>
+#include <algorithm>
+
+using namespace std;
+const int MAXN = 205, MAXQ = 50005;
+
+int n, m, dis[MAXN][MAXN], q, x[MAXQ], y[MAXQ], z[MAXQ], idx, t[MAXN];
+bool fixed[MAXN];
+
+void update(int k){
+	for(int i = 0 ; i < n ; ++i){
+		for(int j = 0 ; j < n ; ++j){
+			dis[i][j] = min(dis[i][j],dis[i][k]+dis[k][j]);
+		}
+	}
+}
+
+int main(){
+	memset(dis,0x3f3f3f3f,sizeof(dis));
+	for(int i = 0 ; i < n ; ++i) dis[i][i] = 0;
+	scanf("%d %d",&n,&m);
+	for(int i = 0 ; i < n ; ++i) scanf("%d",&t[i]);
+	for(int i = 1, u, v, w ; i <= m ; ++i){
+		scanf("%d %d %d",&u,&v,&w);
+		dis[u][v] = dis[v][u] = w;
+	}
+	scanf("%d",&q);
+	for(int i = 1 ; i <= q ; ++i) scanf("%d %d %d",&x[i],&y[i],&z[i]);
+	for(int i = 1 ; i <= q ; ++i){
+		while(t[idx]<=z[i]&&idx<n){
+			update(idx);
+			fixed[idx++] = true;
+		}
+		if(dis[x[i]][y[i]]==0x3f3f3f3f||!fixed[x[i]]||!fixed[y[i]]) puts("-1");
+		else printf("%d\n",dis[x[i]][y[i]]);
+	}
+}

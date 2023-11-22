@@ -1,0 +1,197 @@
+/*
+https://codeforces.com/gym/103185/problem/H
+Halting Wolf
+Input file: standard input
+Output file: standard output
+Time limit: 0.25 seconds
+Memory limit: 1024 megabytes
+Senoof loves programming languages, and the only thing he loves more than using them is creating new
+ones. His latest invention is the Wolf Programming Language, a very simple language consisting of only
+two types of instructions. They are numbered consecutively and written one under the other to make a
+program. Execution starts at instruction 1 and continues until the program gets stuck.
+The two types of instructions are:
+• “K L1 L2 · · · LK” is a finite jump. Each value Li
+is an instruction number in the program, while
+K indicates how many of them are specified. When a finite jump is executed, one of the values Li
+is chosen, and the execution continues with instruction Li
+. But that’s not all! The program changes
+the finite jump instruction so as to consume the chosen value. If a program executes a finite jump
+without available values, it gets stuck and halts.
+• “* L” is an infinite jump. When it’s executed, the program continues with instruction L, leaving the
+infinite jump instruction unmodified.
+I know, Senoof is crazy, but it’s not that difficult. The picture below shows an example, where current
+instruction is indicated with a . sign, and a consumed value is denoted with a t sign. The program in
+(a) starts execution at instruction 1, which is a finite jump. Suppose that the second value is chosen, that
+is, execution continues with instruction 2 and this value is consumed in instruction 1, which yields the
+situation shown in (b). Since instruction 2 is an infinite jump to instruction 3, execution continues with
+this instruction, without consuming any value from instruction 2. Now imagine that from instruction 3
+execution jumps to instruction 4, then to instruction 1, and then again to instruction 1, consuming the
+corresponding values. The situation at this point is shown in (c). As you can see the program gets stuck
+and halts, because there are no available values for jumping.
+.1: 2 1 2
+2: * 3
+3: 3 4 3 4
+4: 2 1 1
+1: 2 1 t
+.2: * 3
+3: 3 4 3 4
+4: 2 1 1
+.1: 2 t t
+2: * 3
+3: 3 t 3 4
+4: 2 t 1
+(a) (b) (c)
+After some playing around, Senoof noticed that programs written in Wolf may run forever, which does not
+imply that a given instruction can be executed infinitely many times. He kindly just sent us the following
+example of a program that may run forever, although instruction 1 can be executed at most twice.
+1: 2 1 2
+2: * 4
+3: 3 4 3 4
+4: * 2
+Given a program written in Wolf, you must determine the maximum number of times that instruction 1
+can be executed.
+Input
+The first line contains an integer N (1 ≤ N ≤ 100), the number of instructions the program has. Each
+of the next N lines describes an instruction. A finite jump is represented with a non-negative integer K
+Page 1 of 2
+followed by K integers L1, L2, . . . , LK (1 ≤ Li ≤ N for i = 1, 2, . . . , K). On the other hand, an infinite
+jump is described with the character “*” (asterisk) followed by an integer L (1 ≤ L ≤ N). It is guaranteed
+that the total amount of instructions mentioned in the finite jumps is at most 104
+.
+Output
+Output a single line with an integer indicating the maximum number of times instruction 1 can be
+executed, or the character “*” (asterisk) if instruction 1 can be executed infinitely many times.
+Examples
+standard input standard output
+4
+2 1 2
+* 3
+3 4 3 4
+2 1 1
+3
+4
+2 1 2
+* 4
+3 4 3 4
+* 2
+2
+4
+2 2 3
+2 3 4
+1 1
+1 1
+3
+3
+* 3
+* 1
+* 2
+*
+1
+0
+*/
+
+#include <cstdio>
+#include <algorithm>
+#include <queue>
+
+using namespace std;
+const int MAXN = 1005;
+
+int head[MAXN], tot = 1;
+
+struct Edge{
+	int u, to, next, flow;
+}G[MAXN*MAXN<<1];
+
+inline void addEdge(int u, int v, int f){
+	G[++tot].u = u;
+	G[tot].to = v;
+	G[tot].flow = f;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+inline void addFlow(int u, int v, int f = 0x3f3f3f3f){
+	addEdge(u,v,f);
+	addEdge(v,u,0);
+}
+
+int n, matrix[MAXN][MAXN], s, t, dis[MAXN], now[MAXN];
+
+bool BFS(int s, int t){
+	for(int i = 0 ; i <= t ; ++i) dis[i] = 0;
+	queue<int> q;
+	q.push(s);
+	dis[s] = 1;
+	now[s] = head[s];
+	while(!q.empty()){
+		int np = q.front(); q.pop();
+		for(int i = head[np], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(dis[to]||!G[i].flow) continue;
+			now[to] = head[to];
+			dis[to] = dis[np] + 1;
+			q.push(to);
+		}
+	}
+	return dis[t];
+}
+
+inline int DFS(int np, int flow){
+	if(np==t) return flow;
+	int res = 0;
+	for(int i = now[np], to ; i ; i = G[i].next){
+		now[np] = i;
+		to = G[i].to;
+		if(!G[i].flow||dis[to]^(dis[np]+1)) continue;
+		int k = DFS(to,min(flow,G[i].flow));
+		if(!k) dis[to] = 0;
+		G[i].flow -= k;
+		G[i^1].flow += k;
+		res += k;
+		flow -= k;
+		if(!flow) break;
+	}
+	return res;
+}
+
+int dinic(int s, int t){
+	int res = 0;
+	while(BFS(s,t)) res += DFS(s,t);
+	return res;
+}
+
+int main(){
+	scanf("%d\n",&n);
+	s = 0;
+	t = n + 1;
+	for(int i = 1 ; i <= n ; ++i){
+		char s[6];
+		scanf("%s",s);
+		if(s[0]=='*'){
+			int t;
+			scanf("%d",&t);
+			if(t==1) t = n + 1;
+			matrix[i][t] = 10002;
+		}else{
+			int k = atoi(s);
+			for(int j = 1, l ; j <= k ; ++j){
+				scanf("%d",&l);
+				if(l==1) l = n + 1;
+				++matrix[i][l];
+			}
+		}
+		getchar();
+	}
+	addFlow(s,1,0x3f3f3f3f);
+	for(int i = 1 ; i <= n ; ++i){
+		for(int j = 1 ; j<= n + 1 ; ++j){
+			if(!matrix[i][j]) continue;
+			addFlow(i,j,matrix[i][j]);
+		}
+	}
+	int res = dinic(s,t);
+	if(res>10000) puts("*");
+	else printf("%d\n",res+1);
+	return 0;
+}

@@ -1,0 +1,120 @@
+/*
+https://vjudge.net/contest/419404#problem/E
+Peter returned from the recently held ACM ICPC World Finals only to find that his return flight was overbooked and he was bumped from the flight! Well, at least he wasn’t beat up by the airline and he’s received a voucher for one free flight between any two destinations he wishes.
+
+He is already planning next year’s trip. He plans to travel by car where necessary, but he may be using his free flight ticket for one leg of the trip. He asked for your help in his planning.
+
+He can provide you a network of cities connected by roads, the amount it costs to buy gas for traveling between pairs of cities, and a list of available flights between some of those cities. Help Peter by finding the minimum amount of money he needs to spend to get from his hometown to next year’s destination!
+
+Input
+The input consists of a single test case. The first line lists five space-separated integers n, m, f, s, and t, denoting the number of cities n (0<n≤50000), the number of roads m (0≤m≤150000), the number of flights f (0≤f≤1000), the number s (0≤s<n) of the city in which Peter’s trip starts, and the number t (0≤t<n) of the city Peter is trying to travel to. (Cities are numbered from 0 to n−1.)
+
+The first line is followed by m lines, each describing one road. A road description contains three space-separated integers i, j, and c (0≤i,j<n,i≠j and 0<c≤50000), indicating there is a road connecting cities i and j that costs c cents to travel. Roads can be used in either direction for the same cost. All road descriptions are unique.
+
+Each of the following f lines contains a description of an available flight, which consists of two space-separated integers u and v (0≤u,v<n, u≠v) denoting that a flight from city u to city v is available (though not from v to u unless listed elsewhere). All flight descriptions are unique.
+
+Output
+Output the minimum number of cents Peter needs to spend to get from his home town to the competition, using at most one flight. You may assume that there is a route on which Peter can reach his destination.
+*/
+
+/*
+ * 做法跟之前做过的CF1473E有点像
+ * 最短路上影响的最多只有一条边，考虑暴力升维，建两个图，图1到图2建一条飞机的边，把所有状态表示出来再跑dijkstra
+ * 堆优化的dij时间复杂度是O(ElogE)，E最大差不多是150000(m)*2(双向边)*3(升维建图)
+ * 注意航线是单向边orz
+ */
+ 
+#include <cstdio>
+#include <queue>
+#include <cstring>
+#include <vector>
+
+using namespace std;
+typedef long long ll;
+// dis, pos
+typedef pair<ll,int> node;
+const int MAXN = 50005, MAXM = 150005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int head[MAXN<<1], tot;
+
+struct Edge{
+	int next, to, val;
+}G[(MAXM<<2)+2005];
+
+inline void addEdge(int u, int v, int w){
+    G[++tot].to = v;
+    G[tot].val = w;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+int n, m, f, s, t;
+
+void ADD(int s, int to, int val){
+	// 1 -> 1
+	addEdge(s,to,val);
+	// 2 -> 2
+	addEdge(s+n,to+n,val);
+}
+
+ll dis[MAXN<<1];
+bool vis[MAXN<<1];
+
+void dij(int s){
+	// for(int i = 0, tp = n<<1 ; i <= tp ; ++i) dis[i] = 0x3f;
+	memset(dis,0x3f,sizeof(dis));
+	priority_queue<node,vector<node>, greater<node> > q;
+	dis[s] = 0;
+	q.push(node{dis[s],s});
+	while(!q.empty()){
+		int np = q.top().second; q.pop();
+		if(vis[np]) continue;
+		vis[np] = true;
+		for(int i = head[np], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(!vis[to]&&dis[to]>dis[np]+G[i].val){
+				dis[to]=dis[np]+G[i].val;
+				q.push(node{dis[to],to});
+			}
+		}
+	}
+}
+
+int main(){
+	n = read();
+	m = read();
+	f = read();
+	s = read();
+	t = read();
+	for(int i = 1, u, v, w ; i <= m ; ++i){
+		u = read();
+		v = read();
+		w = read();
+		ADD(u,v,w);
+		ADD(v,u,w);
+	}
+	for(int i = 1, u, v ; i <= f ; ++i){
+		// 1 -0-> 2
+		u = read();
+		v = read();
+		addEdge(u,v+n,0);
+	}
+	dij(s);
+	printf("%lld\n",dis[t+n]);
+	return 0;
+}

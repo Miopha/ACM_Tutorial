@@ -1,0 +1,64 @@
+/*
+https://vjudge.net/problem/UVA-572/origin
+Oil Deposits 
+The GeoSurvComp geologic survey company is responsible for detecting underground oil deposits.
+GeoSurvComp works with one large rectangular region of land at a time, and creates a grid that divides
+the land into numerous square plots. It then analyzes each plot separately, using sensing equipment to
+determine whether or not the plot contains oil.
+A plot containing oil is called a pocket. If two pockets are adjacent, then they are part of the
+same oil deposit. Oil deposits can be quite large and may contain numerous pockets. Your job is to
+determine how many different oil deposits are contained in a grid.
+Input
+The input file contains one or more grids. Each grid begins with a line containing m and n, the number
+of rows and columns in the grid, separated by a single space. If m = 0 it signals the end of the input;
+otherwise 1 ≤ m ≤ 100 and 1 ≤ n ≤ 100. Following this are m lines of n characters each (not counting
+the end-of-line characters). Each character corresponds to one plot, and is either ‘*’, representing the
+absence of oil, or ‘@’, representing an oil pocket.
+Output
+For each grid, output the number of distinct oil deposits. Two different pockets are part of the same
+oil deposit if they are adjacent horizontally, vertically, or diagonally. An oil deposit will not contain
+more than 100 pockets.
+*/
+
+#include <iostream>
+#include <cstdio>
+#define re register
+#define MAXN 105
+
+using namespace std;
+
+int m, n, ans;
+bool mp[MAXN][MAXN];
+
+inline void DFS(int x, int y){
+    mp[x][y] = false;
+    for(re int i = -1 ; i <= 1 ; ++i){
+        for(re int j = -1 ; j <= 1 ; ++j){
+            int x1 = x + i, y1 = y + j;
+            if((i||j)&&x1>=1&&y1>=1&&x1<=m&&y1<=n&&mp[x1][y1]){
+                DFS(x1,y1);
+            }
+        }
+    }
+}
+
+int main(){
+    while(scanf("%d %d",&m,&n)==2&&m&&n){
+        ans = 0;
+        char tmp;
+        for(re int i = 1 ; i <= m ; ++i)
+            for(re int j = 1 ; j <= n ; ++j){
+                cin>>tmp;
+                mp[i][j] = (tmp=='@');
+            }
+        for(re int i = 1 ; i <= m ; ++i)
+            for(re int j = 1 ; j <= n ; ++j){
+                if(mp[i][j]){
+                    ++ans;
+                    DFS(i,j);
+                }
+            }
+        printf("%d\n",ans);
+    }
+    return 0;
+}

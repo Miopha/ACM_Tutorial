@@ -1,0 +1,148 @@
+/*
+https://www.luogu.com.cn/problem/P3373
+题目描述
+如题，已知一个数列，你需要进行下面三种操作：
+将某区间每一个数乘上 x
+将某区间每一个数加上 x
+求出某区间每一个数的和
+输入格式
+第一行包含三个整数 n,m,p，分别表示该数列数字的个数、操作的总个数和模数。
+第二行包含 n 个用空格分隔的整数，其中第 i 个数字表示数列第 i 项的初始值。
+接下来 m 行每行包含若干个整数，表示一个操作，具体如下：
+操作 1： 格式：1 x y k 含义：将区间 [x,y] 内每个数乘上 k
+操作 2： 格式：2 x y k 含义：将区间 [x,y] 内每个数加上 k
+操作 3： 格式：3 x y 含义：输出区间 [x,y] 内每个数的和对 p 取模所得的结果
+输出格式
+输出包含若干行整数，即为所有操作 3 的结果。
+说明/提示
+【数据范围】
+对于 100% 的数据：n<=10^5,m<=10^5
+除样例外，p = 571373
+*/
+
+/*
+ * 加入两个lazytag,乘法和加法,根据分配律维护这两个值,在每次更新和查询时pushdown()
+ * 比如在区间先加了x后乘上y,那么这个区间的乘法lazytag就是y,加法lazytag就是x*y
+ */
+ 
+#include <iostream>
+#include <cstdio>
+#define re register
+#define MAXN 500005
+
+using namespace std;
+
+typedef long long ll;
+
+inline int read(){
+    int x = 0, f = 1;
+    char ch = getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-')
+            f = -1;
+        ch = getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x = (x<<1) + (x<<3) + (ch^48);
+        ch = getchar();
+    }
+    return x*f;
+}
+
+ll n, m, p, data[MAXN], tree[MAXN<<2];
+
+struct node{
+    ll mul, add;
+}lazytag[MAXN<<2];
+
+inline void build(int node, int L, int R){
+    lazytag[node].mul = 1;
+    lazytag[node].add = 0;
+    if(L==R){
+        tree[node] = data[L]%p;
+        return ;
+    }
+    int left_node = node<<1, right_node = node<<1|1, mid = (L+R)>>1;
+    build(left_node,L,mid);
+    build(right_node,mid+1,R);
+    tree[node] = (tree[left_node] + tree[right_node]) % p;
+}
+
+inline void pushdown(int node, int L, int R){
+    if(lazytag[node].add||lazytag[node].mul!=1){
+        int left_node = node<<1, right_node = node<<1|1, mid = (L+R)>>1;
+        // pushdown son value.
+        tree[left_node] = (tree[left_node]*lazytag[node].mul%p+lazytag[node].add*(mid-L+1))%p;
+        tree[right_node] = (tree[right_node]*lazytag[node].mul%p+lazytag[node].add*(R-mid))%p;
+        // pushdown lazytag.mul
+        lazytag[left_node].mul = (lazytag[left_node].mul*lazytag[node].mul)%p;
+        lazytag[right_node].mul = (lazytag[right_node].mul*lazytag[node].mul)%p;
+        // pushdown lazytag.add
+        lazytag[left_node].add = (lazytag[left_node].add*lazytag[node].mul%p+lazytag[node].add)%p;
+        lazytag[right_node].add = (lazytag[right_node].add*lazytag[node].mul%p+lazytag[node].add)%p;
+        // initialize lazytag[node]
+        lazytag[node].mul = 1;
+        lazytag[node].add = 0;
+    }
+}
+
+inline void update1(int node, int L, int R, int start, int end, int val){ // multiply
+    if(L>end||R<start) return ;
+    if(L>=start&&R<=end){
+        tree[node] = (tree[node]*val)%p;
+        lazytag[node].mul = (lazytag[node].mul*val)%p;
+        lazytag[node].add = (lazytag[node].add*val)%p;
+        return ;
+    }
+    pushdown(node,L,R);
+    int left_node = node<<1, right_node = node<<1|1, mid = (L+R)>>1;
+    update1(left_node,L,mid,start,end,val);
+    update1(right_node,mid+1,R,start,end,val);
+    tree[node] = (tree[left_node] + tree[right_node])%p;
+}
+
+inline void update2(int node, int L, int R, int start, int end, int val){ // add
+    if(L>end||R<start) return ;
+    if(L>=start&&R<=end){
+        tree[node] = (tree[node]+val*(R-L+1)%p)%p;
+        lazytag[node].add = (lazytag[node].add+val)%p;
+        return ;
+    }
+    pushdown(node,L,R);
+    int left_node = node<<1, right_node = node<<1|1, mid = (L+R)>>1;
+    update2(left_node,L,mid,start,end,val);
+    update2(right_node,mid+1,R,start,end,val);
+    tree[node] = (tree[left_node] + tree[right_node])%p;
+}
+
+inline int query(int node, int L, int R, int start, int end){
+    if(L>end||R<start) return 0;
+    if(L>=start&&R<=end) return tree[node];
+    pushdown(node,L,R);
+    int left_node = node<<1, right_node = node<<1|1, mid = (L+R)>>1;
+    int ask1 = query(left_node,L,mid,start,end);
+    int ask2 = query(right_node,mid+1,R,start,end);
+    return (ask1 + ask2)%p;
+}
+
+int main(){
+    n = read(); m = read(); p = read();
+    for(re int i = 1 ; i <= n ; ++i)
+        data[i] = read();
+    build(1,1,n);
+    int cmd, l, r, v;
+    for(re int i = 1 ; i <= m ; ++i){
+        cmd = read();
+        if(cmd==1){ //multiply
+            l = read(); r = read(); v = read();
+            update1(1,1,n,l,r,v%p);
+        }else if(cmd==2){ //add
+            l = read(); r = read(); v = read();
+            update2(1,1,n,l,r,v%p);
+        }else{
+            l = read(); r = read();
+            printf("%d\n",query(1,1,n,l,r));
+        }
+    }
+    return 0;
+}

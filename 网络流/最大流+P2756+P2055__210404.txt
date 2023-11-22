@@ -1,0 +1,275 @@
+/*
+https://www.luogu.com.cn/problem/P2756
+题目背景
+第二次世界大战期间，英国皇家空军从沦陷国征募了大量外籍飞行员。由皇家空军派出的每一架飞机都需要配备在航行技能和语言上能互相配合的两名飞行员，其中一名是英国飞行员，另一名是外籍飞行员。在众多的飞行员中，每一名外籍飞行员都可以与其他若干名英国飞行员很好地配合。
+
+题目描述
+一共有 nn 个飞行员，其中有 mm 个外籍飞行员和 (n - m)(n−m) 个英国飞行员，外籍飞行员从 11 到 mm 编号，英国飞行员从 m + 1m+1 到 nn 编号。 对于给定的外籍飞行员与英国飞行员的配合情况，试设计一个算法找出最佳飞行员配对方案，使皇家空军一次能派出最多的飞机。
+
+输入格式
+输入的第一行是用空格隔开的两个正整数，分别代表外籍飞行员的个数 mm 和飞行员总数 nn。
+从第二行起到倒数第二行，每行有两个整数 u, vu,v，代表外籍飞行员 uu 可以和英国飞行员 vv 配合。
+输入的最后一行保证为 -1 -1，代表输入结束。
+
+输出格式
+本题存在 Special Judge。
+请输出能派出最多的飞机数量，并给出一种可行的方案。
+输出的第一行是一个整数，代表一次能派出的最多飞机数量，设这个整数是 kk。
+第 22 行到第 k + 1k+1 行，每行输出两个整数 u, vu,v，代表在你给出的方案中，外籍飞行员 uu 和英国飞行员 vv 配合。这 kk 行的 uu 与 vv 应该互不相同。
+*/
+
+/*
+ * 设源点s=101，汇点t=102，源点与英国飞行员用一条权值为1的边连接，外籍飞行员与汇点用一条权值为1的边连接，飞行员之间也用权值为1的边连接
+ * 然后就可以开始dinic求最大流，根据最大流定义，增广边权值为1的那么说明这条原边有流量流过，k最大的情况下u和v是配合的
+ */
+
+#include <cstdio>
+#include <algorithm>
+#include <queue>
+#include <iostream>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+using namespace std;
+typedef long long ll;
+const int MAXN = 105, MAXM = 100005;
+
+int head[MAXN], tot = 1;
+
+struct Edge{
+	int u, to, val, next;
+}G[MAXM];
+
+inline void addEdge(int u, int v, int w){
+	G[++tot].u = u;
+	G[tot].to = v;
+	G[tot].val = w;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+int n, m, dis[MAXN], now[MAXN], ans, s = 101, t = 102;
+
+bool BFS(int s, int t){
+	for(int i = 0 ; i <= 102 ; ++i) dis[i] = 0;
+	queue<int> q;
+	q.push(s);
+	dis[s] = 1;
+	now[s] = head[s];
+	while(!q.empty()){
+		int np = q.front(); q.pop();
+		for(int i = head[np], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(dis[to]||!G[i].val) continue;
+			now[to] = head[to];
+			dis[to] = dis[np] + 1;
+			q.push(to);
+		}
+	}
+	return dis[t];
+}
+
+inline ll DFS(int np, int flow){
+	if(np==t) return flow;
+	int res = 0;
+	for(int i = now[np], to ; i ; i = G[i].next){
+		now[np] = i;
+		to = G[i].to;
+		if(!G[i].val||dis[to]^(dis[np]+1)) continue;
+		int k = DFS(to,min(flow,G[i].val));
+		if(k==0) dis[to] = 0;
+		G[i].val -= k;
+		G[i ^ 1].val += k;
+		res += k;
+		flow -= k;
+	}
+	return res;
+}
+
+void dinic(){
+	while(BFS(s,t))
+		ans += DFS(s,100);
+}
+
+int main(){
+	m = read();
+	n = read();
+	while(true){
+		int u = read(), v = read();
+		if(u==-1&&v==-1) break;
+		addEdge(u,v,100);
+		addEdge(v,u,0);
+	}
+	int nowEdge = tot;
+	for(int i = 1 ; i <= m ; ++i){
+		addEdge(s,i,1);
+		addEdge(i,s,0);
+	}
+	for(int i = m + 1 ; i <= n ; ++i){
+		addEdge(i,t,1);
+		addEdge(t,i,0);
+	}
+	dinic();
+	printf("%d\n",ans);
+	for(int i = 3 ; i <= nowEdge ; i += 2){
+		if(G[i].val) printf("%d %d\n",G[i].u,G[i].to);
+	}
+	return 0;
+}
+
+/*
+https://www.luogu.com.cn/problem/P2055
+题目描述
+学校放假了……有些同学回家了，而有些同学则有以前的好朋友来探访，那么住宿就是一个问题。
+
+比如 A 和 B 都是学校的学生，A 要回家，而 C 来看B，C 与 A 不认识。我们假设每个人只能睡和自己直接认识的人的床。那么一个解决方案就是 B 睡 A 的床而 C 睡 B 的床。而实际情况可能非常复杂，有的人可能认识好多在校学生，在校学生之间也不一定都互相认识。
+
+我们已知一共有 nn 个人，并且知道其中每个人是不是本校学生，也知道每个本校学生是否回家。问是否存在一个方案使得所有不回家的本校学生和来看他们的其他人都有地方住。
+
+输入格式
+第一行一个数 TT 表示数据组数。接下来 TT 组数据，每组数据第一行一个数 nn 表示涉及到的总人数。
+
+接下来一行 nn 个数，第 ii 个数表示第 ii 个人是否是在校学生 (00 表示不是，11 表示是)。再接下来一行 nn 个数，第 ii 个数表示第 ii 个人是否回家 (00 表示不回家，11 表示回家，注意如果第 ii 个人不是在校学生，那么这个位置上的数是一个随机的数，你应该在读入以后忽略它)。
+
+接下来 nn 行每行 nn 个数，第 ii 行第 jj 个数表示 ii 和 jj 是否认识 (11 表示认识，00 表示不认识，第 ii 行 ii 个的值为 00，但是显然自己还是可以睡自己的床)，认识的关系是相互的。
+
+输出格式
+对于每组数据，如果存在一个方案则输出 ^_^，否则输出T_T。（注意输出的都是半角字符，即三个符号的 ASCII 码分别为 94,84,9594,84,95）
+*/
+
+#include <cstdio>
+#include <algorithm>
+#include <queue>
+#include <iostream>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+using namespace std;
+typedef long long ll;
+const int MAXN = 105, MAXM = 100005;
+
+int head[MAXN], tot = 1;
+
+struct Edge{
+	int u, to, val, next;
+}G[MAXM];
+
+inline void addEdge(int u, int v, int w){
+	G[++tot].u = u;
+	G[tot].to = v;
+	G[tot].val = w;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+int n, m, dis[MAXN], now[MAXN], s = 101, t = 102, needBed;
+bool student[MAXN], atHome[MAXN];
+
+bool BFS(int s, int t){
+	for(int i = 0 ; i <= 102 ; ++i) dis[i] = 0;
+	queue<int> q;
+	q.push(s);
+	dis[s] = 1;
+	now[s] = head[s];
+	while(!q.empty()){
+		int np = q.front(); q.pop();
+		for(int i = head[np], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(dis[to]||!G[i].val) continue;
+			now[to] = head[to];
+			dis[to] = dis[np] + 1;
+			q.push(to);
+		}
+	}
+	return dis[t];
+}
+
+inline ll DFS(int np, int flow){
+	if(np==t) return flow;
+	int res = 0;
+	for(int i = now[np], to ; i ; i = G[i].next){
+		now[np] = i;
+		to = G[i].to;
+		if(!G[i].val||dis[to]^(dis[np]+1)) continue;
+		int k = DFS(to,min(flow,G[i].val));
+		if(k==0) dis[to] = 0;
+		G[i].val -= k;
+		G[i ^ 1].val += k;
+		res += k;
+		flow -= k;
+	}
+	return res;
+}
+
+int dinic(){
+	int res = 0;
+	while(BFS(s,t))
+		res += DFS(s,100);
+	return res;
+}
+
+void solve(){
+	tot = 1;
+	needBed = 0;
+	for(int i = 0 ; i <= 102 ; ++i) head[i] = 0;
+	n = read();
+	for(int i = 1 ; i <= n ; ++i) student[i] = read();
+	for(int i = 1 ; i <= n ; ++i) atHome[i] = read();
+	for(int i = 1 ; i <= n ; ++i){
+		// i-th needs bed
+		if((student[i]&&!atHome[i])||!student[i]){
+			++needBed;
+			addEdge(s,i,1);
+			addEdge(i,s,0);
+		}
+		// i-th has bed
+		if(student[i]){ 
+			addEdge(i+n,t,1);
+			addEdge(t,i+n,0);
+		}
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		for(int j = 1 ; j <= n ; ++j){
+			if(read()||i==j){
+				addEdge(i,j+n,1);
+				addEdge(j+n,i,0);
+			}
+		}
+	}
+	if(dinic()>=needBed) puts("^_^");
+	else puts("T_T");
+}
+
+int main(){
+	int t = read();
+	while(t--) solve();
+	return 0;
+}

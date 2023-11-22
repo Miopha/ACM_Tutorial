@@ -1,0 +1,189 @@
+/*
+https://acm.hdu.edu.cn/showproblem.php?pid=6749
+Mosquito
+Time Limit: 20000/10000 MS (Java/Others)    Memory Limit: 131072/131072 K (Java/Others)
+Total Submission(s): 263    Accepted Submission(s): 93
+
+
+Problem Description
+房间是个 n∗m 的网格，一共有 k 个窗户，都在上下左右四条边上。在第 0 时刻，每个窗户对应的格子上都会出现若干只蚊子。
+
+蚊子每个时刻可以往上下左右移动一格或者呆在原地不动。
+
+假设这些蚊子都足够聪明，请问最少花费多少时刻，使得所有格子上都有至少一只蚊子？
+
+蚊子在第 0 时刻不能动。
+ 
+
+Input
+第一行一个正整数 test(1≤test≤10) 表示数据组数。
+
+对于每组数据，第一行三个整数 n,m,k(1≤n,m≤1000,1≤k≤6) 表示房间的大小和窗户的个数。
+
+接下来 k 行，每行三个整数 x,y,z(1≤z≤nm) 表示窗户的坐标以及出现在这个窗户的初始蚊子的数目。
+
+横坐标从 1...n 编号，纵坐标从 1...m 编号，数据保证窗户一定在边界上。
+ 
+
+Output
+对于每组数据，一行一个整数表示答案。如果无解，输出 -1。
+*/
+
+/*
+ * 二分+最大流
+ * 先二分枚举时间t，如果这个点p到第k个初始蚊子点mp的曼哈顿距离小于等于t，则在mp到p连一条流量为z[k]的边，源点S到第k个初始蚊子点连一条流量为z[k]的边，网格上的点与相邻的点连接一条无限流量的无向边，网格上的每个点到汇点T连一条流量为1的边，那么跑dinic()最大流的时候最大流等于n*m则说明t是符合要求的，这样的时间复杂度为O(log(n+m)*(n^3))而且常数很大，需要优化
+ * 有些点是可以合并的，在当前时间t下把每个点分类，把点p的状态stat定义为第i个初始蚊子点能到达，这个stat最大能是2^6-1=63，然后记录每个状态的点的数量flow[stat]，然后我们用分类后的点建图
+ * 源点S到第i个蚊子点连一条流量为z[i]的边，第i个蚊子点到能到达的状态点连一条流量为z[i]的边，每个状态点stat到汇点T连一条流量为flow[stat]的边，然后二分跑dinic()最大流，时间复杂度为O(log(n+m)*(2^k)*(2^k)^2)
+ */
+
+#include <cmath>
+#include <cstdio>
+#include <algorithm>
+#include <iostream>
+#include <cstring>
+#include <queue>
+#define mp make_pair
+
+using namespace std;
+typedef pair<int,int> P;
+typedef long long ll;
+const int MAXK = 10, MAXN = 1005, INF = 0x3f3f3f3f, MAXP = 256;
+
+int tot = 1, head[MAXP];
+
+struct Edge{
+	int np, to, next;
+	ll flow;
+}G[MAXP];
+
+inline void addEdge(int u, int v, int f){
+	G[++tot].np = u;
+	G[tot].to = v;
+	G[tot].flow = f;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+inline void addFlow(int u, int v, int f = INF){
+	addEdge(u,v,f);
+	addEdge(v,u,0);
+}
+
+int n, m, k, x[MAXK], y[MAXK], z[MAXK], dis[MAXN][MAXN][MAXK], vis[MAXN][MAXN];
+int sumz, flow[MAXP], S, T, dep[MAXP], now[MAXP];
+
+int BFS(int s, int t){
+	for(int i = 0 ; i <= 255 ; ++i) dep[i] = 0;
+	queue<int> q;
+	q.push(s);
+	dep[s] = 1;
+	now[s] = head[s];
+	while(!q.empty()){
+		int np = q.front(); q.pop();
+		for(int i = head[np], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(dep[to]||!G[i].flow) continue;
+			now[to] = head[to];
+			dep[to] = dep[np] + 1;
+			q.push(to);
+		}
+	}
+	return dep[t];
+}
+
+inline ll DFS(int np, ll flow){
+	if(np==T) return flow;
+	ll res = 0;
+	for(int i = now[np], to ; i ; i = G[i].next){
+		now[np] = i;
+		to = G[i].to;
+		if(!G[i].flow||dep[to]^(dep[np]+1)) continue;
+		ll k = DFS(to,min(flow,G[i].flow));
+		if(!k) dep[to] = 0;
+		G[i].flow -= k;
+		G[i^1].flow += k;
+		res += k;
+		flow -= k;
+	}
+	return res;
+}
+
+int dinic(int s, int t){
+	int flow = 0;
+	while(BFS(s,t)){
+		flow += DFS(s,1e18);
+	}
+	return flow;
+}
+
+bool check(int t){
+	int stats = (1<<k)-1;
+	tot = 1;
+	memset(head,0,sizeof(head));
+	memset(flow,0,sizeof(flow));
+	for(int i = 0 ; i <= n ; ++i){
+		for(int j = 0 ; j <= m ; ++j){
+			int stat = 0;
+			for(int l = 1 ; l <= k ; ++l){
+				if(dis[i][j][l]<=t) stat |= (1<<(l-1));
+			}
+			++flow[stat];
+		}
+	}
+	S = stats + k + 1;
+	T = S + 1;
+	for(int i = 1 ; i <= k ; ++i){
+		// source to mos points
+		addFlow(S,stats+i);
+		for(int j = 0 ; j <= stats ; ++j){
+			// mos points to nodes
+			if(j&(1<<(i-1))) addFlow(i+stats,j,z[i]);
+		}
+	}
+	// nodes to meeting point
+	for(int i = 0 ; i <= stats ; ++i){
+		addFlow(i,T,flow[i]);
+	}
+	return dinic(S,T)==(n+1)*(m+1);
+}
+
+void solve(){
+	sumz = 0;
+	memset(vis,0,sizeof(vis));
+	scanf("%d %d %d",&n,&m,&k);
+	--n;
+	--m;
+	for(int i = 1; i <= k ; ++i){
+		scanf("%d %d %d",&x[i],&y[i],&z[i]);
+		--x[i];
+		--y[i];
+		sumz += z[i];
+	}
+	if(sumz<(n+1)*(m+1)){
+		puts("-1");
+		return ;
+	}
+	for(int i = 1 ; i <= k ; ++i){
+		for(int j = 0 ; j <= n ; ++j){
+			for(int l = 0 ; l <= m ; ++l){
+				dis[j][l][i] = abs(x[i]-j)+abs(y[i]-l);
+			}
+		}
+	}
+	
+	int l = 0, r = n + m;
+	while(1+l<r){
+		int mid = (l+r)>>1;
+		if(check(mid)) r = mid;
+		else l = mid;
+	}
+	printf("%d\n",r);
+	
+}
+
+int main(){
+	int t;
+	scanf("%d",&t);
+	while(t--) solve();
+	return 0;
+}

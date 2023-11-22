@@ -1,0 +1,112 @@
+/*
+https://codeforces.com/problemset/problem/1473/E
+E. Minimum Path
+time limit per test3 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You are given a weighted undirected connected graph consisting of n vertices and m edges. It is guaranteed that there are no self-loops or multiple edges in the given graph.
+
+Let's define the weight of the path consisting of k edges with indices e1,e2,…,ek as ∑i=1kwei−maxi=1kwei+mini=1kwei, where wi — weight of the i-th edge in the graph.
+
+Your task is to find the minimum weight of the path from the 1-st vertex to the i-th vertex for each i (2≤i≤n).
+
+Input
+The first line contains two integers n and m (2≤n≤2⋅105; 1≤m≤2⋅105) — the number of vertices and the number of edges in the graph.
+
+Following m lines contains three integers vi,ui,wi (1≤vi,ui≤n; 1≤wi≤109; vi≠ui) — endpoints of the i-th edge and its weight respectively.
+
+Output
+Print n−1 integers — the minimum weight of the path from 1-st vertex to the i-th vertex for each i (2≤i≤n).
+*/
+
+/*
+ * 式子只多了两项，只有两条边受影响，可以考虑暴力升维，从而表示出所有状态，再跑dij()
+ */
+
+#include <cstdio>
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <cstring>
+#define mp make_pair
+#define pb push_back
+
+using namespace std;
+typedef long long ll;
+typedef pair<ll,int> node;
+typedef pair<int,int> edge;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+
+int n, m;
+bool vis[MAXN<<2];
+ll dis[MAXN<<2];
+vector<edge> G[MAXN<<2];
+
+inline void ADD(int s, int t, int v){
+	// 升维
+	G[s].pb(edge(t,v));
+	G[s+n].pb(edge(t+n,v));
+	G[s+2*n].pb(edge(t+2*n,v));
+	G[s+3*n].pb(edge(t+3*n,v));
+	// 最大和最小是同一条边
+	G[s].pb(edge(t+3*n,v));
+	// 1 -min-> 2 -max-> 4
+	G[s].pb(edge(t+n,0));
+	G[s+n].pb(edge(t+3*n,v<<1));
+	// 1 -max-> 3 -min-> 4
+	G[s].pb(edge(t+2*n,v<<1));
+	G[s+2*n].pb(edge(t+3*n,0));
+}
+
+void dij(int s){
+	priority_queue<node,vector<node>,greater<node> > q;
+	memset(dis,0x3f,sizeof(dis));
+	q.push(node{dis[s]=0,s});
+	while(!q.empty()){
+		int np = q.top().second; q.pop();
+		if(vis[np]) continue;
+		vis[np] = true;
+		for(int i = 0, to, sz = G[np].size() ; i < sz ; ++i){
+			to = G[np][i].first;
+			if(!vis[to]&&dis[to]>G[np][i].second+dis[np]){
+				dis[to]=G[np][i].second+dis[np];
+				q.push(node{dis[to],to});
+			}
+		}
+	}
+}
+
+int main(){
+	n = read();
+	m = read();
+	for(int i = 1, u, v, w ; i <= m ; ++i){
+		u = read();
+		v = read();
+		w = read();
+		ADD(u,v,w);
+		ADD(v,u,w);
+	}
+	dij(1);
+	for(int i = 3 * n + 2 ; i <= (n<<2) ; ++i){
+		printf("%lld ",dis[i]);
+	}
+	puts("");
+	return 0;
+}

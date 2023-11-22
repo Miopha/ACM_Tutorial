@@ -1,0 +1,173 @@
+/*
+https://www.luogu.com.cn/problem/P7863
+题目背景
+你骄傲地飞远，我栖息的叶片。
+听不见的宣言，重复过很多年。
+沧海月的想念羽化我昨天，
+在我成熟的笑脸，
+你却未看过一眼。
+
+题目描述
+蝉 Charlie 要去寻找他的好朋友飞鸟了。
+
+具体来说，Charlie 和他的好朋友生活的地方可以看作一个 n \times mn×m 的网格，左上角为 (1,1)(1,1)，右下角为 (n,m)(n,m)。每个格子 (i,j)(i,j) 有一个海拔高度 h_{i,j}h 
+i,j
+​
+ 。Charlie 的目标是从他的家 (x_0,y_0)(x 
+0
+​
+ ,y 
+0
+​
+ ) 出发，不重不漏地经过网格中的每个格子恰好一次，最终回到自己的家 (x_0,y_0)(x 
+0
+​
+ ,y 
+0
+​
+ )。Charlie 有两种移动方式：
+
+跳跃。用这种方式，Charlie 可以到达上下左右 44 个相邻格子中海拔严格低于当前格子的一个格子。注意跳跃不消耗体力。
+飞行。用这种方式，Charlie 可以从当前格子 (x,y)(x,y) 到达网格中任意一个格子 (x',y')(x 
+′
+ ,y 
+′
+ )，并消耗 h_{x',y'}-h_{x,y}h 
+x 
+′
+ ,y 
+′
+ 
+​
+ −h 
+x,y
+​
+  个单位的体力。注意飞行所消耗的体力值可以是负数。
+Charlie 希望用尽量少的飞行次数完成目标，在此前提下再令消耗的体力最少。由于网格实在太大了，Charlie 希望你能帮助他。
+
+输入格式
+第一行四个整数，分别代表 n,m,x_0,y_0n,m,x 
+0
+​
+ ,y 
+0
+​
+ ，含义如上所述。
+接下来 nn 行，每行 mm 个整数，第 ii 行第 jj 个数代表格子 (i,j)(i,j) 的海拔 h_{i,j}h 
+i,j
+​
+ 。
+
+输出格式
+一行两个整数，分别代表“飞行的最少次数”与“飞行次数最少的前提下消耗的最少体力值”。
+*/
+
+/*
+ * 比赛时想到二分图最大匹配但只能求条件“飞行的最少次数”时的答案..
+ * 建图：把i点拆分成i和i+n*m点建立二分图，点i可到相邻的高度比他小的点j+n*m，通过题解的一系列推导可得出费用为h[i]-h[j]，源点与1~n*m点连接，n*m+1~n*m*2与汇点连接
+ * 最后MCMF跑出来的最大匹配(流)mxFlow就是不用“飞”也可以走过的点，那么剩下n*m-mxFlow则是要飞的次数，最小费用mnCost就是最少消耗体力
+ * 这题还卡STL，必须开O2优化
+ */
+
+#include <cstdio>
+#include <algorithm>
+#include <queue>
+
+using namespace std;
+typedef long long ll;
+const int MAXN = 55, INF = 0x3f3f3f3f;
+const ll INFL = 0x3f3f3f3f3f3f3f3f;
+
+int head[MAXN*MAXN<<1], tot = 1;
+
+struct Edge{
+	int to, next;
+	ll flow, cost;
+}G[MAXN*MAXN<<3];
+
+inline void addEdge(int u, int v, int f, int c){
+	G[++tot].to = v;
+	G[tot].flow = f;
+	G[tot].cost = c;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+inline void addFlow(int u, int v, int f, int c){
+	addEdge(u,v,f,c);
+	addEdge(v,u,0,-c);
+}
+
+ll mxFlow, mnCost;
+ll dis[MAXN*MAXN<<1], flow[MAXN*MAXN<<1];
+int pre[MAXN*MAXN<<1], last[MAXN*MAXN<<3];
+bool inq[MAXN*MAXN<<1];
+deque<int> dq;
+int n, m, x0, y0, s, t, h[MAXN][MAXN], id[MAXN][MAXN];
+int dir[4][2] = {{0,1},{0,-1},{1,0},{-1,0}};
+
+bool SPFA(int s, int t){
+	for(int i = 0 ; i <= t ; ++i) dis[i] = flow[i] = INFL;
+	dis[s] = 0;
+	dq.push_front(s);
+	inq[s] = true;
+	while(!dq.empty()){
+		int np = dq.front(); dq.pop_front();
+		inq[np] = false;
+		for(int i = head[np], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(G[i].flow>0&&(dis[to]>dis[np]+G[i].cost)){
+				dis[to] = dis[np] + G[i].cost;
+				flow[to] = min(flow[np],G[i].flow);
+				last[to] = i;
+				pre[to] = np;
+				if(!inq[to]){
+					inq[to] = true;
+					if(dq.empty()||dis[to]<=dis[dq.front()]) dq.push_front(to);
+					else dq.push_back(to);
+				}
+			}
+		}
+	}
+	return (dis[t] ^ INFL);
+}
+
+void MCMF(int s, int t){
+	while(SPFA(s,t)){
+		mxFlow += flow[t];
+		mnCost += flow[t] * dis[t];
+		int np = t;
+		while(np^s){
+			G[last[np]].flow -= flow[t];
+			G[last[np]^1].flow += flow[t];
+			np = pre[np];
+		}
+	}
+}
+
+signed main(){
+	scanf("%d %d %d %d",&n,&m,&x0,&y0);
+	for(int i = 1 ; i <= n ; ++i)
+		for(int j = 1 ; j <= m ; ++j){
+			scanf("%d",&h[i][j]);
+			id[i][j] = (j-1)*m+i;
+		}
+	s = 0;
+	t = n*m<<1|1;
+	
+	for(int i = 1 ; i <= n ; ++i){
+		for(int j = 1 ; j <= m ; ++j){
+			for(int k = 0 ; k < 4 ; ++k){
+				int dx = i + dir[k][0], dy = j + dir[k][1];
+				if(dx&&dy&&dx<=n&&dy<=m&&h[i][j]>h[dx][dy]){
+					addFlow(id[i][j],id[dx][dy]+m*n,1,h[i][j]-h[dx][dy]);
+				}
+			}
+			addFlow(s,id[i][j],1,0);
+			addFlow(id[i][j]+n*m,t,1,0);
+		}
+	}
+	MCMF(s,t);
+	printf("%lld %lld\n",n*m-mxFlow,mnCost);
+	return 0;
+}

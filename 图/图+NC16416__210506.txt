@@ -1,0 +1,128 @@
+/*
+链接：https://ac.nowcoder.com/acm/problem/16416
+来源：牛客网
+
+题目描述 
+策策同学特别喜欢逛公园。 公园可以看成一张 N 个点 M 条边构成的有向图，且没有自环和重边。其中 1 号点是公园的入口， N 号点是公园的出口，每条边有一个非负权值，代表策策经过这条边所要花的时间。
+策策每天都会去逛公园，他总是从 1 号点进去，从 N 号点出来。
+策策喜欢新鲜的事物，他不希望有两天逛公园的路线完全一样，同时策策还是一个特别热爱学习的好孩子，他不希望每天在逛公园这件事上花费太多的时间。如果 1 号点到 N 号点的最短路长为 d，那么策策只会喜欢长度不超过 d + K 的路线。
+策策同学想知道总共有多少条满足条件的路线，你能帮帮他吗？
+为避免输出过大，答案对 P 取模。
+如果有无穷多条合法的路线，请输出 −1。
+输入描述:
+第一行包含一个整数 T, 代表数据组数。
+接下来 T 组数据，对于每组数据：
+第一行包含四个整数 N,M,K,P， 每两个整数之间用一个空格隔开。
+接下来 M 行，每行三个整数 ai,bi,ci， 代表编号为 ai,bi 的点之间有一条权值为 ci 的有向边，每两个整数之间用一个空格隔开。
+输出描述:
+输出文件包含 T 行，每行一个整数代表答案。
+*/
+
+#include <cstdio>
+#include <queue>
+#define int ll
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef pair<ll,int> P;
+const ll INFL = 0x3f3f3f3f3f3f3f3f;
+const int MAXM = 200005, MAXN = 100005, MAXK = 55;
+
+int head[MAXN], tot;
+
+struct Edge{
+	int to, val, next;
+}G[MAXM];
+
+inline void addEdge(int u, int v, int w){
+	G[++tot].to = v;
+	G[tot].val = w;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+int n, m, k, p, ans;
+int a[MAXM], b[MAXM], c[MAXM], DP[MAXN][MAXK];
+bool vis[MAXN][MAXK], inf;
+ll dis[MAXN];
+
+void dijkstra(){
+	bool vis[n+1];
+	priority_queue<P,vector<P>,greater<> > pq;
+	for(int i = 1 ; i < n ; ++i) dis[i] = INFL;
+	for(int i = 1 ; i <= n ; ++i) vis[i] = false;
+	dis[n] = 0;
+	pq.push(mp(0,n));
+	while(!pq.empty()){
+		int np = pq.top().second; pq.pop();
+		if(vis[np]) continue;
+		vis[np] = true;
+		for(int i = head[np], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(!vis[to]&&dis[to]>dis[np]+G[i].val){
+				dis[to] = dis[np] + G[i].val;
+				pq.push(mp(dis[to],to));
+			}
+		}
+	}
+}
+
+inline int DFS(int np, int offset){
+	if(inf) return 0;
+	if(vis[np][offset]){
+		inf = true;
+		return 0;
+	}
+	vis[np][offset] = true;
+	if(!DP[np][offset]){
+		vis[np][offset] = false;
+		return DP[np][offset];
+	}
+	// printf("np=%d offset=%d\n",np,offset);
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(offset-(dis[to]+G[i].val-dis[np])>=0) DP[np][offset] = (DP[np][offset] + DFS(to,offset-(dis[to]+G[i].val-dis[np]))) % p;
+		if(inf) return 0;
+	}
+	vis[np][offset] = 0;
+	if(np==n&&!offset) return (DP[n][0] = 1);
+	return DP[np][offset];
+}
+
+void solve(int thisCase){
+	scanf("%lld %lld %lld %lld",&n,&m,&k,&p);
+	inf = false;
+	ans = 0;
+	tot = 0;
+	for(int i = 1 ; i <= n ; ++i){
+		head[i] = 0;
+		for(int j = 0 ; j <= k ; ++j){
+			vis[i][j] = false;
+			DP[i][j] = 0;
+		}
+	}
+	for(int i = 1 ; i <= m ; ++i) scanf("%lld %lld %lld",&a[i],&b[i],&c[i]);
+	for(int i = 1 ; i <= m ; ++i) addEdge(b[i],a[i],c[i]);
+	dijkstra();
+	// printf("%lld\n",dis[3]);
+	tot = 0;
+	for(int i = 1 ; i <= n ; ++i){
+		head[i] = 0;
+		// DP[i][0] = !!dis[i]
+	}
+	for(int i = 1 ; i <= m ; ++i) addEdge(a[i],b[i],c[i]);
+	for(int i = 0 ; i <= k ; ++i){
+		ans = (ans + DFS(1,i))%p;
+		if(inf) break;
+	}
+	if(inf) puts("-1");
+	else printf("%lld\n",ans);
+}
+
+signed main(){
+	int t;
+	scanf("%lld",&t);
+	for(int i = 1 ; i <= t ; ++i) solve(i);
+	return 0;
+}

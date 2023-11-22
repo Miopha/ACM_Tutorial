@@ -1,0 +1,84 @@
+/*
+链接：https://ac.nowcoder.com/acm/contest/18460/A
+来源：牛客网
+
+题目描述 
+Filiberto is planning a race to celebrate the 2019 ICPC Mid-Central Regional. The racers compete by going down a mountain on a set of roads. As it would be dangerous to have cars speeding at each other in opposite directions, racers may only drive down-hill on each road in a single direction. The endpoint of each road is called a station, and roads connect only at stations. A path is a sequence of roads where the ending station of one road is the starting station of the next. Each racer must choose a path to race on. The length of a path is the number of roads in it. The goal of this race is to stay on the course as long as possible – that is, to find a path of maximum length. Every racer knows the full layout of the stations and roads, and will choose some path of maximal length. Filiberto is concerned about natural disasters (e.g., landslides) blocking off roads during the competition. If a road is blocked off, it may reduce the length of some paths of the race. This works as follows: say the road from station u to station v is blocked off. Then the racer will follow their path until station u, at which point they have to modify their path starting from station u, while still trying to maximize the length of their new path. As each racer knows the full map of the mountain, they will optimally re-route to maximize the length of their new path. To understand the worst-case scenario, Filiberto wants to know the minimum length path that a winning racer would take if at most one of the roads is blocked off. This means that among all sets of maximum length paths that racers can choose and all possible roads that can be blocked off, what is the minimum length path that a racer may take after that road is blocked off and that path is at least as long as any other racers’ path (other racers are also effected by the same blocked road)?
+输入描述:
+The first line of the input contains two integers n and m (2 ≤ n ≤ 105 , 1 ≤ m ≤ min(n(n − 1)/2, 106 )) – the number of stations and number of roads on the mountain. The next m lines each contain two integers u and v (1 ≤ u, v ≤ n, u 6= v) representing a one-way road from station u to station v. It is guaranteed that there is at most one road between any pair of stations and there are no loops in the road graph (i.e. the input is a directed acyclic graph).
+输出描述:
+Print a line with a single integer – the minimum length path that competitors can achieve if at most one of the roads is blocked off. That is, Filiberto wants to know the minimum longest time with the worst landslide location.
+*/
+
+#include <algorithm>
+#include <cstdio>
+
+using namespace std;
+const int MAXN = 1e5 + 5, MAXM = 1e6 + 5;
+
+int head[MAXN], tot;
+
+struct Edge{
+	int to, next;
+}G[MAXM];
+
+inline void addEdge(int u, int v){
+	G[++tot].to = v;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+int dep1[MAXN], dep2[MAXN], n, m, mxDep, out[MAXN], sub[MAXN], ans;
+bool vis[MAXN];
+
+int DFS1(int np){
+	if(dep1[np]) return dep1[np];
+	for(int i = head[np], to, dep ; i ; i = G[i].next){
+		to = G[i].to;
+		dep = DFS1(to) + 1;
+		if(dep>=dep1[np]){
+			dep2[np] = dep1[np];
+			dep1[np] = dep;
+		}else if(dep>=dep2[np]){
+			dep2[np] = dep;
+		}
+	}
+	return dep1[np];
+}
+
+void DFS2(int np, int dis){
+	if(vis[np]) return ;
+	vis[np] = true;
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(dep1[np]^dep1[to]+1) continue;
+		++out[dis];
+		DFS2(to,dis+1);
+		// sub[dis] = max(max(dis+dep2[np],dep1[to]),sub[dis]);
+		sub[dis] = max(dis+dep2[np],sub[dis]);
+	}
+}
+
+int main(){
+	scanf("%d %d",&n,&m);
+	for(int i = 1, u, v ; i <= m ; ++i){
+		scanf("%d %d",&u,&v);
+		addEdge(u,v);
+	}
+	
+	for(int i = 1 ; i <= n ; ++i){
+		DFS1(i);
+		mxDep = max(mxDep,dep1[i]);
+	}
+	
+	for(int i = 1 ; i <= n ; ++i){
+		if(mxDep==dep1[i]) DFS2(i,0);
+	}
+	
+	ans = mxDep;
+	for(int i = 0 ; i < mxDep ; ++i){
+		if(out[i]==1) ans = min(ans,sub[i]);
+	}
+	printf("%d\n",ans);
+	return 0;
+}

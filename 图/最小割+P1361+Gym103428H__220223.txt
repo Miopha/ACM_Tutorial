@@ -1,0 +1,234 @@
+/*
+https://www.luogu.com.cn/problem/solution/P1361
+*/
+
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <algorithm>
+
+using namespace std;
+const int MAXN = 1e5 + 5, INF = 0x3f3f3f3f;
+
+int head[MAXN<<2], tot = 1;
+
+struct Edge{
+	int np, to, flow, next;
+}G[5000005];
+
+inline void addEdge(int u, int v, int flow = INF){
+	G[++tot].to = v;
+	G[tot].np = u;
+	G[tot].flow = flow;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+inline void addFlow(int u, int v, int flow = INF){
+	addEdge(u,v,flow);
+	addEdge(v,u,0);
+}
+
+int n, a[MAXN], b[MAXN], m, c1[MAXN], c2[MAXN], k[MAXN], sum;
+int s, t, mxFlow, dis[MAXN<<2], now[MAXN<<2];
+vector<int> combo[MAXN];
+
+bool BFS(int s, int t){
+	for(int i = 0 ; i <= t ; ++i)
+		dis[i] = 0;
+	queue<int> q;
+	q.push(s);
+	dis[s] = 1;
+	now[s] = head[s];
+	while(!q.empty()){
+		int np = q.front(); q.pop();
+		for(int i = head[np], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(dis[to]||!G[i].flow) continue;
+			now[to] = head[to];
+			dis[to] = dis[np] + 1;
+			q.push(to);
+		}
+	}
+	return dis[t];
+}
+
+inline int DFS(int np, int flow){
+	if(np==t) return flow;
+	int res = 0;
+	for(int i = head[np], to ; i ; i = G[i].next){
+		now[np] = i;
+		to = G[i].to;
+		if(!G[i].flow||dis[to]^(dis[np]+1)) continue;
+		int k = DFS(to,min(flow,G[i].flow));
+		if(!k) dis[to] = 0;
+		G[i].flow -= k;
+		G[i^1].flow += k;
+		res += k;
+		flow -= k;
+		if(!flow) break;
+	}
+	return res;
+}
+
+void dinic(int s, int t){
+	while(BFS(s,t)){
+		mxFlow += DFS(s,0x3f3f3f3f);
+	}
+}
+
+int main(){
+	scanf("%d",&n);
+	for(int i = 1 ; i <= n ; ++i){
+		scanf("%d",&a[i]);
+		sum += a[i];
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		scanf("%d",&b[i]);
+		sum += b[i];
+	}
+	scanf("%d",&m);
+	for(int i = 1 ; i <= m ; ++i){
+		scanf("%d %d %d",&k[i],&c1[i],&c2[i]);
+		sum += (c1[i] + c2[i]);
+		for(int j = 1, a ; j <= k[i] ; ++j){
+			scanf("%d",&a);
+			combo[i].emplace_back(a);
+		}
+	}
+	t = n+2*m+1;
+	for(int i = 1 ; i <= n ; ++i){
+		addFlow(s,i,a[i]);
+		addFlow(i,t,b[i]);
+	}
+	for(int i = 1 ; i <= m ; ++i){
+		addFlow(s,n+i*2-1,c1[i]);
+		addFlow(n+i*2,t,c2[i]);
+		for(int it : combo[i]){
+			addFlow(n+i*2-1,it);
+			addFlow(it,n+i*2);
+		}
+	}
+	dinic(s,t);
+	printf("%d\n",sum-mxFlow);
+	return 0;
+}
+
+/*
+https://codeforces.com/gym/103428/problem/H
+*/
+
+#include <cstdio>
+#include <algorithm>
+#include <queue>
+#define int ll
+
+using namespace std;
+typedef long long ll;
+const int MAXN = 6e6 + 5, INF = 0x3f3f3f3f;
+const ll INFL = 0x3f3f3f3f3f3f3f3f;
+
+int head[MAXN], tot = 1;
+
+struct Edge{
+	int np, to, next;
+	ll flow;
+}G[MAXN];
+
+inline void addEdge(int u, int v, ll flow = INFL){
+	G[++tot].to = v;
+	G[tot].np = u;
+	G[tot].flow = flow;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+inline void addFlow(int u, int v, ll flow = INFL){
+	// printf("%d %d %lld\n",u,v,flow);
+	addEdge(u,v,flow);
+	addEdge(v,u,0);
+}
+
+int n, w[205], v[205], dis[205][205];
+int s, t, now[MAXN], ds[MAXN];
+ll mxFlow, sum;
+
+bool BFS(int s, int t){
+	for(int i = 0 ; i <= t ; ++i)
+		ds[i] = 0;
+	queue<int> q;
+	q.push(s);
+	ds[s] = 1;
+	now[s] = head[s];
+	while(!q.empty()){
+		int np = q.front(); q.pop();
+		for(int i = head[np], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(ds[to]||!G[i].flow) continue;
+			now[to] = head[to];
+			ds[to] = ds[np] + 1;
+			q.push(to);
+		}
+	}
+	return ds[t];
+}
+
+inline ll DFS(int np, ll flow){
+	if(np==t) return flow;
+	ll res = 0;
+	for(int i = now[np], to ; i ; i = G[i].next){
+		now[np] = i;
+		to = G[i].to;
+		if(!G[i].flow||ds[to]^(ds[np]+1)) continue;
+		ll k = DFS(to,min(flow,G[i].flow));
+		if(!k) ds[to] = 0;
+		G[i].flow -= k;
+		G[i^1].flow += k;
+		res += k;
+		flow -= k;
+		if(!flow) break;
+	}
+	return res;
+}
+
+void dinic(int s, int t){
+	while(BFS(s,t)){
+		mxFlow += DFS(s,0x3f3f3f3f);
+	}
+}
+
+signed main(){
+	scanf("%d",&n);
+	for(int i = 1 ; i <= n ; ++i) scanf("%d",&w[i]);
+	for(int i = 1 ; i <= n ; ++i) scanf("%d",&v[i]);
+	sum = n*v[n];
+	for(int i = 1 ; i <= n ; ++i)
+		for(int j = 1 ; j <= n ; ++j)
+			if(i!=j) dis[i][j] = INF;
+	for(int i = 1, u, v ; i < n ; ++i){
+		scanf("%d %d",&u,&v);
+		dis[u][v] = dis[v][u] = 1;
+	}
+	// floyd
+	for(int k = 1 ; k <= n ; ++k)
+		for(int i = 1 ; i <= n ; ++i)
+			for(int j = 1 ; j <= n ; ++j)
+				dis[i][j] = min(dis[i][j],dis[i][k]+dis[k][j]);
+	t = n+n*n+1;
+	for(int i = 1 ; i <= n ; ++i)
+		addFlow(i,t,w[i]);
+	for(int i = 1 ; i <= n ; ++i){
+		// n+j+(i-1)*n
+		for(int j = 1 ; j <= n ; ++j){ // dis
+			addFlow(s,n+j+(i-1)*n,v[j]-v[j-1]);
+			// if(j==2) addFlow(n+j+(i-1)*n,i);
+			if(j>=2) addFlow(n+j+(i-1)*n,n+j+(i-1)*n-1);
+			for(int k = 1 ; k <= n ; ++k){
+				if(dis[i][k]==j-1) addFlow(n+j+(i-1)*n,k);
+			}
+		}
+	}
+	dinic(s,t);
+	printf("%lld\n",sum-mxFlow);
+	return 0;
+}

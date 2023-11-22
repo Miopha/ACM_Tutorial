@@ -1,0 +1,103 @@
+/*
+https://www.luogu.com.cn/problem/P3385
+题目描述
+给定一个 n 个点的有向图，请求出图中是否存在从顶点 1 出发能到达的负环。
+
+负环的定义是：一条边权之和为负数的回路。
+
+输入格式
+本题单测试点有多组测试数据。
+
+输入的第一行是一个整数 TT，表示测试数据的组数。对于每组数据的格式如下：
+
+第一行有两个整数，分别表示图的点数 nn 和接下来给出边信息的条数 m。
+
+接下来 mm 行，每行三个整数 u, v, w
+
+若 w≥0，则表示存在一条从 u 至 v 边权为 w 的边，还存在一条从 v 至 u 边权为 w 的边。
+若 w < 0，则只表示存在一条从 u 至 v 边权为 w 的边。
+输出格式
+对于每组数据，输出一行一个字符串，若所求负环存在，则输出 YES，否则输出 NO。
+*/
+
+//package P3385;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+
+	static int T, n, m, dis[], cnt[];
+	static ArrayList<Edge> node[];
+	static boolean vis[];
+	
+	public static void main(String[] args) throws IOException {
+		StreamTokenizer st = new StreamTokenizer(new BufferedReader(new InputStreamReader(System.in)));
+		st.nextToken(); T = (int)st.nval;
+		StringBuilder ans = new StringBuilder();
+		while(T-->0) {
+			st.nextToken(); n = (int)st.nval;
+			st.nextToken(); m = (int)st.nval;
+			init();
+			int u, v, vl;
+			for(int i = 1 ; i <= m ; ++i) {
+				st.nextToken(); u = (int)st.nval;
+				st.nextToken(); v = (int)st.nval;
+				st.nextToken(); vl = (int)st.nval;
+				node[u].add(new Edge(v,vl));
+				if(vl>=0) {
+					node[v].add(new Edge(u,vl));
+				}
+			}
+			if(SPFA()) {
+				ans.append("YES").append("\n");
+			}else {
+				ans.append("NO").append("\n");
+			}
+		}
+		System.out.print(ans.toString());
+	}
+	
+	public static boolean SPFA() {
+		Queue<Integer> q = new LinkedList<Integer>();
+		dis[1] = 0;
+		vis[1] = true;
+		q.add(1);
+		while(!q.isEmpty()) {
+			int cur = q.poll();
+			vis[cur] = false;
+			for(int i = 0 ; i < node[cur].size() ; ++i) {
+				Edge aft = node[cur].get(i);
+				if(dis[aft.to]>dis[cur]+aft.val) {
+					dis[aft.to]=dis[cur]+aft.val;
+					cnt[aft.to]=cnt[cur]+1;
+					if(cnt[aft.to]>=n) return true;
+					if(!vis[aft.to]) {
+						q.add(aft.to);
+						vis[aft.to] = true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
+	public static void init(){
+		node = new ArrayList[n+1];
+		for(int i = 1 ; i <= n ; ++i)
+			node[i] = new ArrayList<Edge>();
+		vis = new boolean[n+1];
+		dis = new int[n+1];
+		cnt = new int[n+1];
+		Arrays.fill(dis,Integer.MAX_VALUE>>1);
+	}
+
+}
+
+class Edge{
+	int to, val;
+	public Edge(int to, int val) {
+		this.to = to;
+		this.val = val;
+	}
+}

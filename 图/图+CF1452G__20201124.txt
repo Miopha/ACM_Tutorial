@@ -1,0 +1,183 @@
+/*
+https://codeforces.com/problemset/problem/1452/G
+G. Game On Tree
+time limit per test3 seconds
+memory limit per test512 megabytes
+inputstandard input
+outputstandard output
+Alice and Bob are playing a game. They have a tree consisting of n vertices. Initially, Bob has k chips, the i-th chip is located in the vertex ai (all these vertices are unique). Before the game starts, Alice will place a chip into one of the vertices of the tree.
+
+The game consists of turns. Each turn, the following events happen (sequentially, exactly in the following order):
+
+Alice either moves her chip to an adjacent vertex or doesn't move it;
+for each Bob's chip, he either moves it to an adjacent vertex or doesn't move it. Note that this choice is done independently for each chip.
+The game ends when Alice's chip shares the same vertex with one (or multiple) of Bob's chips. Note that Bob's chips may share the same vertex, even though they are in different vertices at the beginning of the game.
+
+Alice wants to maximize the number of turns, Bob wants to minimize it. If the game ends in the middle of some turn (Alice moves her chip to a vertex that contains one or multiple Bob's chips), this turn is counted.
+
+For each vertex, calculate the number of turns the game will last if Alice places her chip in that vertex.
+
+Input
+The first line contains one integer n (2≤n≤2⋅105) — the number of vertices in the tree.
+
+Then n−1 lines follow, each line contains two integers ui, vi (1≤ui,vi≤n; ui≠vi) that denote the endpoints of an edge. These edges form a tree.
+
+The next line contains one integer k (1≤k≤n−1) — the number of Bob's chips.
+
+The last line contains k integers a1, a2, ..., ak (1≤ai≤n; ai≠aj if i≠j) — the vertices where the Bob's chips are initially placed.
+
+Output
+Print n integers. The i-th of them should be equal to the number of turns the game will last if Alice initially places her chip in the vertex i. If one of Bob's chips is already placed in vertex i, then the answer for vertex i is 0.
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <string.h>
+#include <algorithm>
+#include <cmath>
+#define re register
+#define pb push_back
+#define cl clear
+#define MAXN 200005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int head[MAXN], tot;
+
+struct Edge{
+    int u, to, next;
+}G[MAXN<<1];
+
+inline void addEdge(int u, int v){
+    G[++tot].u = u;
+    G[tot].to = v;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+int n, k, dis[MAXN], a[MAXN], dp[MAXN], d[MAXN], ans[MAXN];
+bool hasChip[MAXN];
+queue<int> q;
+
+void BFS(){
+	for(re int i = 1 ; i <= n ; ++i){
+		if(!hasChip[i]){
+			dis[i] = INF;
+		}else{
+			q.push(i);
+		}
+	}
+	int cur, to;
+	while(!q.empty()){
+		cur = q.front(); q.pop();
+		for(re int i = head[cur] ; i ; i = G[i].next){
+			to = G[i].to;
+			if(dis[to] > dis[cur] + 1){
+				dis[to] = dis[cur] + 1;
+				q.push(to);
+			}
+		}
+	} 
+}
+
+int DFS(int x){
+	if(dp[x]){
+		return dp[x];
+	}
+	int res = dis[x];
+	for(re int i = head[x] ; i ; i = G[i].next){
+		if(dis[G[i].to]>dis[x]){
+			res = DFS(G[i].to);
+		}
+	}
+	return dp[x] = res;
+}
+
+void DFS1(int u, int p, int val, int cnt){
+	if(d[u]>=cnt){
+		return ;
+	}
+	d[u] = max(d[u],cnt);
+	ans[u] = max(ans[u],val);
+	for(re int i = head[u], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(to!=p){
+			DFS1(to,u,val,cnt-1);
+		}
+	}
+}
+
+void solve(){
+	n = read();
+	for(re int i = 1, u, v ; i < n ; ++i){
+		u = read(); v = read();
+		addEdge(u,v);
+		addEdge(v,u);
+	}
+	k = read();
+	for(re int i = 1 ; i <= k ; ++i){
+		a[i] = read();
+		hasChip[a[i]] = true;
+	}
+	BFS();
+	/*
+	for(re int i = 1 ; i <= n ; ++i){
+		printf("dis[%d]=%d ",i,dis[i]);
+	}
+	printf("\n");
+	*/
+	/*
+	for(re int i = 1 ; i <= n ; ++i){
+		if(!hasChip[i]){
+			printf("%d ",DFS(i));
+		}else{
+			printf("0 ");
+		}
+	}
+	printf("\n");
+	*/
+	// printf("%d\n",dp[1]);
+	vector<P> u;
+	for(re int i = 1 ; i <= n ; ++i){
+		u.pb(P(dis[i],i));
+	}
+	sort(u.begin(),u.end(),greater<P>());
+	// printf("a=%d %d\n",u[0].first,u[0].second);
+	P a;
+	for(re int i = 0 ; i < n ; ++i){
+		a = u[i];
+		DFS1(a.second,-1,a.first,a.first);
+	}
+	for(re int i = 1 ; i <= n ; ++i){
+		printf("%d ",ans[i]);
+	}
+	printf("\n");
+}
+
+int main(int argc, char** argv) {
+	int t = 1;
+    // t = read();
+    while(t--) solve();
+	return 0;
+}

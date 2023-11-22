@@ -1,0 +1,77 @@
+/*
+https://www.luogu.com.cn/problem/P5002
+题目背景
+Imakf 是一个小蒟蒻，他最近刚学了 LCA，他在手机 APPstore 里看到一个游戏也叫做 LCA 就下载了下来。
+
+题目描述
+这个游戏会给出你一棵树，这棵树有 N 个节点，根结点是 R ，系统会选中 M 个点 P1,P2...PM ，要Imakf 回答有多少组点对 (ui,vi) 的最近公共祖先是 Pi 。Imakf 是个小蒟蒻，他就算学了 LCA 也做不出，于是只好求助您了。
+
+Imakf 毕竟学过一点 OI,所以他要求您把答案模 (10^9+7)
+
+输入格式
+第一行 N , R , M
+
+此后 N-1 行 每行两个数 a,b 表示 a,b 之间有一条边。
+
+此后 1行，共 M 个数，表示Pi
+
+输出格式
+输出共 M 行，每行一个数，第 i 行的数表示有多少组点对 (ui,vi) 的最近公共祖先是 Pi
+*/
+
+//package P5002;
+
+import java.io.*;
+import java.util.*;
+
+public class Main {
+	
+	final static int MAXN = 10005<<1;
+	static int N, R, M, siz[], ans[], sum[];
+	static ArrayList<Integer> node[];
+	
+	public static void main(String[] args) throws IOException {
+		StreamTokenizer st = new StreamTokenizer(new BufferedReader(new InputStreamReader(System.in)));
+		st.nextToken(); N = (int)st.nval;
+		st.nextToken(); R = (int)st.nval;
+		st.nextToken(); M = (int)st.nval;
+		init();
+		int u, v;
+		for(int i = 1 ; i < N ; ++i) {
+			st.nextToken(); u = (int)st.nval;
+			st.nextToken(); v = (int)st.nval;
+			node[u].add(v);
+			node[v].add(u);
+		}
+		DFS(R,0);
+//		System.out.println(Arrays.toString(siz));
+		StringBuilder res = new StringBuilder();
+		for(int i = 1 ; i <= M ; ++i) {
+			st.nextToken(); int q = (int)st.nval;
+			res.append(ans[q]).append("\n");
+		}
+		System.out.print(res.toString());
+	}
+	
+	public static void DFS(int x, int fat) {
+		for(int i = 0 ; i < node[x].size() ; ++i) {
+			int aft = node[x].get(i);
+			if(aft==fat) continue;
+			DFS(aft,x);
+			siz[x] += siz[aft];
+			sum[x] += siz[aft]*siz[aft];
+		}
+		ans[x] = siz[x]*siz[x]-sum[x];
+	}
+	
+	public static void init() {
+		node = new ArrayList[MAXN];
+		for(int i = 1 ; i < MAXN ; ++i)
+			node[i] = new ArrayList<Integer>();
+		ans = new int[MAXN];
+		sum = new int[MAXN];
+		siz = new int[MAXN];
+		Arrays.fill(siz,1);
+	}
+
+}

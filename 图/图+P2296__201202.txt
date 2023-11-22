@@ -1,0 +1,138 @@
+/*
+https://www.luogu.com.cn/problem/P2296
+题目描述
+在有向图 GG 中，每条边的长度均为 11，现给定起点和终点，请你在图中找一条从起点到终点的路径，该路径满足以下条件：
+
+路径上的所有点的出边所指向的点都直接或间接与终点连通。
+在满足条件11的情况下使路径最短。
+注意：图 GG 中可能存在重边和自环，题目保证终点没有出边。
+
+请你输出符合条件的路径的长度。
+
+输入格式
+第一行有两个用一个空格隔开的整数 nn 和 mm，表示图有 nn 个点和 mm 条边。
+
+接下来的 mm 行每行 22 个整数 x,yx,y，之间用一个空格隔开，表示有一条边从点 xx 指向点yy。
+
+最后一行有两个用一个空格隔开的整数 s, ts,t，表示起点为 ss，终点为 tt。
+
+输出格式
+输出只有一行，包含一个整数，表示满足题目描述的最短路径的长度。如果这样的路径不存在，输出-1−1。
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <queue>
+#define mp make_pair
+#define MAXN 10005
+#define MAXM 200005
+
+using namespace std;
+typedef pair<short,short> P;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int head[MAXN], tot;
+
+struct Edge{
+	short u, to;
+    int next;
+}G[MAXM];
+
+inline void addEdge(int u, int v){
+    G[++tot].u = u;
+    G[tot].to = v;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+short s, t, dis[MAXN];
+int n, m;
+bool toEnd[MAXN], sa[MAXN];
+P E[MAXM];
+
+int main(){
+	
+	n = read();
+	m = read();
+	for(int i = 1 ; i <= m ; ++i){
+		E[i].first = read();
+		E[i].second = read();
+		// 建立反向边 
+		addEdge(E[i].second,E[i].first);
+	}
+	s = read();
+	t = read();
+	queue<int> q;
+	q.push(t);
+	toEnd[t] = true;
+	
+	while(!q.empty()){
+		int cur =  q.front(); q.pop();
+		for(int i = head[cur], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(!toEnd[to]){
+				toEnd[to] = true;
+				q.push(to);
+			}
+		}
+	}
+	if(!toEnd[s]){
+		printf("-1\n");
+		return 0;
+	}
+	// clear 
+	for(int i = 1 ; i <= n ; ++i) head[i] = 0;
+	tot = 0;
+	// 建立正向图 
+	// printf("toend[2]=%d\n",toEnd[2]);
+	for(int i = 1 ; i <= m ; ++i) addEdge(E[i].first,E[i].second);
+	for(int i = 1 ; i <= n ; ++i){
+		if(toEnd[i]){
+			sa[i] = true;
+			for(int j = head[i], to ; j ; j = G[j].next){
+				to = G[j].to;
+				if(!toEnd[to]){
+					sa[i] = false;
+					break;
+				}
+			}
+		}
+	}
+	if(!sa[s]){
+		printf("-1\n");
+		return 0;
+	}
+	// 从s开始BFS找最短路
+	q.push(s);
+	dis[s] = 1;
+	// for(int i = 1 ; i <= n ; ++i) printf("%d ",toEnd[i]);
+	while(!q.empty()){
+		int nw = q.front(); q.pop();
+		if(nw==t){
+			printf("%d\n",dis[t]-1);
+			return 0;
+		} 
+		for(int i = head[nw], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(!dis[to]&&sa[to]){
+				dis[to] = dis[nw] + 1;
+				q.push(to);
+			}
+		}
+	} 
+	return 0;
+}

@@ -1,0 +1,156 @@
+/*
+https://codeforces.com/problemset/problem/1520/F2
+F2. Guess the K-th Zero (Hard version)
+time limit per test4 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+This is an interactive problem.
+
+This is a hard version of the problem. The difference from the easy version is that in the hard version 1≤t≤min(n,104) and the total number of queries is limited to 6⋅104.
+
+Polycarp is playing a computer game. In this game, an array consisting of zeros and ones is hidden. Polycarp wins if he guesses the position of the k-th zero from the left t times.
+
+Polycarp can make no more than 6⋅104 requests totally of the following type:
+
+? l r — find out the sum of all elements in positions from l to r (1≤l≤r≤n) inclusive.
+To make the game more interesting, each guessed zero turns into one and the game continues on the changed array. More formally, if the position of the k-th zero was x, then after Polycarp guesses this position, the x-th element of the array will be replaced from 0 to 1.
+
+Help Polycarp win the game.
+
+Interaction
+First, your program must read two integers n and t (1≤n≤2⋅105, 1≤t≤min(n,104)).
+
+Then t lines follow, each of which contains one integer k (1≤k≤n). It is guaranteed that at the moment of the request the array contains at least k zeros. In order to get the next value of k, you must output the answer for the previous value of k.
+
+After that, you can make no more than 6⋅104 requests in total.
+
+Use the following format to output the answer (it is not a request, it doesn't count in 6⋅104):
+
+! x — position of the k-th zero.
+Positions in the array are numbered from left to right from 1 to n inclusive.
+
+After printing t answers, your program should exit immediately.
+
+In this task, the interactor is not adaptive. This means that within the same test, the hidden array and the queries do not change.
+
+In case of an incorrect query, -1 will be displayed. When this value is received, your program must immediately exit normally (for example, by calling exit(0)), otherwise, the testing system may issue an arbitrary verdict.
+
+If the number of requests is exceeded, the verdict wrong answer will be displayed.
+
+Your solution may get the verdict Idleness limit exceeded if you don't print anything or forget to flush the output buffer.
+
+To flush the output buffer, you need to do the following immediately after the query output and the end-of-line character:
+
+fflush(stdout) or cout.flush() in C ++;
+System.out.flush() in Java;
+flush(output) in Pascal;
+stdout.flush() in Python;
+see the documentation for other languages.
+Hacks
+
+Use the following format for hacks:
+
+On the first line print the string s (1≤|s|≤2⋅105), consisting of zeros and ones, and an integer t (1≤t≤min(|s|,104)) — hidden array and number of requests, respectively. In the next t lines output the number k (1≤k≤|s|).
+
+The hacked solution will not have direct access to the hidden array.
+*/
+
+/*
+ * 用线段树查询和修改
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005, MAXP = MAXN<<2;
+
+struct node{
+	int val, ls, rs;
+}t[MAXP];
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, k, pcnt, rt[MAXN], t1, lst;
+
+inline void query(int &np, int l, int r, int val){
+	if(l==r){
+		printf("! %d\n",l);
+		lst = l;
+		fflush(stdout);
+		return ;
+	}
+	if(!np){
+		np = ++pcnt;
+		printf("? %d %d\n",l,r);
+		fflush(stdout);
+		t[np].val = r-l+1-read();
+	}
+	if(t[np].val<val) exit(0);
+	int mid = (l+r)>>1;
+	if(!t[np].ls){
+		t[np].ls = ++pcnt;
+		printf("? %d %d\n",l,mid);
+		fflush(stdout);
+		t[t[np].ls].val = mid-l+1-read();
+		t[np].rs = ++pcnt;
+		t[t[np].rs].val = t[np].val-t[t[np].ls].val;
+	} 
+	if(t[t[np].ls].val >= val) query(t[np].ls,l,mid,val);
+	else query(t[np].rs,mid+1,r,val-t[t[np].ls].val);
+}
+
+inline void add(int &np, int l, int r, int pos){
+	if(l==r){
+		--t[np].val;
+		return ;
+	}
+	int mid = (l+r)>>1;
+	if(pos<=mid&&pos>=l) add(t[np].ls,l,mid,pos);
+	else add(t[np].rs,mid+1,r,pos);
+	--t[np].val;
+}
+
+void solve(){
+	n = read(); t1= read();
+	for(int i = 1, a ; i <= t1 ; ++i){
+		a = read();
+		if(a==-1) exit(0);
+		query(rt[1],1,n,a);
+		add(rt[1],1,n,lst);
+	}
+}
+ 
+int main(){
+    int t = 1;
+    // t = read();
+    while(t--) solve();
+    return 0;
+}

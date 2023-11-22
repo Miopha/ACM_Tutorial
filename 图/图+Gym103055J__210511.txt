@@ -1,0 +1,86 @@
+/*
+https://codeforces.com/gym/103055/problem/J
+J. Grammy and Jewelry
+time limit per test0.5 seconds
+memory limit per test512 megabytes
+inputstandard input
+outputstandard output
+There is a connected undirected graph with n vertices and m edges. Vertices are indexed from 1 to n. There is infinite jewelry in vertex i (2≤i≤n), each valued ai. Grammy starts at point 1. Going through each edge consumes 1 unit of time. She can pick up a piece of jewelry at vertex i and put it down at vertex 1. Picking up and putting down a piece of jewelry can be done instantly. Additionally, she can carry at most 1 piece of jewelry at any time. When she put down a piece of jewelry valued x at vertex 1, she obtains the value of it. Now, for each k between 1 and T (inclusive) she wonders what is the maximum value she can get in k units of time.
+
+Input
+The input contains only a single case.
+
+The first line contains three integers n, m, and T (1≤n,m,T≤3000).
+
+The second line contains n−1 integers a2,a3,…,an (1≤ai≤3000).
+
+The following m lines describe m edges. Each line contains 2 integers xi and yi (1≤xi,yi≤n), representing a bidirectional edge between vertex xi and vertex yi.
+
+Note that the graph may contain self-loops or duplicated edges.
+
+Output
+Print T integers in one line, the k-th (1≤k≤T) of which denoting the maximum value she can get in k units of time.
+*/
+
+/*
+ * BFS算出距离，距离乘2就是拿这个点的宝石的花费
+ * 因为宝石可以无限拿，用无限背包求出容量为i下能拿的最大价值
+ */
+
+#include <algorithm>
+#include <queue>
+#include <cstdio>
+
+using namespace std;
+const int MAXN = 3005, INF = 0x3f3f3f3f;
+
+int head[MAXN], tot;
+
+struct Edge{
+	int to, next;
+}G[MAXN<<1];
+
+inline void addEdge(int u, int v){
+	G[++tot].to = v;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+int n, m, k, val[MAXN], ans, cost[MAXN], DP[MAXN];
+bool vis[MAXN];
+
+void BFS(int p){
+	queue<int> q;
+	q.push(p);
+	cost[p] = 0;
+	while(!q.empty()){
+		int np = q.front(); q.pop();
+		for(int i = head[np], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(cost[to]^INF) continue;
+			cost[to] = cost[np] + 1;
+			q.push(to);
+		}
+	}
+}
+
+int main(){
+	scanf("%d %d %d",&n,&m,&k);
+	for(int i = 2 ; i <= n ; ++i){
+		scanf("%d",&val[i]);
+		cost[i] = INF;
+	}
+	for(int i = 1, u, v ; i <= m ; ++i){
+		scanf("%d %d",&u,&v);
+		addEdge(u,v);
+		addEdge(v,u);
+	}
+	BFS(1);
+	for(int i = 2 ; i <= n ; ++i){
+		for(int j = cost[i]<<1 ; j <= k ; ++j){
+			DP[j] = max(DP[j],DP[j-(cost[i]<<1)]+val[i]);
+		}
+	}
+	for(int i = 1 ; i <= k ; ++i) printf("%d%c",DP[i]," \n"[i==k]);
+	return 0;
+}

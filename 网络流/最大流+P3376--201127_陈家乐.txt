@@ -1,0 +1,134 @@
+/*
+https://www.luogu.com.cn/problem/P3376
+题目描述
+如题，给出一个网络图，以及其源点和汇点，求出其网络最大流。
+
+输入格式
+第一行包含四个正整数 n,m,s,t，分别表示点的个数、有向边的个数、源点序号、汇点序号。
+
+接下来M行每行包含三个正整数 ui,vi,wi，表示第 i 条有向边从 ui出发，到达 vi，边权为 wi （即该边最大流量为 wi）。
+
+输出格式
+一行，包含一个正整数，即为该网络的最大流。
+*/
+
+#include <iostream>
+#include <cstdio>
+#define MAXN 205
+#define MAXM 5005
+
+using namespace std;
+typedef long long ll;
+
+int head[MAXN], tot = 1;
+
+struct Edge{
+	int u, to, next;
+	ll val;
+}G[MAXM<<1];
+
+void addEdge(int u, int to, ll val){
+	G[++tot].u = u;
+	G[tot].to = to;
+	G[tot].val = val;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+inline ll read(){
+	ll x = 0;
+	int f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, m, s, t, depth[MAXN], q[MAXN], l, r;
+ll ans;
+bool vis[MAXN];
+
+bool BFS(){
+	for(int i = 1 ; i <= n ; ++i) depth[i] = 0;
+	q[l=r=1] = s;
+	depth[s] = 1;
+	while(l<=r){
+		int u = q[l++];
+		for(int i = head[u], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(G[i].val&&!depth[to]){
+				depth[to] = depth[u] + 1;
+				q[++r] = to;
+			}
+			
+		}
+	}
+	return depth[t];
+}
+/*
+ll DFS(int u, ll flow){
+	// printf("u=%d\n",u);
+	if(u==t) return flow;
+	vis[u] = true;
+	for(int i = head[u], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(!G[i].val||vis[to]) continue;
+		ll res = 0;
+		if((res=DFS(to,min(flow,G[i].val)))>0){
+			G[i].val -= res;
+			G[i^1].val += res;
+			return res;
+		}
+	}
+	return 0;
+} 
+*/
+
+ll DFS(int u, ll in){
+	if(u==t) return in;
+	ll out = 0;
+	for(int i = head[u], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(G[i].val&&depth[to]==depth[u]+1){
+			ll res = DFS(to,min(G[i].val,in));
+			G[i].val -= res;
+			G[i^1].val += res;
+			in -= res;
+			out += res;
+		}
+	}
+	if(!out) depth[u] = 0;
+	return out;
+}
+
+int main(){
+	n = read();
+	m = read();
+	s = read();
+	t = read();
+	for(int i = 1, u, v ; i <= m ; ++i){
+		u = read();
+		v = read();
+		ll w = read();
+		addEdge(u,v,w);
+		// 残留边 
+		addEdge(v,u,0);
+	}
+	while(BFS()) ans += DFS(s,1e18);
+	/*
+	ll add;
+	while((add=DFS(s,1e19))>0){
+		ans += add;
+		for(int i = 1 ; i <= n ; ++i) vis[i] = false;
+	}
+	*/
+	printf("%lld\n",ans);
+	return 0;
+}

@@ -1,0 +1,172 @@
+/*
+https://www.luogu.com.cn/problem/P2023
+题目背景
+老师交给小可可一个维护数列的任务，现在小可可希望你来帮他完成。
+
+题目描述
+有一个长为 n 的数列 {an}，有如下三种操作形式：
+
+1.格式 1 t g c，表示把所有满足 t≤i≤g 的 ai改为 ai * c
+2.格式 2 t g c 表示把所有满足 t≤i≤g 的 ai 改为 ai + c
+3.格式 3 t g 询问所有满足 t≤i≤g 的 ai 的和，由于答案可能很大，你只需输出这个数模 p 的值。
+输入格式
+第一行两个整数 n 和 p。
+
+第二行含有 n 个非负整数，表示数列 ai
+
+第三行有一个整数 m，表示操作总数。
+
+从第四行开始每行描述一个操作，同一行相邻两数之间用一个空格隔开，每行开头和末尾没有多余空格。
+
+输出格式
+对每个操作 3，按照它在输入中出现的顺序，依次输出一行一个整数表示询问结果。
+*/
+
+//package P2023;
+
+import java.io.*;
+
+public class Main {
+
+	static int n, p, data[], m;
+	static Node tree[];
+	static StreamTokenizer st = new StreamTokenizer(new BufferedReader(new InputStreamReader(System.in)));
+	static PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+	
+	public static void main(String[] args) throws IOException {
+		n = nextInt();
+		p = nextInt();
+		init();
+		for(int i = 1 ; i <= n ; ++i)
+			data[i] = nextInt();
+		build(1,1,n);
+		m = nextInt();
+		StringBuilder ans = new StringBuilder();
+		int cmd, t, g, c;
+//		System.out.println();
+//		for(int i = 1 ; i <= n<<2 && tree[i] != null ; ++i) {
+//			System.out.print(tree[i].val+" ");
+//		}
+//		System.out.println();
+		for(int i = 1 ; i <= m ; ++i) {
+			cmd = nextInt();
+			if(cmd==1) {
+				t = nextInt();
+				g = nextInt();
+				c = nextInt();
+				modifyMul(1,1,n,t,g,c);
+			}else if(cmd==2) {
+				t = nextInt();
+				g = nextInt();
+				c = nextInt();
+				modifyAdd(1,1,n,t,g,c);
+			}else {
+				t = nextInt();
+				g = nextInt();
+				ans.append(query(1,1,n,t,g)).append('\n');
+			}
+		}
+		out.print(ans.toString());
+		out.flush();
+	}
+	
+	public static long query(int node, int l, int r, int start, int end) {
+		if(r<start||l>end)
+			return 0;
+		
+		if(start<=l&&end>=r) {
+			return tree[node].val;
+		}
+//		System.out.println("node="+node+" l="+l+" r="+r);
+		pushDown(node,l,r);
+		int left_node = node<<1, right_node = node<<1|1, mid = (l+r)>>1;
+		long left_res = query(left_node,l,mid,start,end);
+		long right_res = query(right_node,mid+1,r,start,end);
+		return (left_res + right_res) % p;
+	}
+	
+	public static void modifyMul(int node, int l, int r, int start, int end, int val) {
+		if(r<start||l>end)
+			return ;
+		if(start<=l&&end>=r) {
+			val %= p;
+			tree[node].val = tree[node].val * val % p;
+			tree[node].mul = tree[node].mul * val % p;
+			tree[node].add = tree[node].add * val % p;
+			return ;
+		}
+		pushDown(node,l,r);
+		int left_node = node<<1, right_node = node<<1|1, mid = (l+r)>>1;
+		modifyMul(left_node,l,mid,start,end,val);
+		modifyMul(right_node,mid+1,r,start,end,val);
+		tree[node].val = (tree[left_node].val + tree[right_node].val) % p;
+	}
+	
+	public static void modifyAdd(int node, int l, int r, int start, int end, int val) {
+		if(r<start||l>end)
+			return ;
+		if(start<=l&&end>=r) {
+			val %= p;
+			tree[node].val = (tree[node].val + val * (r-l+1)) % p;
+			tree[node].add = (tree[node].add + val) % p;
+			return ;
+		}
+//		System.out.println("node="+node+" l="+l+" r="+r);
+		pushDown(node,l,r);
+		int left_node = node<<1, right_node = node<<1|1, mid = (l+r)>>1;
+		modifyAdd(left_node,l,mid,start,end,val);
+		modifyAdd(right_node,mid+1,r,start,end,val);
+		tree[node].val = (tree[left_node].val + tree[right_node].val) % p;
+	}
+	
+	public static void pushDown(int node, int l, int r) {
+		int left_node = node<<1, right_node = node<<1|1, mid = (l+r)>>1;
+		if(tree[node].mul!=1) { //push down multiply
+			tree[left_node].val = tree[left_node].val * tree[node].mul % p;
+			tree[right_node].val = tree[right_node].val * tree[node].mul % p;
+			tree[left_node].mul = tree[left_node].mul * tree[node].mul % p;
+			tree[right_node].mul = tree[right_node].mul * tree[node].mul % p;
+			tree[left_node].add = tree[left_node].add * tree[node].mul % p;
+			tree[right_node].add = tree[right_node].add * tree[node].mul % p;
+			tree[node].mul = 1;
+		}
+		if(tree[node].add!=0) { //push down add
+			tree[left_node].val = (tree[left_node].val + (mid-l+1)*tree[node].add)% p;
+			tree[right_node].val = (tree[right_node].val + (r-mid)*tree[node].add) % p;
+			tree[left_node].add = (tree[left_node].add + tree[node].add) % p;
+			tree[right_node].add = (tree[right_node].add + tree[node].add) % p;
+			tree[node].add = 0;
+		}
+	}
+	
+	public static void build(int node, int l, int r) {
+		if(l==r) {
+			tree[node] = new Node(data[l]%p);
+			return ;
+		}
+		int left_node = node<<1, right_node = node<<1|1, mid = (l+r)>>1;
+		build(left_node,l,mid);
+		build(right_node,mid+1,r);
+		tree[node] = new Node((tree[left_node].val+tree[right_node].val)%p);
+	}
+	
+	public static void init() {
+		data = new int[n+1];
+		tree = new Node[n<<2];
+	}
+	
+	public static int nextInt() throws IOException {
+		st.nextToken();
+		return (int)st.nval;
+	}
+
+}
+
+class Node{
+	long val, mul, add;
+	public Node(long val) {
+		this.val = val;
+		this.mul = 1;
+		add = 0;
+	}
+}

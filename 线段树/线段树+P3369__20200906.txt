@@ -1,0 +1,154 @@
+	/*
+https://www.luogu.com.cn/problem/P3369
+题目描述
+您需要写一种数据结构（可参考题目标题），来维护一些数，其中需要提供以下操作：
+1.插入 x 数
+2.删除 x 数(若有多个相同的数，因只删除一个)
+3.查询 x 数的排名(排名定义为比当前数小的数的个数 +1 )
+4.查询排名为 x 的数
+5.求 x 的前驱(前驱定义为小于 x，且最大的数)
+6.求 x 的后继(后继定义为大于 x，且最小的数)
+输入格式
+第一行为 n，表示操作的个数,下面 n 行每行有两个数 opt 和 x，opt 表示操作的序号( 1≤opt≤6 )
+
+输出格式
+对于操作 3,4,5,6 每行输出一个数，表示对应答案
+*/
+
+/*
+ * 权值线段树:维护全局的值域信息,每个节点记录数据在值域中出现的次数
+ * 对于1,2操作,直接在树的x位置+1和-1
+ * 3操作就是求1到x-1区间的和+1
+ * 4操作:要选择在左子树寻找还是右子树查找,在右子树查找的话x=tree[right_node]-x(在右子树中的排名)
+ * 5操作:x<=mid+1时前驱只能在左子树,否则要先去检查右子树,右子树为空再检查左子树
+ * 6操作:x>mid-1时后继只能在右子树,其他的和找前驱类似
+ * 对于负数操作,只要将数组开二倍大,x+=1e7来操作,结果再转换一下即可
+ */
+
+#include <iostream>
+#include <cstdio>
+#define re register
+#define MAXN 10000000
+
+using namespace std;
+
+inline int read(){
+	int x = 0 , f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, tree[(MAXN<<1)<<2];
+
+inline void Update(int node, int l, int r, int x){
+    ++tree[node];
+    if(l==r) return ;
+    int left_node = node<<1, right_node = node<<1|1, mid = (l+r)>>1;
+    if(x<=mid)
+        Update(left_node,l,mid,x);
+    else
+        Update(right_node,mid+1,r,x);
+}
+
+inline void Delete(int node, int l, int r, int x){
+    --tree[node];
+    if(l==r) return ;
+    int left_node = node<<1, right_node = node<<1|1, mid = (l+r)>>1;
+    if(x<=mid)
+        Delete(left_node,l,mid,x);
+    else
+        Delete(right_node,mid+1,r,x);
+}
+
+inline int Rank(int node, int l, int r, int start, int end){
+    if(r<start||l>end)
+        return 0;
+    if(start<=l&&end>=r)
+        return tree[node];
+    int left_node = node<<1, right_node = node<<1|1, mid = (l+r)>>1;
+    int left_res = Rank(left_node,l,mid,start,end);
+    int right_res = Rank(right_node,mid+1,r,start,end);
+    return left_res + right_res;
+}
+
+inline int Xth(int node, int l, int r, int x){
+    //printf("l=%d, r=%d, x=%d\n",l,r,x);
+    if(l==r)
+        return l;
+    int left_node = node<<1, right_node = node<<1|1, mid = (l+r)>>1;
+    if(tree[left_node]>=x)
+        return Xth(left_node,l,mid,x);
+    return Xth(right_node,mid+1,r,x-tree[left_node]);
+}
+
+inline int FindMax(int node, int l, int r){ // find maximum in this range
+    if(l==r) return l;
+    int left_node = node<<1, right_node = node<<1|1, mid = (l+r)>>1;
+    if(tree[right_node]) return FindMax(right_node,mid+1,r);
+    return FindMax(left_node,l,mid);
+}
+
+inline int Pre(int node, int l, int r, int p){
+    if(r<p){
+        if(tree[node]) return FindMax(node,l,r);
+        return 0;
+    }
+    int left_node = node<<1, right_node = node<<1|1, mid = (l+r)>>1, Re;
+    if(p>=mid+2&&tree[right_node]){ //check right subtree first
+        Re = Pre(right_node,mid+1,r,p);
+        if(Re) return Re; // if right subtree is empty
+    }
+    return Pre(left_node,l,mid,p); // otherwise, check left subtree
+}
+
+inline int FindMin(int node, int l, int r){ // find minimum in this range
+    if(l==r)
+        return l;
+    int left_node = node<<1, right_node = node<<1|1, mid = (l+r)>>1;
+    if(tree[left_node]) return FindMin(left_node,l,mid);
+    return FindMin(right_node,mid+1,r);
+}
+
+inline int Next(int node, int l, int r, int p){
+    if(l>p){
+        if(tree[node]) return FindMin(node,l,r);
+        return 0;
+    }
+    int left_node = node<<1, right_node = node<<1|1, mid = (l+r)>>1, Re;
+    if(p<mid&&tree[left_node]){
+        Re = Next(left_node,l,mid,p);
+        if(Re) return Re;
+    }
+    return Next(right_node,mid+1,r,p);
+}
+
+int main(){
+    n = read();
+    int opt, x;
+    while(n--){
+        opt = read(); x = read() + MAXN;
+        if(opt==1){
+            Update(1,1,MAXN<<1,x);
+        }else if(opt==2){
+            Delete(1,1,MAXN<<1,x);
+        }else if(opt==3){
+            printf("%d\n",Rank(1,1,MAXN<<1,1,x-1)+1);
+        }else if(opt==4){
+            printf("%d\n",Xth(1,1,MAXN<<1,x-MAXN)-MAXN);
+        }else if(opt==5){
+            printf("%d\n",Pre(1,1,MAXN<<1,x)-MAXN);
+        }else{
+            printf("%d\n",Next(1,1,MAXN<<1,x)-MAXN);
+        }
+    }
+    return 0;
+}

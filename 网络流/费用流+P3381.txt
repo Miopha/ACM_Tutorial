@@ -1,0 +1,157 @@
+/*
+https://www.luogu.com.cn/problem/P3381
+ 展开
+题目描述
+给出一个包含 nn 个点和 mm 条边的有向图（下面称其为网络） G=(V,E)G=(V,E)，该网络上所有点分别编号为 1 \sim n1∼n，所有边分别编号为 1\sim m1∼m，其中该网络的源点为 ss，汇点为 tt，网络上的每条边 (u,v)(u,v) 都有一个流量限制 w(u,v)w(u,v) 和单位流量的费用 c(u,v)c(u,v)。
+
+你需要给每条边 (u,v)(u,v) 确定一个流量 f(u,v)f(u,v)，要求：
+
+0 \leq f(u,v) \leq w(u,v)0≤f(u,v)≤w(u,v)（每条边的流量不超过其流量限制）；
+\forall p \in \{V \setminus \{s,t\}\}∀p∈{V∖{s,t}}，\sum_{(i,p) \in E}f(i,p)=\sum_{(p,i)\in E}f(p,i)∑ 
+(i,p)∈E
+​	
+ f(i,p)=∑ 
+(p,i)∈E
+​	
+ f(p,i)（除了源点和汇点外，其他各点流入的流量和流出的流量相等）；
+\sum_{(s,i)\in E}f(s,i)=\sum_{(i,t)\in E}f(i,t)∑ 
+(s,i)∈E
+​	
+ f(s,i)=∑ 
+(i,t)∈E
+​	
+ f(i,t)（源点流出的流量等于汇点流入的流量）。
+定义网络 GG 的流量 F(G)=\sum_{(s,i)\in E}f(s,i)F(G)=∑ 
+(s,i)∈E
+​	
+ f(s,i)，网络 GG 的费用 C(G)=\sum_{(i,j)\in E} f(i,j) \times c(i,j)C(G)=∑ 
+(i,j)∈E
+​	
+ f(i,j)×c(i,j)。
+
+你需要求出该网络的最小费用最大流，即在 F(G)F(G) 最大的前提下，使 C(G)C(G) 最小。
+
+输入格式
+输入第一行包含四个整数 n,m,s,tn,m,s,t，分别代表该网络的点数 nn，网络的边数 mm，源点编号 ss，汇点编号 tt。
+
+接下来 mm 行，每行四个整数 u_i,v_i,w_i,c_iu 
+i
+​	
+ ,v 
+i
+​	
+ ,w 
+i
+​	
+ ,c 
+i
+​	
+ ，分别代表第 ii 条边的起点，终点，流量限制，单位流量费用。
+
+输出格式
+输出两个整数，分别为该网络的最大流 F(G)F(G)，以及在 F(G)F(G) 最大的前提下，该网络的最小费用 C(G)C(G)。
+
+输入输出样例
+*/
+
+#include <cstdio>
+#include <algorithm>
+#include <queue>
+#include <cstring>
+#include <iostream>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+using namespace std;
+typedef long long ll;
+const ll INFL = 0x3f3f3f3f3f3f3f3f;
+const int MAXN = 5005, MAXM = 50005;
+
+int head[MAXN], tot = 1;
+
+struct Edge{
+	int u, to, cost, next;
+	ll flow;
+}G[MAXM<<1];
+
+inline void addEdge(int u, int v, int w, int c){
+	G[++tot].u = u;
+	G[tot].to = v;
+	G[tot].flow = w;
+	G[tot].cost = c;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+int n, m, s, t, last[MAXM<<1], pre[MAXN];
+deque<int> dq;
+bool inq[MAXN];
+ll dis[MAXN], flow[MAXN], mxFlow, mnCost;
+
+bool SPFA(int s, int t){
+	for(int i = 1 ; i <= n ; ++i) dis[i] = flow[i] = INFL;
+	dis[s] = 0;
+	dq.push_front(s);
+	inq[s] = true;
+	while(!dq.empty()){
+		int np = dq.front(); dq.pop_front();
+		inq[np] = false;
+		for(int i = head[np], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(G[i].flow>0&&(dis[to]>dis[np]+G[i].cost)){
+				dis[to] = dis[np]+G[i].cost;
+				flow[to] = min(flow[np],G[i].flow);
+				last[to] = i;
+				pre[to] = np;
+				if(!inq[to]){
+					inq[to] = true;
+					if(dq.empty()||dis[to]<=dis[dq.front()]) dq.push_front(to);
+					else dq.push_back(to);
+				}
+			}
+		}
+	}
+	return (dis[t] ^ INFL);
+}
+
+void MCMF(int s, int t){
+	while(SPFA(s,t)){
+		mxFlow += flow[t];
+		mnCost += flow[t] * dis[t];
+		int np = t;
+		while(np^s){
+			G[last[np]].flow -= flow[t];
+			G[last[np]^1].flow += flow[t];
+			np = pre[np];
+		}
+	}
+}
+
+int main(){
+	n = read();
+	m = read();
+	s = read();
+	t = read();
+	for(int i = 1, u, v, w, c ; i <= m ; ++i){
+		u = read(); v = read(); w = read(); c = read();
+		addEdge(u,v,w,c);
+		addEdge(v,u,0,-c);
+	}
+	MCMF(s,t);
+	printf("%lld %lld\n",mxFlow,mnCost);
+	return 0;
+}

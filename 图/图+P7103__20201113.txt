@@ -1,0 +1,125 @@
+/*
+https://www.luogu.com.cn/problem/P7103?contestId=35595
+题目背景
+小 Soup 正在翻看他们家的族谱，他们家的族谱构成了一棵树。小 Soup 发现，由于年代久远，他们家族中的一些分支已经绝迹，他对此十分好奇。
+
+题目描述
+小 Soup 给你他们家的族谱树，想要问你在这棵树中所有第 k 层的孩子（树中深度为 k 的点，根节点的深度为 1 ,根节点编号为 1 ）的最近公共祖先 是谁。
+
+输入格式
+第一行两个整数 n,m.
+第二行 n 个整数，其中第 i 个整数为 fi ，表示 i 的父亲为 fi	，请注意，1 的 fi固定为 0。
+接下来 m 行，每行一个整数 k，代表小 Soup 的询问。
+
+输出格式
+对于每个小 Soup 的询问，输出一个整数，即所有深度为 k 的点的最近公共祖先。
+*/
+
+/*
+ * 倍增LCA时空复杂度都是nlogn, 最后一个测试点卡常
+ * 我们可以第一个DFS算出节点的最高子树高度(md[mx1[node]])和次高子树高度(md[mx2[node]])
+ * 第二个DFS算出LCA(从1层到最大高度层)：
+ * ①上一层的LCA必定是下一层的CA, 我们要找机会将CA往下跳
+ * ②向下跳的条件是次子树高度小于当前查询层（大于等于的话次高子树必定会有节点在查询层，无法往下跳）
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <string.h>
+#include <algorithm>
+#include <cmath>
+#define re register
+#define pb push_back
+#define cl clear
+#define MAXN 3000005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int head[MAXN], tot;
+
+struct Edge{
+    int u, to, next;
+}G[MAXN];
+
+inline void addEdge(int u, int v){
+    G[++tot].u = u;
+    G[tot].to = v;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+int n, q, depth[MAXN], md[MAXN], mx1[MAXN], mx2[MAXN], mxd, ans[MAXN];
+
+inline int DFS1(int x, int fat){
+    md[x] = depth[x] = depth[fat] + 1;
+    mxd = max(mxd,depth[x]);
+    for(re int i = head[x], to ; i ; i = G[i].next){
+        to = G[i].to;
+        md[x] = max(md[x],DFS1(to,x));
+        if(md[to]>md[mx1[x]]){
+            mx2[x] = mx1[x];
+            mx1[x] = to;
+        }else if(md[to]>md[mx2[x]]){
+            mx2[x] = to;
+        }
+    }
+    return md[x];
+}
+
+inline int DFS2(int x, int nwd){
+    if(md[mx2[x]] >= nwd){
+        return x;
+    }
+	// 特判
+    if(!md[mx1[x]]||depth[x]==nwd){
+        return x;
+    }
+    return DFS2(mx1[x],nwd);
+}
+
+void solve(){
+    n = read();
+    q = read(); read();
+    for(re int i = 2, u ; i <= n ; ++i){
+        u = read();
+        addEdge(u,i);
+    }
+    DFS1(1,0);
+    // printf("depth=%d\n",depth[7]);
+    ans[0] = 1;
+    for(re int i = 1 ; i <= mxd ; ++i){
+        ans[i] = DFS2(ans[i-1],i);
+    }
+    for(re int i = 1, ask ; i <= q ; ++i){
+        ask = read();
+        printf("%d\n",ans[ask]);
+    }
+}
+
+int main(){
+    int t = 1;
+    // t = read();
+    while(t--) solve();
+    return 0;
+}

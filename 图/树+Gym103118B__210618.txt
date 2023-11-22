@@ -1,0 +1,61 @@
+/*
+https://codeforces.com/gym/103118/problem/C
+C. Cat Virus
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+In the cat country, any cat family can be regarded as a rooted tree. As we all know, a kind of zombie virus hides in all the cats' bodies. Therefore, a cat family may consist of cats and zombies. When a cat is born, it may become a zombie. If a cat becomes a zombie, all of its offspring will also become zombies.
+
+Now given an integer K, you should construct a cat family with exactly K ways to mark the identities (cat or zombie) of members of this family. Two ways are considered different if and only if there is at least one member that is marked as a cat in one way and marked as a zombie in the other way.
+
+Formally, the vertices in a rooted tree will be marked black or white, and if a vertex is marked black, all the vertices in its subtree should also be marked black. Given a rooted tree, it's easy to calculate the number of possible valid ways to mark the vertices in the tree. Your task is to construct a rooted tree with exactly K ways to mark your tree's vertices. Two ways are considered different if and only if there is at least one vertex such that in one way is marked black and marked white in the other way.
+
+Input
+The only line contains an integer K (2≤K≤2⋅1018) – the number of valid ways to mark the vertices in the tree.
+
+Output
+Let's denote the number of vertices of the tree you construct as n, and label the vertices from 1 to n where vertex 1 is the root.
+
+The output should contain n lines. In the first line, print one integer n (1≤n≤105). In the each of the next n−1 lines, print two integers u,v (1≤u,v≤n,u≠v) describing an edge in your rooted tree.
+
+It is guaranteed that at least one solution exists. If there are several possible valid solutions, you can print any of them.
+*/
+
+ 
+#include <cstdio>
+#include <algorithm>
+#include <vector>
+
+using namespace std;
+typedef long long ll;
+typedef pair<int,int> P;
+
+vector<P> ans;
+ll n;
+int cnt;
+
+int main(){
+	scanf("%lld",&n);
+	if(n==2){
+		puts("1");
+		return 0;
+	}
+	int lst = 1;
+	cnt = 1;
+	--n;
+	while(n^1){
+		if((n&1)){
+			ans.push_back(make_pair(lst,++cnt));
+			lst = cnt;
+			--n;
+		}
+		if(n^1){
+			ans.push_back(make_pair(lst,++cnt));
+			n >>= 1;
+		}
+	}
+	printf("%d\n",ans.size()+1);
+	for(auto it : ans) printf("%d %d\n",it.first,it.second);
+	return 0;
+}

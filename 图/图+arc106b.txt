@@ -1,0 +1,108 @@
+/*
+https://atcoder.jp/contests/arc106/tasks/arc106_b
+B - Values
+Time Limit: 2 sec / Memory Limit: 1024 MB
+
+Score : 400 points
+Problem Statement
+Given is a simple undirected graph with N vertices and M edges. The i-th edge connects Vertex ci and Vertex di. Initially, Vertex i has the value ai written on it. You want to change the values on Vertex 1,...,Vertex N to b1,..,bn, respectively, by doing the operation below zero or more times.
+* Choose an edge, and let Vertex x and Vertex y be the vertices connected by that edge. Choose one of the following and do it:
+  * Decrease the value ax by 1, and increase the value ay by 1.
+  * Increase the value ax by 1, and decrease the value ay by 1.
+Determine whether it is possible to achieve the objective by properly doing the operation.
+*/
+
+/*
+ * 连通的点的sum_a和sum_b值相等就可以完成操作
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cmath>
+#define re register
+#define pb push_back
+#define cl clear
+#define MAXN 200005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int head[MAXN], tot;
+
+struct Edge{
+    int u, v, next;
+}G[MAXN<<1];
+
+inline void addEdge(int u, int v){
+    G[++tot].u = u;
+    G[tot].v = v;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+int n, m, a[MAXN], b[MAXN];
+ll totA, totB;
+bool vis[MAXN];
+
+inline void DFS(int cur){
+    vis[cur] = true;
+    totA += a[cur];
+    totB += b[cur];
+    for(re int i = head[cur], to ; i ; i = G[i].next){
+        to = G[i].v;
+        if(!vis[to]) DFS(to);
+    }
+}
+
+void solve(){
+    n = read();
+    m = read();
+    for(re int i = 1 ; i <= n ; ++i)
+        a[i] = read();
+    for(re int i = 1 ; i <= n ; ++i)
+        b[i] = read();
+    for(re int i = 1, u, v ; i <= m ; ++i){
+        u = read();
+        v = read();
+        addEdge(u,v);
+        addEdge(v,u);
+    }
+    for(re int i = 1 ; i <= n ; ++i){
+        if(!vis[i]){
+            totA = totB = 0;
+            DFS(i);
+            if(totA^totB){
+                printf("No\n");
+                return ;
+            }
+        }
+    }
+    printf("Yes\n");
+}
+
+int main(){
+    int t = 1;
+    //t = read();
+    while(t--) solve();
+    return 0;
+}

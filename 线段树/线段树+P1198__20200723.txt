@@ -1,0 +1,94 @@
+/*
+https://www.luogu.com.cn/problem/P1198
+题目描述
+现在请求你维护一个数列，要求提供以下两种操作：
+1.查询操作
+语法：Q L
+功能：查询当前数列中末尾L个数中的最大的数，并输出这个数的值。
+
+限制：L不超过当前数列的长度。(L > 0)
+2.插入操作
+语法：A n
+功能：将n加上t，其中t是最近一次查询操作的答案（如果还未执行过查询操作，则t=0)，并将所得结果对一个固定的常数D取模，将所得答案插入到数列的末尾。
+限制：n是整数（可能为负数）并且在长整范围内
+注意：初始时数列可能为空，没有一个数
+输入格式
+第一行两个整数，M 和 D，其中 M 表示操作的个数，D 如上文中所述。
+
+接下来的 M 行，每行一个字符串，描述一个具体的操作。语法如上文所述。
+输出格式
+对于每一个查询操作，你应该按照顺序依次输出结果，每个结果占一行。
+说明/提示
+数据规模与约定
+对于全部的测试点，保证 1 <= M <= 2e5 1<=D<=2e9
+*/
+
+/*
+ * cnt维护数组的右边界
+ * 甚至不用建树
+ * 假设全是插入操作，那么右边界的上限就是200000
+ */
+ 
+//package P1198;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+	
+	static int M, D, tree[], lastAns, cnt;
+	
+	public static void main(String[] args) throws IOException {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		String str[] = br.readLine().split(" ");
+		M = Integer.parseInt(str[0]); D = Integer.parseInt(str[1]);
+		init();
+		StringBuilder ans = new StringBuilder();
+		for(int i = 1 ; i <= M ; i++) {
+			str = br.readLine().split(" ");
+			if(str[0].equals("Q")) { //Q
+				if(cnt==0) {
+					continue;
+				}
+				lastAns = ask(1,1,200000,cnt-Integer.parseInt(str[1])+1,cnt+1);
+				ans.append(lastAns).append("\n");
+			}else { //A
+				update(1,1,200000,++cnt,(Integer.parseInt(str[1])+lastAns)%D);
+			}
+		}
+		System.out.println(ans.toString());
+	}
+	
+	public static void init() {
+		tree = new int[800000];
+	}
+	
+	public static int ask(int node, int start, int end, int L, int R) {
+		//System.out.println("start="+start+" end="+end);
+		if(R<start||L>end) {
+			return 0;
+		}else if(start>=L&&end<=R) {
+			return tree[node];
+		}
+		int mid = (start+end)>>1, left_node = 2*node, right_node = 2*node|1;
+		//System.out.println("ln="+left_node+" rn="+right_node+" start="+start+" end="+end+" L="+L+" R="+R);
+		int left_value = ask(left_node,start,mid,L,R);
+		int right_value = ask(right_node,mid+1,end,L,R);
+		return Math.max(left_value,right_value);
+	}
+	
+	public static void update(int node, int start, int end, int idx, int value) {
+		if(idx<start||idx>end) {
+			return ;
+		}else if(start==end) {
+			tree[node] = value;
+			return ;
+		}
+		int mid = (start+end)>>1, left_node = 2*node, right_node = 2*node|1;
+//		System.out.println("ln="+left_node+" rn="+right_node+" start="+start+" end="+end);
+		update(left_node,start,mid,idx,value);
+		update(right_node,mid+1,end,idx,value);
+		tree[node] = Math.max(tree[left_node],tree[right_node]);
+	}
+
+}

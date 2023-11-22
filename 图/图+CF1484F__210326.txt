@@ -1,0 +1,123 @@
+/*
+https://codeforces.com/contest/1483/problem/D
+D. Useful Edges
+time limit per test5 seconds
+memory limit per test512 megabytes
+inputstandard input
+outputstandard output
+You are given a weighted undirected graph on n vertices along with q triples (u,v,l), where in each triple u and v are vertices and l is a positive integer. An edge e is called useful if there is at least one triple (u,v,l) and a path (not necessarily simple) with the following properties:
+
+u and v are the endpoints of this path,
+e is one of the edges of this path,
+the sum of weights of all edges on this path doesn't exceed l.
+Please print the number of useful edges in this graph.
+
+Input
+The first line contains two integers n and m (2≤n≤600, 0≤m≤n(n−1)2).
+
+Each of the following m lines contains three integers u, v and w (1≤u,v≤n, u≠v, 1≤w≤109), denoting an edge connecting vertices u and v and having a weight w.
+
+The following line contains the only integer q (1≤q≤n(n−1)2) denoting the number of triples.
+
+Each of the following q lines contains three integers u, v and l (1≤u,v≤n, u≠v, 1≤l≤109) denoting a triple (u,v,l).
+
+It's guaranteed that:
+
+the graph doesn't contain loops or multiple edges;
+all pairs (u,v) in the triples are also different.
+Output
+Print a single integer denoting the number of useful edges in the graph.
+*/
+
+/*
+ * 先用floyd求出两点间最短路 O(n^3)
+ * 对与一条边np--val-->to，如果存在dis[ui][np] + val + dis[to][vi] <= li，那么这条边是useful edge
+ * 如果对每条边遍历triples判断是否为useful edge，那么复杂度是O(mq) = O(n^4)会TLE
+ * 式子可化成 li - dis[to][vi] >= dis[ui][np] + val
+ * 左边只由【triples】和【当前边连接的点】决定，那么我们可以枚举节点，遍历triples，将左边最大化，复杂度O(nq) = O(n^3)
+ * 右边也只需枚举边和点，复杂度O(nm) = O(n^3)
+ */
+ 
+#include <cstdio>
+#include <algorithm>
+#include <queue>
+#include <cstring>
+#include <iostream>
+#include <vector>
+#include <set>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define mp make_pair
+
+using namespace std;
+const int MAXN = 605, MAXM = 600 * 600 + 5;
+typedef long long ll;
+typedef pair<ll,int> P;
+
+int head[MAXN], tot;
+
+struct Edge{
+    int u, to, val, next;
+}G[MAXM<<1];
+
+inline void addEdge(int u, int v, int w){
+    G[++tot].u = u;
+    G[tot].to = v;
+    G[tot].val = w;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+int n, m, q, ans;
+ll dis[MAXN][MAXN], mx[MAXN][MAXN];
+
+void floyd(){
+	for(int k = 1 ; k <= n ; ++k){
+		for(int i = 1 ; i <= n ; ++i){
+			for(int j = 1 ; j <= n ; ++j){
+				dis[i][j] = min(dis[i][j],dis[i][k]+dis[k][j]);
+			}
+		}
+	}
+}
+
+int main(){
+	memset(dis,0x3f,sizeof(dis));
+	scanf("%d %d",&n,&m);
+	for(int i = 1, u, v, w ; i <= m ; ++i){
+		scanf("%d %d %d",&u,&v,&w);
+		dis[u][v] = w;
+		dis[v][u] = w;
+		addEdge(u,v,w);
+	}
+	for(int i = 1 ; i <= n ; ++i) dis[i][i] = 0;
+	
+	floyd();
+	
+	scanf("%d",&q);
+	for(int i = 1, u, v, l ; i <= q ; ++i){
+		scanf("%d %d %d",&u,&v,&l);
+		for(int to = 1 ; to <= n ; ++to){
+			mx[to][v] = max(mx[to][v],l-dis[to][u]);
+			mx[to][u] = max(mx[to][u],l-dis[to][v]);
+		}
+	}
+	
+	for(int i = 1, u, to, w ; i <= m ; ++i){
+		u = G[i].u;
+		to = G[i].to;
+		w = G[i].val;
+		for(int np = 1 ; np <= n ; ++np){
+			if(mx[u][np]>=dis[to][np]+w){
+				++ans;
+				break;
+			}
+			if(mx[to][np]>=dis[u][np]+w){
+				++ans;
+				break;
+			}
+		}
+	}
+	
+	cout<<ans<<endl;
+	return 0;
+}

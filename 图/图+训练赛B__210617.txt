@@ -1,0 +1,95 @@
+/*
+https://vjudge.net/contest/443690#problem/B
+Alice and Bob are playing a fun game of tree tag.
+
+The game is played on a tree of n vertices numbered from 1 to n. Recall that a tree on n vertices is an undirected, connected graph with n−1 edges.
+
+Initially, Alice is located at vertex a, and Bob at vertex b. They take turns alternately, and Alice makes the first move. In a move, Alice can jump to a vertex with distance at most da from the current vertex. And in a move, Bob can jump to a vertex with distance at most db from the current vertex. The distance between two vertices is defined as the number of edges on the unique simple path between them. In particular, either player is allowed to stay at the same vertex in a move. Note that when performing a move, a player only occupies the starting and ending vertices of their move, not the vertices between them.
+
+If after at most 10100 moves, Alice and Bob occupy the same vertex, then Alice is declared the winner. Otherwise, Bob wins.
+
+Determine the winner if both players play optimally.
+
+Input
+Each test contains multiple test cases. The first line contains the number of test cases t (1≤t≤104). Description of the test cases follows.
+
+The first line of each test case contains five integers n,a,b,da,db (2≤n≤105, 1≤a,b≤n, a≠b, 1≤da,db≤n−1)  — the number of vertices, Alice's vertex, Bob's vertex, Alice's maximum jumping distance, and Bob's maximum jumping distance, respectively.
+
+The following n−1 lines describe the edges of the tree. The i-th of these lines contains two integers u, v (1≤u,v≤n,u≠v), denoting an edge between vertices u and v. It is guaranteed that these edges form a tree structure.
+
+It is guaranteed that the sum of n across all test cases does not exceed 105.
+
+Output
+For each test case, output a single line containing the winner of the game: "Alice" or "Bob".
+*/
+
+/*
+ * 题意：a和b能在树上移动最多da和db距离，问是否有机会a追上b，有则a赢，没有则b赢，注这里的追上是指a追上b移动前的或移动后的点
+ * 要b赢则要保证b不会出现到a的可行点上
+ * ①开始的ab距离小于等于da则第一回合就能追上了
+ * ②如果树直径<=2*da，则a的可行点可以覆盖整课树
+ * ③b不会走到a下一回合的可行点上，要保证这个则就要db>2*da，所以db<=2*da时a获胜
+ * 有其他情况的b就能保证b不会走到a下一回合的可行点上
+ */
+ 
+#include <cstdio>
+
+using namespace std;
+const int MAXN = 100005;
+
+int head[MAXN], tot;
+
+struct Edge{
+	int u, to, next;
+}G[MAXN<<1];
+
+inline void addEdge(int u, int v){
+	G[++tot].u = u;
+	G[tot].to = v;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+int n, a, b, da, db, dis, diameter, p;
+
+inline void DFS1(int np, int fat, int d){
+	if(d>diameter){
+		p = np;
+		diameter = d;
+	}
+	if(np==b) dis = d;
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(to==fat) continue;
+		DFS1(to,np,d+1);
+	}
+}
+
+void solve(){
+	scanf("%d %d %d %d %d",&n,&a,&b,&da,&db);
+	for(int i = 1 ; i <= n ; ++i) head[i] = 0;
+	tot = diameter = 0;
+	for(int i = 1, u, v ; i < n ; ++i){
+		scanf("%d %d",&u,&v);
+		addEdge(u,v);
+		addEdge(v,u);
+	}
+	DFS1(a,0,0);
+	if(dis<=da||db<=(da<<1)){
+		puts("Alice");
+		return ;
+	}
+	DFS1(p,0,0);
+	if(diameter<=(da<<1)){
+		puts("Alice");
+		return ;
+	}
+	puts("Bob");
+}
+
+int main(){
+	int t;
+	scanf("%d",&t);
+	while(t--) solve();
+	return 0;
+}

@@ -1,0 +1,69 @@
+/*
+https://www.luogu.com.cn/problem/P3386
+题目描述
+给定一个二分图，其左部点的个数为 nn，右部点的个数为 mm，边数为 ee，求其最大匹配的边数。
+
+左部点从 11 至 nn 编号，右部点从 11 至 mm 编号。
+
+输入格式
+输入的第一行是三个整数，分别代表 nn，mm 和 ee。
+
+接下来 ee 行，每行两个整数 u, vu,v，表示存在一条连接左部点 uu 和右部点 vv 的边。
+
+输出格式
+输出一行一个整数，代表二分图最大匹配的边数。
+*/
+
+/*
+ * 匈牙利算法过程：每个左边的点都进行一次DFS，如果有点未匹配到，则匹配这个点，否则用先前匹配的点DFS，看看能否与其他点匹配，能则两个点都匹配成功，不能则当前点匹配失败
+ * 时间复杂度O(n*e+m)，可把数量少的点放在左边以降低时间复杂度
+ */
+
+#include <cstdio>
+
+using namespace std;
+
+const int MAXN = 1005, MAXM = 50005;
+
+int head[MAXN], tot;
+
+struct Edge{
+	int to, next;
+}G[MAXM<<1];
+
+inline void addEdge(int u, int v){
+	G[++tot].to = v;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+int n, m, e, ans, vis[MAXN], matched[MAXN];
+
+bool DFS(int np, int tag){
+	if(vis[np]==tag) return false;
+	vis[np] = tag;
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(!matched[to]||DFS(matched[to],tag)){
+			matched[to] = np;
+			return true;
+		}
+	}
+	return false;
+}
+
+void match(){
+	for(int i = 1 ; i <= n ; ++i) ans += DFS(i,i);
+}
+
+int main(){
+	scanf("%d %d %d",&n,&m,&e);
+	for(int i = 1, u, v ; i <= e ; ++i){
+		scanf("%d %d",&u,&v);
+		addEdge(u,v+n);
+		addEdge(v+n,u);
+	}
+	match();
+	printf("%d\n",ans);
+	return 0;
+}

@@ -1,0 +1,170 @@
+/*
+https://www.luogu.com.cn/problem/P2846
+*/
+
+/*
+ * 线段树的区间修改区间查询
+ * |1不等于+1,但向左移位之后最后一个二进制数为0,这时能做到+1
+ */
+
+#include <bits/stdc++.h>
+#define re register
+#define MAXN 1000005
+
+using namespace std;
+
+inline int read(){
+	int x = 0 , f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+    }
+    return x*f;
+}
+
+int n, m, tree[MAXN<<2];
+bool lazy[MAXN<<2];
+
+void update(int node, int L, int R, int start, int end){
+    if(R<start||L>end) return ;
+    if(L==R){
+        tree[node] = !tree[node];
+        return ;
+    }
+    int left_node = node<<1, right_node = node<<1|1, mid = (L+R)>>1;
+    update(left_node,L,mid,start,end);
+    update(right_node,mid+1,R,start,end);
+    tree[node] = tree[left_node] + tree[right_node];
+}
+
+int ask(int node, int L, int R, int start, int end, bool tag){
+    if(R<start||L>end) return 0;
+    if(L>=start&&R<=end){
+        return tree[node];
+        //printf("node=%d,tree[node]=%d,L=%d,R=%d,tag=%d\n",node,tree[node],L,R,tag);
+    }
+    int left_node = node<<1, right_node = node<<1|1, mid = (L+R)>>1;
+    int ans1 = ask(left_node,L,mid,start,end,tag^lazy[node]);
+    int ans2 = ask(right_node,mid+1,R,start,end,tag^lazy[node]);
+    return ans1 + ans2;
+}
+
+int main(){
+    n = read(); m = read();
+    int x, y, z;
+    while(m--){
+        x = read(); y = read(); z = read();
+        if(x){
+            printf("%d\n",ask(1,1,n,y,z,0));
+        }else{
+            update(1,1,n,y,z);
+        }
+    }
+    return 0;
+}
+
+/*
+https://www.luogu.com.cn/problem/P2574
+*/
+
+/*
+ * 和第一题差不多,加了建树和lazytag,当节点有lazytag的时候要修改子节点的值和向下传递
+ */
+ 
+#include <bits/stdc++.h>
+#define re register
+#define MAXN 300020
+
+using namespace std;
+
+inline int read(){
+	int x = 0 , f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+    }
+    return x*f;
+}
+
+int n, m, tree[MAXN<<2], data[MAXN];
+bool lazytag[MAXN<<2];
+char str[MAXN];
+
+void build(int node, int L, int R){
+    if(L==R){
+        tree[node] = data[L];
+        return ;
+    }
+    int left_node = node<<1, right_node = node<<1|1, mid = (L+R)>>1;
+    build(left_node,L,mid);
+    build(right_node,mid+1,R);
+    tree[node] = tree[left_node] + tree[right_node];
+}
+
+void pushdown(int node, int L, int R){
+    if(lazytag[node]){
+        int left_node = node<<1, right_node = node<<1|1, mid = (L+R)>>1;
+        lazytag[left_node]^=true;
+        lazytag[right_node]^=true;
+        tree[left_node]=mid-L+1-tree[left_node];
+        tree[right_node]=R-mid-tree[right_node];
+        lazytag[node]=false;;
+    }
+}
+
+void update(int node, int L, int R, int start, int end){
+    pushdown(node,L,R);
+    if(R<start||L>end) return ;
+    if(L>=start&&R<=end){
+        lazytag[node] ^= true;
+        tree[node] = R-L+1-tree[node];
+        return ;
+    }
+    int left_node = node<<1, right_node = node<<1|1, mid = (L+R)>>1;
+    update(left_node,L,mid,start,end);
+    update(right_node,mid+1,R,start,end);
+    tree[node] = tree[left_node] + tree[right_node];
+}
+
+int ask(int node, int L, int R, int start, int end){
+	pushdown(node,L,R);
+    if(R<start||L>end) return 0;
+    if(L>=start&&R<=end){
+        return tree[node];
+    }
+    int left_node = node<<1, right_node = node<<1|1, mid = (L+R)>>1;
+    int ans1 = ask(left_node,L,mid,start,end);
+    int ans2 = ask(right_node,mid+1,R,start,end);
+    return ans1 + ans2;
+}
+
+int main(){
+    n = read(); m = read();
+    cin>>(1+str);
+    for(re int i = 1 ; i <= n ; ++i)
+        data[i] = (str[i]=='1'?1:0);
+    build(1,1,n);
+    int x, y, z;
+    while(m--){
+        x = read(); y = read(); z = read();
+        if(x){
+            printf("%d\n",ask(1,1,n,y,z));
+        }else{
+            update(1,1,n,y,z);
+        }
+    }
+    return 0;
+}
+

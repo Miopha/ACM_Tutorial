@@ -1,0 +1,229 @@
+/*
+https://codeforces.com/gym/103055/problem/D
+D. Shortest Path Query
+time limit per test2 seconds
+memory limit per test512 megabytes
+inputstandard input
+outputstandard output
+There is an undirected graph with n vertices and m edges. The vertices are labelled by 1,2,…,n. The i-th edge connects the ui-th vertex and the vi-th vertex, the length of which is wi. Here, ui's binary representation is always a prefix of vi's binary representation. Both binary representations are considered without leading zeros. For example, ui=210=102, vi=510=1012.
+
+You will be given q queries. In the i-th query, you will be given two integers si and ti. Please write a program to figure out the length of the shortest path from the si-th vertex to the ti-th vertex, or determine there is no path between them.
+
+Input
+The input contains only a single case.
+
+The first line of the input contains two integers n and m (1≤n≤100000, 1≤m≤200000), denoting the number of vertices and the number of edges.
+
+In the next m lines, the i-th line (1≤i≤m) contains three integers ui,vi and wi (1≤ui<vi≤n, 1≤wi≤109), describing the i-th edge. It is guaranteed that ui's binary representation is a prefix of vi's binary representation.
+
+In the next line, there contains a single integer q (1≤q≤200000), denoting the number of queries.
+
+In the next q lines, the i-th line (1≤i≤q) contains two integers si and ti (1≤si,ti≤n, si≠ti), describing the i-th query.
+
+Output
+For each query, print a single line containing an integer, denoting the length of the shortest path. If there is no path, print "-1" instead.
+*/
+
+/*
+ * 发现边的连接规则符合完全二叉树，所以深度最大为17(2^17=131072)
+ * 在完全二叉树的基础上，对于点u，和u的祖先节点集合v，可能存在边直接连接u和v
+ * 所以对于每一课以p(p∈[1,n])为根的子树，只用子树中的边，使用dijkstra(dijkstra在完全二叉树中效率很高)，算出p和子节点sp间的距离dis[sp][depth(p,sp)]，其中depth(a,b)指a和b的层数差+1的绝对值
+ * 所以对于每个提问找出他们所有的祖先节点anc，答案为dis[s][depth(s,anc)]+dis[t][depth(t,anc)]的最小值
+ * 注：每次dijkstra时不能用遍历初始化vis和dis数组，否则复杂度变成O(n^2)
+ */
+
+#include <cstdio>
+#include <algorithm>
+#include <queue>
+#include <set>
+#include <vector>
+#include <iostream>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef pair<ll,int> P;
+typedef pair<int,ll> P1;
+const int MAXN = 100005, MAXM = 200005;
+const ll INFL = 0x3f3f3f3f3f3f3f3f;
+
+int head[MAXN], tot;
+
+struct Edge{
+	int to, val, next;
+}G[MAXM<<1];
+
+inline void addEdge(int u, int v, int w){
+	G[++tot].to = v;
+	G[tot].val = w;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+int n, m, q, vis[MAXN], dvis[MAXN];
+ll dis[MAXN][18];
+
+inline int calc(int u, int v){
+	// u > v holds
+	int res = 0;
+	while(u^v){
+		u >>= 1;
+		++res;
+	}
+	return res;
+}
+
+void dijkstra(int start){
+	ll ndis[MAXN];
+	priority_queue<P,vector<P>, greater<> > pq;
+	pq.push(P{ndis[start]=0,start});
+	while(!pq.empty()){
+		int np = pq.top().second; pq.pop();
+		if(vis[np]==start) continue;
+		vis[np] = start;
+		dis[np][calc(np,start)] = ndis[np];
+		for(int i = head[np], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(to<start) continue;
+			if(vis[to]^start&&(dvis[to]^start||ndis[to]>ndis[np]+G[i].val)){
+				dvis[to] = start;
+				ndis[to] = ndis[np] + G[i].val;
+				pq.push(P{ndis[to],to});
+			}
+		}
+	}
+}
+
+int main(){
+	scanf("%d %d",&n,&m);
+	for(int i = 1, u, v, w ; i <= m ; ++i){
+		scanf("%d %d %d",&u,&v,&w);
+		addEdge(u,v,w);
+		addEdge(v,u,w);
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		for(int j = 1 ; j <= 17 ; ++j){
+			dis[i][j] = INFL;
+		}
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		dijkstra(i);
+	}
+	// for(auto it : dis[1]) printf("to %d : %lld\n",it.first,it.second);
+	scanf("%d",&q);
+	for(int i = 1, s, t ; i <= q ; ++i){
+		scanf("%d %d",&s,&t);
+		// keep s smaller
+		if(s>t) swap(s,t);
+		int tmp = 1, ts = s, tt = t;
+		while(tmp<=ts) tmp <<= 1;
+		while(tt>=tmp) tt >>= 1;
+		while(ts^tt) ts >>= 1, tt >>= 1;
+		int anc = ts;
+		ll ans = INFL;
+		while(anc){
+			// CHECK(anc);
+			ll ds = dis[s][calc(s,anc)];
+			ll dt = dis[t][calc(t,anc)];
+			if(ds^INFL&&dt^INFL) ans = min(ans,ds+dt);
+			anc >>= 1;
+		}
+		if(ans==INFL) puts("-1");
+		else printf("%lld\n",ans);
+	}
+	return 0;
+}
+
+/*
+https://codeforces.com/gym/103055/problem/G
+Wall Game
+Input file: standard input
+Output file: standard output
+Time limit: 4 seconds
+Memory limit: 512 megabytes
+Recently, Grammy is playing a boring game called Wall Game.
+There is a plane in the game, which is tiled with regular hexagons. There are honeycombs on this plane,
+which are oriented in such a manner that there are hexagon nodes below and above, and there are edges to
+the left and right which the honeycomb shares with its adjacent honeycombs in the row. Every consequent
+row is shifted relative to the previous row by half a honeycomb. The Ox axis goes from left to right along
+the horizontal row of honeycombs. The Oy axis is inclined 60 degrees relative to the Ox axis. The axes
+intersect at the honeycomb with coordinates (0, 0).
+There are 2 operations attack and query. Grammy can conquer a honeycomb located at (xi
+, yi) by an
+attack operation. For a query operation, Grammy wonders if she builds walls between the honeycombs
+she has conquered and the honeycombs she hasn’t conquered, how many walls she can touch if she set
+out from honeycomb (xi
+, yi) in her territory without crossing any walls.
+Note: A person in honeycomb A can go to honeycomb B if and only if A and B share a common edge or
+there exists a honeycomb C that A can go to C and C can also go to B.
+At the beginning of the game, no honeycombs are conquered. Please write a program to handle n
+operations.
+Input
+The input contains only a single case.
+The first line contains a single integer n (1 ≤ n ≤ 500 000), representing the number of operations.
+The following n lines describe n operations. Each line contains 3 integers opi
+, xi and yi (1 ≤ opi ≤ 2,
+−109 ≤ xi
+, yi ≤ 109
+), representing the type of operation and the coordinate of the honeycomb.
+Page 1 of 2• opi = 1 means an attack operation. Grammy will conquer honeycomb (xi
+, yi).
+• opi = 2 means a query operation. In this operation, Grammy asks you how many walls she can
+touch if she transfers from honeycomb (xi
+, yi) without crossing any walls.
+It is guaranteed that (xi
+, yi) has not been conquered if opi = 1, and (xi
+, yi) has been conquered
+if opi = 2.
+Output
+For each query operation, you should output an integer in a line representing the answer to Grammy’s
+query.
+*/
+
+#include <cstdio>
+#include <map>
+#include <algorithm>
+#define mp make_pair
+
+using namespace std;
+const int MAXN = 500005;
+typedef pair<int,int> P;
+
+map<P,int> ref;
+int n, dir[6][2] = {{0,1},{1,0},{1,-1},{0,-1},{-1,0},{-1,1}}, parent[MAXN], cnt, conq[MAXN];
+
+inline int find(int x){
+	if(parent[x]==x) return x;
+	return parent[x] = find(parent[x]);
+}
+
+int main(){
+	scanf("%d",&n);
+	for(int i = 1 ; i <= n ; ++i) parent[i] = i;
+	for(int i = 1, op, x, y ; i <= n ; ++i){
+		scanf("%d %d %d",&op,&x,&y);
+		if(op==1){
+			ref[mp(x,y)] = ++cnt;
+			conq[cnt] = 6;
+			for(int j = 0, dx, dy ; j < 6 ; ++j){
+				dx = x + dir[j][0];
+				dy = y + dir[j][1];
+				if(!ref.count(mp(dx,dy))) continue;
+				int r = ref[mp(dx,dy)];
+				int pr = find(r);
+				--conq[cnt];
+				--conq[pr];
+				if(cnt^pr){
+					parent[pr] = cnt;
+					conq[cnt] += conq[pr];
+				}
+			}
+		}else{
+			int num = conq[find(ref[P{x,y}])];
+			printf("%d\n",num);
+		}
+		// printf("ref=%d\n",ref[P{x,y}]);
+	}
+	return 0;
+}

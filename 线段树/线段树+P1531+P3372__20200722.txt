@@ -1,0 +1,205 @@
+/*
+https://www.luogu.com.cn/problem/P1531
+题目描述
+不管你喜不喜欢，现在需要你做的是，就是按照老师的要求，写一个程序，模拟老师的询问。当然，老师有时候需要更新某位同学的成绩
+
+输入格式
+第一行，有两个正整数 N 和 M ( 0<N<=200000,0<M<5000 )，分别代表学生的数目和操作的数目。学生ID编号分别从1编到N。第二行包含N个整数，代表这N个学生的初始成绩，其中第i个数代表ID为i的学生的成绩。接下来有M行。每一行有一个字符 C (只取'Q'或'U') ，和两个正整数A，B。当C为'Q'的时候，表示这是一条询问操作，它询问ID从A到B(包括A,B)的学生当中，成绩最高的是多少。当C为'U'的时候，表示这是一条更新操作，如果当前A学生的成绩低于B，则把ID为A的学生的成绩更改为B，否则不改动。
+
+输出格式
+对于每一次询问操作，在一行里面输出最高成绩
+*/
+
+/*
+ * 线段树，每个节点存储区间的最大值
+ */
+ 
+//package P1276;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+	
+	static int data[], tree[], n, m;
+
+	public static void main(String[] args) throws IOException {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+		String tmp[] = br.readLine().split(" ");
+		n = Integer.parseInt(tmp[0]); m = Integer.parseInt(tmp[1]);
+		init();
+		tmp = br.readLine().split(" ");
+		for(int i = 1 ; i <= n ; i++) {
+			data[i] = Integer.parseInt(tmp[i-1]);
+		}
+		build(1,1,n);
+		StringBuilder ans = new StringBuilder();
+		int x, y;
+		for(int i = 1 ; i <= m ; i++) {
+			tmp = br.readLine().split(" ");
+			if(tmp[0].equals("Q")) {
+				x = Integer.parseInt(tmp[1]);
+				y = Integer.parseInt(tmp[2]);
+				ans.append(query(1,1,n,x,y)).append("\n");
+			}else {
+				x = Integer.parseInt(tmp[1]);
+				y = Integer.parseInt(tmp[2]);
+				update(1,1,n,x,y);
+			}
+		}
+		out.println(ans.toString());
+		out.flush();
+	}
+
+	public static void init() {
+		data = new int[n+1];
+		tree = new int[1000000];
+	}
+	
+	public static void build(int node, int start, int end){
+		//node, 当前节点   [start,end]当前区间
+		if(start==end) {
+			tree[node] = data[start];
+			return ;
+		}
+		int mid = (start+end)>>1;
+		int left_node = 2 * node;
+		int right_node = 2 * node + 1;
+		build(left_node,start,mid);
+		build(right_node,mid+1,end);
+		tree[node] = Math.max(tree[left_node],tree[right_node]);
+	}
+	
+	public static int query(int node, int start, int end, int L, int R) {
+		//[L,R]查询的区间 
+		if(R<start||L>end) {
+			return 0;
+		}else if(L<=start&&R>=end) {
+			return tree[node];
+		}
+		int mid = (start+end)>>1;
+		int left_node = 2 * node;
+		int right_node = 2 * node + 1;
+		int max_left = query(left_node,start,mid,L,R);
+		int max_right = query(right_node,mid+1,end,L,R);
+		return Math.max(max_left,max_right);
+	}
+	
+	public static void update(int node, int start, int end, int index, int value) {
+		if(start==end) {
+			if(value>tree[node]) {
+				tree[node]=value;
+				data[index]=value;
+			}
+			return ;
+		}
+		int mid = (start+end)>>1;
+		int left_node = 2 * node;
+		int right_node = 2 * node + 1;
+		if(index>=start&&index<=mid) {
+			update(left_node,start,mid,index,value);
+		}else {
+			update(right_node,mid+1,end,index,value);
+		}
+		tree[node] = Math.max(tree[left_node],tree[right_node]);
+	}
+}
+
+/*
+https://www.luogu.com.cn/problem/P3372
+题目描述：
+已知一个数列，你需要进行下面两种操作：
+1.将某区间每一个数加上 k。
+2.求出某区间每一个数的和。
+输入格式
+第一行包含两个整数 n, m，分别表示该数列数字的个数和操作的总个数。
+
+第二行包含 n 个用空格分隔的整数，其中第 i 个数字表示数列第 i 项的初始值。
+接下来 m 行每行包含 3 或 	4 个整数，表示一个操作，具体如下：
+1.1 x y k :将区间[x,y]内每个数加上k
+2.2 x y : 输出区间[x,y]内每个数的和
+输出格式
+输出包含若干行整数，即为所有操作 2 的结果。
+*/
+
+//package P3372;
+
+import java.util.*;
+import java.io.*;
+	
+public class Main {
+		
+	static int data[], n, m;
+	static long tree[], tag[];
+		
+	public static void main(String[] args) throws IOException {
+		StreamTokenizer st = new StreamTokenizer(new BufferedReader(new InputStreamReader(System.in)));
+		st.nextToken(); n = (int)st.nval;
+		st.nextToken(); m = (int)st.nval;
+		init();
+		for(int i = 1 ; i <= n ; i++) {
+			st.nextToken(); data[i] = (int)st.nval;
+		}
+		build(1,1,n);
+		StringBuilder ans = new StringBuilder();
+		int x, y, z;
+		for(int i = 1 ; i <= m ; i++) {
+			st.nextToken();
+			if(((int)st.nval)==1) {
+				st.nextToken(); x = (int)st.nval;
+				st.nextToken(); y = (int)st.nval;
+				st.nextToken(); z = (int)st.nval;
+				update(1,1,n,x,y,z);
+			}else {
+				st.nextToken(); x = (int)st.nval;
+				st.nextToken(); y = (int)st.nval;
+				ans.append(ask(1,1,n,x,y,0)).append("\n");
+			}
+		}
+		System.out.print(ans.toString());
+	}
+		
+	public static void init() {
+		data = new int[n+1];
+		tree = new long[1000000];
+		tag = new long[1000000];
+	}
+		
+	public static void build(int node, int start, int end) {
+		if(start==end) {
+			tree[node] = data[start];
+			return ;
+		}
+		int mid = (start+end)>>1, left_node = 2*node, right_node = 2*node|1;
+		build(left_node,start,mid);
+		build(right_node,mid+1,end);
+		tree[node] = tree[left_node] + tree[right_node];
+		}
+	
+	public static void update(int node, int start, int end, int L, int R, int value) {
+		if(R<start||L>end) {
+			return ;
+		}else if(L<=start&&R>=end){
+			tree[node] += (value*(end-start+1));
+			tag[node] += value;
+			return ;
+		}
+		int mid = (start+end)>>1, left_node = 2*node, right_node = 2*node|1;
+		update(left_node,start,mid,L,R,value);
+		update(right_node,mid+1,end,L,R,value);
+		tree[node] = tree[left_node] + tree[right_node] + tag[node]*(end-start+1);
+	}
+		
+	public static long ask(int node, int start, int end, int L, int R, long t) {
+		if(R<start||L>end) {
+			return 0;
+		}else if(L<=start&&R>=end) {
+			return (tree[node]+(end-start+1)*t);
+		}
+		int mid = (start+end)>>1, left_node = 2*node, right_node = 2*node|1;
+		long left_value = ask(left_node,start,mid,L,R,t+tag[node]);
+		long right_value = ask(right_node,mid+1,end,L,R,t+tag[node]);
+		return left_value+right_value;
+	}
+}

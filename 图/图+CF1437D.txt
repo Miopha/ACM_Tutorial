@@ -1,0 +1,135 @@
+/*
+https://codeforces.com/problemset/problem/1437/D
+D. Minimal Height Tree
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Monocarp had a tree which consisted of n vertices and was rooted at vertex 1. He decided to study BFS (Breadth-first search), so he ran BFS on his tree, starting from the root. BFS can be described by the following pseudocode:
+
+a = [] # the order in which vertices were processed
+q = Queue()
+q.put(1) # place the root at the end of the queue
+while not q.empty():
+    k = q.pop() # retrieve the first vertex from the queue
+    a.append(k) # append k to the end of the sequence in which vertices were visited
+    for y in g[k]: # g[k] is the list of all children of vertex k, sorted in ascending order
+        q.put(y)
+Monocarp was fascinated by BFS so much that, in the end, he lost his tree. Fortunately, he still has a sequence of vertices, in which order vertices were visited by the BFS algorithm (the array a from the pseudocode). Monocarp knows that each vertex was visited exactly once (since they were put and taken from the queue exactly once). Also, he knows that all children of each vertex were viewed in ascending order.
+
+Monocarp knows that there are many trees (in the general case) with the same visiting order a, so he doesn't hope to restore his tree. Monocarp is okay with any tree that has minimum height.
+
+The height of a tree is the maximum depth of the tree's vertices, and the depth of a vertex is the number of edges in the path from the root to it. For example, the depth of vertex 1 is 0, since it's the root, and the depth of all root's children are 1.
+
+Help Monocarp to find any tree with given visiting order a and minimum height.
+
+Input
+The first line contains a single integer t (1≤t≤1000) — the number of test cases.
+
+The first line of each test case contains a single integer n (2≤n≤2⋅105) — the number of vertices in the tree.
+
+The second line of each test case contains n integers a1,a2,…,an (1≤ai≤n; ai≠aj; a1=1) — the order in which the vertices were visited by the BFS algorithm.
+
+It's guaranteed that the total sum of n over test cases doesn't exceed 2⋅105.
+
+Output
+For each test case print the minimum possible height of a tree with the given visiting order a.
+*/
+
+/*
+ * 模拟建个图，然后再找深度
+ */
+ 
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <string>
+#include <string.h>
+#include <cmath>
+#define re register
+#define pb push_back
+#define cl clear
+#define MAXN 200005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+int head[MAXN], tot;
+
+struct Edge{
+    int u, v, next;
+}G[MAXN<<1];
+
+inline void addEdge(int u, int v){
+    G[++tot].u = u;
+    G[tot].v = v;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, arr[MAXN], depth[MAXN], ans;
+bool vis[MAXN];
+
+inline void DFS(int x, int fat){
+    vis[x] = true;
+    depth[x] = depth[fat] + 1;
+    ans = max(ans,depth[x]);
+    for(re int i = head[x], to ; i ; i = G[i].next){
+        to = G[i].v;
+        if(!vis[to]){
+            DFS(to,x);
+        }
+    }
+}
+
+void solve(){
+    memset(head,0,sizeof(head));
+    ans = tot = 0;
+    n = read();
+    for(re int i = 1 ; i <= n ; ++i){
+        arr[i] = read();
+        vis[i] = false;
+        depth[i] = 0;
+    }
+    queue<int> q;
+    int last = 1;
+    addEdge(last,arr[2]);
+    addEdge(arr[2],last);
+    q.push(arr[2]);
+    for(re int i = 3 ; i <= n ; ++i){
+        if(arr[i]<arr[i-1]){
+            last = q.front(); q.pop();
+        }
+        addEdge(last,arr[i]);
+        addEdge(arr[i],last);
+        q.push(arr[i]);
+    }
+    DFS(1,0);
+    printf("%d\n",ans-1);
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}

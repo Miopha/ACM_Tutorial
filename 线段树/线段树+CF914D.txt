@@ -1,0 +1,128 @@
+/*
+https://codeforces.com/problemset/problem/914/D
+Bash likes playing with arrays. He has an array a 1,a 2,... a n of n integers. He likes to guess the greatest common divisor (gcd) of different segments of the array. Of course, sometimes the guess is not correct. However, Bash will be satisfied if his guess is almost correct.
+
+Suppose he guesses that the gcd of the elements in the range [l,r] of a is x. He considers the guess to be almost correct if he can change at most one element in the segment such that the gcd of the segment is x after making the change. Note that when he guesses, he doesn't actually change the array — he just wonders if the gcd of the segment can be made x. Apart from this, he also sometimes makes changes to the array itself.
+
+Since he can't figure it out himself, Bash wants you to tell him which of his guesses are almost correct. Formally, you have to process q queries of one of the following forms:
+
+1 l r x — Bash guesses that the gcd of the range [l,r] is x. Report if this guess is almost correct.
+2 i y — Bash sets a i to y.
+Note: The array is 1-indexed.
+
+Input
+The first line contains an integer n (1≤n≤5e5)  — the size of the array.
+
+The second line contains n integers a1,a2,...,a n (1≤ai≤1e9)  — the elements of the array.
+
+The third line contains an integer q (1≤q≤4e5)  — the number of queries.
+
+The next q lines describe the queries and may have one of the following forms:
+
+1 l r x (1 ≤l≤r≤n,1≤x≤1e9).
+2 i y (1 ≤i≤n,1≤y≤1e9).
+Guaranteed, that there is at least one query of first type.
+
+Output
+For each query of first type, output "YES" (without quotes) if Bash's guess is almost correct and "NO" (without quotes) otherwise.
+*/
+
+/*
+ * 维护一个数组a1,a2,...,an,操作有两个：1 l r x 问[l,r]区间内,是否能自然或删掉一个数使得区间内的GCD是x的倍数; 2 i y 将 i 位置的值改为 y
+ * 线段树的数组长度开4*N,每个节点维护区间的GCD
+ * 查询的时候如果区间公约数能被x整除,那么就符合条件,不用继续往下判断了
+ * 否则继续拆分区间,拆分到区间长度为1时说明这个数要被删除,出现两次或以上这种情况就就"NO"的情况了
+ */
+ 
+#include <bits/stdc++.h>
+#define maxn 100005
+
+using namespace std;
+
+inline int read(){
+    int x = 0, f = 1;
+    char ch = getchar();
+    while(ch>'9'||ch<'0'){
+        if(ch=='-')
+            f = -1;
+        ch = getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x = (x<<1) + (x<<3) + (ch^48);
+        ch = getchar();
+    }
+    return x*f;
+}
+
+int n, q, tree[2000005], data[500005], cnt;
+
+int gcd(int a, int b){
+    return b==0?a:gcd(b,a%b);
+}
+
+void build(int node, int start, int end){
+    if(start==end){
+        tree[node] = data[start];
+        return ;
+    }
+    int mid = (start+end)>>1, left_node = 2*node, right_node = 2*node|1;
+    build(left_node,start,mid);
+    build(right_node,mid+1,end);
+    tree[node] = gcd(tree[left_node],tree[right_node]);
+}
+
+void ask(int node, int start, int end, int L, int R, int value){
+    if(cnt>1)
+        return ;
+    if(end<L||start>R){
+        return ;
+    }
+    if(start>=L&&end<=R&&(tree[node]%value)==0){
+        return ;
+    }
+    if(start==end){
+        cnt++;
+        return ;
+    }
+    int mid = (start+end)>>1, left_node = 2*node, right_node = 2*node|1;
+    ask(left_node,start,mid,L,R,value);
+    ask(right_node,mid+1,end,L,R,value);
+}
+
+void update(int node, int start, int end, int idx, int value){
+    if(end<idx||start>idx){
+        return ;
+    }else if(start==end&&start==idx){
+        tree[node] = value;
+        return ;
+    }
+    int mid = (start+end)>>1, left_node = 2*node, right_node = 2*node|1;
+    update(left_node,start,mid,idx,value);
+    update(right_node,mid+1,end,idx,value);
+    tree[node] = gcd(tree[left_node],tree[right_node]);
+}
+
+int main(){
+    n = read();
+    for(int i = 1 ; i <= n ; i++)
+        data[i] = read();
+    build(1,1,n);
+    q = read();
+    int x, y, z, k;
+    for(int i = 1 ; i <= q ; i++){
+        x = read();
+        if(x==1){
+            y = read(); z = read(); k = read();
+            cnt = 0;
+            ask(1,1,n,y,z,k);
+            if(cnt<=1)
+                printf("YES\n");
+            else
+                printf("NO\n");
+        }else{
+            y = read(); z = read();
+            update(1,1,n,y,z);
+        }
+    }
+    return 0;
+}
