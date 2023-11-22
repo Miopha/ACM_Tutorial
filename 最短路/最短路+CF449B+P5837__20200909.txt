@@ -1,0 +1,235 @@
+/*
+https://codeforces.com/contest/449/problem/B
+B. Jzzhu and Cities
+time limit per test:2 seconds
+memory limit per test:256 megabytes
+inputstandard input
+outputstandard output
+Jzzhu is the president of country A. There are n cities numbered from 1 to n in his country. City 1 is the capital of A. Also there are m roads connecting the cities. One can go from city ui to vi (and vise versa) using the i-th road, the length of this road is xi. Finally, there are k train routes in the country. One can use the i-th train route to go from capital of the country to city si (and vise versa), the length of this route is yi.
+
+Jzzhu doesn't want to waste the money of the country, so he is going to close some of the train routes. Please tell Jzzhu the maximum number of the train routes which can be closed under the following condition: the length of the shortest path from every city to the capital mustn't change.
+
+Input
+The first line contains three integers n,m,k (2≤n≤10^5; 1≤m≤3*10^5; 1≤k≤10^5).
+
+Each of the next m lines contains three integers ui,vi,xi (1≤ui,vi≤n; ui≠vi; 1≤xi≤10^9).
+
+Each of the next k lines contains two integers si and yi (2≤si≤n; 1≤yi≤10^9).
+
+It is guaranteed that there is at least one way from every city to the capital. Note, that there can be multiple roads between two cities. Also, there can be multiple routes going to the same city from the capital.
+
+Output
+Output a single integer representing the maximum number of the train routes which can be closed.
+*/
+
+/*
+ * SPFA,如果松弛的是带有铁路的那一个节点,那么这条铁路可以拆除
+ */
+ 
+//package CF449B;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+
+	static long dis[];
+	static boolean hasTrain[], inq[];
+	static int n, m, k, ans;
+	static Queue<Integer> q = new LinkedList();
+	static ArrayList<Edge> node[];
+	static StreamTokenizer st = new StreamTokenizer(new BufferedReader(new InputStreamReader(System.in)));
+	
+	public static void main(String[] args) throws IOException {
+		n = nextInt();
+		m = nextInt();
+		k = nextInt();
+		init();
+		int u, v, w;
+		for(int i = 1 ; i <= m ; ++i) {
+			u = nextInt();
+			v = nextInt();
+			w = nextInt();
+			node[u].add(new Edge(v,w));
+			node[v].add(new Edge(u,w));
+		}
+		for(int i = 1 ; i <= k ; ++i) {
+			u = nextInt();
+			v = nextInt();
+			if(!inq[u]) {
+				q.add(u);
+				inq[u] = true;
+			}
+			if(hasTrain[u]) //每个节点只保留一条铁路
+				++ans;
+			hasTrain[u] = true;
+			dis[u] = Math.min(dis[u],v);
+		}
+		SPFA();
+//		System.out.println(Arrays.toString(dis));
+		System.out.println(ans);
+	}
+	
+	public static void SPFA() {
+		q.add(1);
+		dis[1] = 0;
+		inq[1] = true;
+		while(!q.isEmpty()) {
+			int cur = q.poll();
+			inq[cur] = false;
+			for(int i = 0 ; i < node[cur].size() ; ++i) {
+				Edge aft = node[cur].get(i);
+				if(dis[cur]+aft.val<=dis[aft.to]&&hasTrain[aft.to]) {
+					hasTrain[aft.to] = false;
+					++ans;
+				}
+				if(dis[cur]+aft.val<dis[aft.to]) {
+					dis[aft.to] = dis[cur]+aft.val;
+					if(!inq[aft.to]) {
+						inq[aft.to] = true;
+						q.add(aft.to);
+					}
+				}
+			}
+		}
+	}
+	
+	public static void init() {
+		node = new ArrayList[n+1];
+		for(int i = 1 ; i <= n ; ++i)
+			node[i] = new ArrayList<Edge>();
+		dis = new long[n+1];
+		Arrays.fill(dis,Long.MAX_VALUE);
+		hasTrain = new boolean[n+1];
+		inq = new boolean[n+1];
+	}
+	
+	public static int nextInt() throws IOException {
+		st.nextToken();
+		return (int)st.nval;
+	}
+
+}
+
+class Edge {
+	int to, val;
+	public Edge(int to, int val) {
+		this.to = to;
+		this.val = val;
+	}
+}
+
+/*
+https://www.luogu.com.cn/problem/P5837
+题目描述
+Farmer John 最近为了扩张他的牛奶产业帝国而收购了一个新的农场。这一新的农场通过一个管道网络与附近的小镇相连，FJ 想要找出其中最合适的一组管道，将其购买并用来将牛奶从农场输送到小镇。
+
+这个管道网络可以用 N 个接合点（管道的端点）来描述，将其编号为 1…N。接合点 1 表示 FJ 的农场，接合点 N 表示小镇。有 M 条双向的管道，每条连接了两个接合点。使用第 i 条管道需要 FJ 花费 c_i美元购入，可以支持每秒 f_i 升牛奶的流量。
+
+FJ 想要购买一条管道组成一条单一路径，路径的两端点分别为接合点 1 和 N。这条路径的花费等于路径上所有管道的费用之和。路径上的流量等于路径上所有管道的最小流量（因为这是沿这条路径输送牛奶的瓶颈）。FJ 想要最大化路径流量与路径花费之比。保证存在从 1 到 N之间的路径。
+
+输入格式
+输入的第一行包含 N 和 M。以下 M 行每行以四个整数描述一条管道：a 和 b（管道连接的两个不同的接合点），c（管道的花费），以及 f（管道的流量）。花费和流量均为范围 1…1000 之内的正整数。
+
+输出格式
+输出 10^6 乘以最优解的值，并向下取整（也就是说，如果这个数本身不是整数，输出小于它的最接近它的整数）。
+*/
+
+/*
+ * 枚举管道的流量,进行最大流量次的dijkstra,取最大合法的flow/sum(cost)为答案
+ */
+ 
+//package P5837;
+
+import java.io.*;
+import java.util.*;
+
+public class Main {
+
+	static int N, M, maxFlow, ans;
+	static ArrayList<Edge> node[];
+	static StreamTokenizer st = new StreamTokenizer(new BufferedReader(new InputStreamReader(System.in)));
+	
+	public static void main(String[] args) throws IOException {
+		N = nextInt();
+		M = nextInt();
+		init();
+		int u, v, flow, cost;
+		for(int i = 1 ; i <= M ; ++i) {
+			u = nextInt();
+			v = nextInt();
+			cost = nextInt();
+			flow = nextInt();
+			maxFlow = Math.max(flow,maxFlow);
+			node[u].add(new Edge(v,flow,cost));
+			node[v].add(new Edge(u,flow,cost));
+		}
+		for(int i = 1 ; i <= maxFlow ; ++i) {
+			int dis = dijkstra(i);
+			if(dis==0) break; //再加流量也走不到N点了
+			ans = Math.max(ans,dis);
+		}
+		System.out.println(ans);
+	}
+	
+	public static int dijkstra(int flow) {
+		PriorityQueue<Point> q = new PriorityQueue();
+		int dis[] = new int[N+1];
+		Arrays.fill(dis,0x7fffffff);
+		boolean vis[] = new boolean[N+1];
+		q.add(new Point(1,0));
+		dis[1] = 0;
+		while(!q.isEmpty()) {
+			int cur = q.poll().p;
+			if(vis[cur]) continue;
+			vis[cur] = true;
+			for(int i = 0 ; i < node[cur].size() ; ++i) {
+				Edge aft = node[cur].get(i);
+				//这条边的流量小于当前流量就continue
+				if(aft.flow>=flow&&dis[aft.to]>dis[cur]+aft.cost) {
+					dis[aft.to]=dis[cur]+aft.cost;
+					q.add(new Point(aft.to,dis[aft.to]));
+				}
+			}
+		}
+		//当前流量走不到N点
+		if(dis[N]==0x7fffffff) return 0;
+		return (int)(flow*1.0/dis[N]*1000000);
+	}
+	
+	public static void init() {
+		node = new ArrayList[N+1];
+		for(int i = 1 ; i <= N ; ++i)
+			node[i] = new ArrayList<Edge>();
+		maxFlow = ans = 0x80000000;
+	}
+	
+	public static int nextInt() throws IOException{
+		st.nextToken();
+		return (int)st.nval;
+	}
+
+}
+
+class Edge{
+	int to, flow, cost;
+	public Edge(int to, int flow, int cost) {
+		this.to = to;
+		this.flow = flow;
+		this.cost = cost;
+	}
+}
+
+class Point implements Comparable<Point>{
+	int p;
+	double dis;
+	public Point(int p, double dis) {
+		this.p = p;
+		this.dis = dis;
+	}
+	//升序排列
+	@Override
+	public int compareTo(Point o) {
+		return dis==o.dis?0:(dis>o.dis?1:-1);
+	}
+}

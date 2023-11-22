@@ -1,0 +1,169 @@
+/*
+题目描述
+如题，给出一个无向图，求出最小生成树，如果该图不连通，则输出 orz。
+
+输入格式
+第一行包含两个整数 N,M，表示该图共有 N 个结点和 M 条无向边。
+
+接下来 M 行每行包含三个整数 X_i,Y_i,Z_i，表示有一条长度为 Z_i 的无向边连接结点 X_i,Y_i
+
+输出格式
+如果该图连通，则输出一个整数表示最小生成树的各边的长度之和。如果该图不连通则输出 orz。
+*/
+
+/*
+ * prim算法:每次选最短的那条边,稠密图中优
+ * kruskal算法:把所有边先排序,先建最短的边,用并查集维护避免出现环,稀疏图中优
+ */
+
+/* prim */
+#include <iostream>
+#include <cstdio>
+#include <string.h>
+#define re register
+#define MAXN 5005
+#define MAXM 200005
+
+using namespace std;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int tot, head[MAXN], N, M;
+
+struct Edge{
+    int u, v, w, next;
+}G[MAXM<<1];
+
+inline void addEdge(int u, int v, int w){
+    G[++tot].u = u;
+    G[tot].v = v;
+    G[tot].w = w;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+int prim(){
+    int ans = 0, nw = 1, dis[N+1], cnt = 0;
+    bool vis[N+1];
+    memset(dis,123456789,sizeof(dis));
+    memset(vis,false,sizeof(vis));
+    for(re int i = head[nw] ; i ; i = G[i].next){
+        dis[G[i].v] = min(dis[G[i].v],G[i].w);
+    }
+    dis[nw] = 0;
+    while(++cnt<N){
+        int mn = 123456789;
+        vis[nw] = true;
+        for(re int i = 1 ; i <= N ; ++i){
+            if(!vis[i]&&mn>dis[i]){
+                mn = dis[i];
+                nw = i;
+            }
+        }
+        ans += mn;
+        for(re int i = head[nw] ; i ; i = G[i].next){
+            dis[G[i].v] = min(dis[G[i].v],G[i].w);
+        }
+    }
+    return ans;
+}
+
+int main(){
+    N = read();
+    M = read();
+    int u, v, w;
+    for(re int i = 1 ; i <= M ; ++i){
+        u = read();
+        v = read();
+        w = read();
+        addEdge(u,v,w);
+        addEdge(v,u,w);
+    }
+    printf("%d\n",prim());
+    return 0;
+}
+
+/* kruskal */
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <algorithm>
+#define re register
+#define MAXN 5005
+#define MAXM 200005
+
+using namespace std;
+
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+struct Edge{
+    int u, v, w;
+}G[MAXM];
+
+bool cmp(Edge a, Edge b){
+    return a.w < b.w;
+}
+
+int N, M, parent[MAXN];
+
+int Find(int x){
+    if(parent[x]!=x){
+        parent[x] = Find(parent[x]);
+    }
+    return parent[x];
+}
+
+int kruskal(){
+    sort(G+1,G+1+M,cmp);
+    int cnt = 0, ans = 0;
+    for(re int i = 1 ; i <= M ; ++i){
+        int pu = Find(G[i].u), pv = Find(G[i].v);
+        if(pu==pv) continue;
+        ans += G[i].w;
+        parent[pu] = pv;
+        if(++cnt==N-1) break;
+    }
+    return ans;
+}
+
+int main(){
+    N = read();
+    M = read();
+    int x, y, z;
+    for(re int i = 1 ; i <= N ; ++i)
+        parent[i] = i;
+    for(re int i = 1 ; i <= M ; ++i){
+        G[i].u = read();
+        G[i].v = read();
+        G[i].w = read();
+    }
+    printf("%d\n",kruskal());
+    return 0;
+}

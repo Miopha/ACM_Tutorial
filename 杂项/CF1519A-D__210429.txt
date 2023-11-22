@@ -1,0 +1,286 @@
+/* https://m1.codeforces.com/contest/1519 */
+
+/* A */
+
+/*
+ * 数
+ */ 
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int r, b, d;
+
+void solve(){
+	r = read();
+	b = read();
+	d = read();
+	if(r>b) swap(r,b);
+	if(r+1ll*r*d>=b) puts("YES");
+	else puts("NO");
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/* B */
+
+/*
+ * 思维/构造
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, m, k, nk;
+
+void solve(){
+	n = read();
+	m = read();
+	k = read();
+	nk = 0;
+	int x = 1, y = 1;
+	while(x!=n){
+		++x;
+		nk += y;
+	}
+	while(y!=m){
+		++y;
+		nk += x;
+	}
+	if(nk==k) puts("YES");
+	else puts("NO");
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/* C */
+
+/*
+ * 模拟
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, belong[MAXN];
+vector<ll> sk[MAXN];
+
+
+void solve(){
+	n = read();
+	for(int i = 1 ; i <= n ; ++i){
+		belong[i] = read();
+		sk[i].clear();
+	}
+	for(int i = 1 ; i <= n ; ++i) sk[belong[i]].pb(read());
+	for(int i = 1 ; i <= n ; ++i){
+		sort(sk[i].begin(),sk[i].end(), greater<int>());
+	}
+	
+	for(int i = 1 ; i <= n ; ++i){
+		for(int j = 1 ; j < sk[i].size() ; ++j)
+			sk[i][j] += sk[i][j-1];
+	}
+	
+	vector<int> vis;
+	
+	for(int i = 1 ; i <= n ; ++i) vis.pb(i);
+	
+	for(int i = 1 ; i <= n ; ++i){
+		vector<int> vs;
+		ll ans = 0;
+		for(auto it : vis){
+			if(sk[it].size()/i==0) continue;
+			int get = sk[it].size()/i*i;
+			ans += sk[it][get-1];
+			vs.pb(it);
+		}
+		vis = vs;
+		printf("%lld%c",ans," \n"[i==n]);
+	}
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/* D */
+
+/*
+ * 暴力 O(n^2)
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 5005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, a[MAXN], b[MAXN];
+ll pre[MAXN], ans, rev[MAXN][MAXN];
+
+void solve(){
+	ans = 0;
+	n = read();
+	for(int i = 1 ; i <= n ; ++i) a[i] = read();
+	for(int i = 1 ; i <= n ; ++i){
+		b[i] = read();
+		rev[i][i] = pre[i] = 1ll * a[i] * b[i];
+		pre[i] += pre[i-1];
+	}
+	for(int len = 2 ; len <= n ; ++len){
+		for(int l = 1, r = len ; r <= n ; ++l, ++r){
+			if(len==2) rev[l][r] = 1ll * a[r] * b[l] + 1ll * a[l] * b[r];
+			else{
+				rev[l][r] = rev[l+1][r-1] + 1ll * a[r] * b[l] + 1ll * a[l] * b[r];
+			}
+		}
+	}
+	ans = pre[n];
+	for(int len = 2 ; len <= n ; ++len){
+		for(int l = 1, r = len ; r <= n ; ++l, ++r){
+			ans = max(ans,rev[l][r]+pre[l-1]+pre[n]-pre[r]);
+		}
+	}
+	printf("%lld\n",ans);
+}
+
+int main(){
+    int t = 1;
+    // t = read();
+    while(t--) solve();
+    return 0;
+}

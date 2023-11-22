@@ -1,0 +1,532 @@
+/*
+https://codeforces.com/contest/1594/problem/A
+A. Consecutive Sum Riddle
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Theofanis has a riddle for you and if you manage to solve it, he will give you a Cypriot snack halloumi for free (Cypriot cheese).
+
+You are given an integer n. You need to find two integers l and r such that −1018≤l<r≤1018 and l+(l+1)+…+(r−1)+r=n.
+
+Input
+The first line contains a single integer t (1≤t≤104) — the number of test cases.
+
+The first and only line of each test case contains a single integer n (1≤n≤1018).
+
+Output
+For each test case, print the two integers l and r such that −1018≤l<r≤1018 and l+(l+1)+…+(r−1)+r=n.
+
+It can be proven that an answer always exists. If there are multiple answers, print any.
+*/
+
+/*
+ * 负和正抵消
+ */
+ 
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <cmath>
+#include <algorithm>
+#include <iostream>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline ll read(){
+	ll x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+ll n;
+
+void solve(){
+	n = read();
+	printf("%lld %lld\n",-n+1,n);
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://codeforces.com/contest/1594/problem/B
+B. Special Numbers
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Theofanis really likes sequences of positive integers, thus his teacher (Yeltsa Kcir) gave him a problem about a sequence that consists of only special numbers.
+
+Let's call a positive number special if it can be written as a sum of different non-negative powers of n. For example, for n=4 number 17 is special, because it can be written as 40+42=1+16=17, but 9 is not.
+
+Theofanis asks you to help him find the k-th special number if they are sorted in increasing order. Since this number may be too large, output it modulo 109+7.
+
+Input
+The first line contains a single integer t (1≤t≤104) — the number of test cases.
+
+The first and only line of each test case contains two integers n and k (2≤n≤109; 1≤k≤109).
+
+Output
+For each test case, print one integer — the k-th special number in increasing order modulo 109+7.
+*/
+
+/*
+ * 快速幂思想
+ */
+
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <cmath>
+#include <algorithm>
+#include <iostream>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9, MOD = 1e9 + 7;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, k;
+ll ans;
+
+void solve(){
+	n = read();
+	k = read();
+	ll tmp = 1;
+	ans = 0;
+	while(k){
+		if(k&1) ans = (ans+tmp)%MOD;
+		tmp = tmp * n % MOD;
+		k >>= 1;
+	}
+	printf("%lld\n",ans);
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://codeforces.com/contest/1594/problem/C
+C. Make Them Equal
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Theofanis has a string s1s2…sn and a character c. He wants to make all characters of the string equal to c using the minimum number of operations.
+
+In one operation he can choose a number x (1≤x≤n) and for every position i, where i is not divisible by x, replace si with c.
+
+Find the minimum number of operations required to make all the characters equal to c and the x-s that he should use in his operations.
+
+Input
+The first line contains a single integer t (1≤t≤104) — the number of test cases.
+
+The first line of each test case contains the integer n (3≤n≤3⋅105) and a lowercase Latin letter c — the length of the string s and the character the resulting string should consist of.
+
+The second line of each test case contains a string s of lowercase Latin letters — the initial string.
+
+It is guaranteed that the sum of n over all test cases does not exceed 3⋅105.
+
+Output
+For each test case, firstly print one integer m — the minimum number of operations required to make all the characters equal to c.
+
+Next, print m integers x1,x2,…,xm (1≤xj≤n) — the x-s that should be used in the order they are given.
+
+It can be proved that under given constraints, an answer always exists. If there are multiple answers, print any.
+*/
+
+/*
+ * 简单构造，最大操作数是2
+ */
+ 
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <cmath>
+#include <algorithm>
+#include <iostream>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 300005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n;
+char c, s[MAXN];
+
+void solve(){
+	n = read();
+	c = getchar();
+	getchar();
+	for(int i = 1 ; i <= n ; ++i) s[i] = getchar();
+	for(int i = 1 ; i <= n ; ++i){
+		if(s[i]!=c) break;
+		if(i==n){
+			puts("0");
+			return ;
+		}
+	}
+	for(int i = (n>>1)+1 ; i <= n ; ++i){
+		if(s[i]==c){
+			printf("1\n%d\n",i);
+			return ;
+		}
+	}
+	printf("2\n%d %d\n",n-1,n);
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://codeforces.com/contest/1594/problem/D
+D. The Number of Imposters
+time limit per test3 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Theofanis started playing the new online game called "Among them". However, he always plays with Cypriot players, and they all have the same name: "Andreas" (the most common name in Cyprus).
+
+In each game, Theofanis plays with n other players. Since they all have the same name, they are numbered from 1 to n.
+
+The players write m comments in the chat. A comment has the structure of "i j c" where i and j are two distinct integers and c is a string (1≤i,j≤n; i≠j; c is either imposter or crewmate). The comment means that player i said that player j has the role c.
+
+An imposter always lies, and a crewmate always tells the truth.
+
+Help Theofanis find the maximum possible number of imposters among all the other Cypriot players, or determine that the comments contradict each other (see the notes for further explanation).
+
+Note that each player has exactly one role: either imposter or crewmate.
+
+Input
+The first line contains a single integer t (1≤t≤104) — the number of test cases. Description of each test case follows.
+
+The first line of each test case contains two integers n and m (1≤n≤2⋅105; 0≤m≤5⋅105) — the number of players except Theofanis and the number of comments.
+
+Each of the next m lines contains a comment made by the players of the structure "i j c" where i and j are two distinct integers and c is a string (1≤i,j≤n; i≠j; c is either imposter or crewmate).
+
+There can be multiple comments for the same pair of (i,j).
+
+It is guaranteed that the sum of all n does not exceed 2⋅105 and the sum of all m does not exceed 5⋅105.
+
+Output
+For each test case, print one integer — the maximum possible number of imposters. If the comments contradict each other, print −1.
+*/
+
+/*
+ * 如果选定一个点为imposter，那么其他点就只有一种选择，选定为crewmate也是一样的
+ * 建双向边，注意逻辑跑一边图即可
+ */
+ 
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <cmath>
+#include <algorithm>
+#include <iostream>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005, MAXM = 500005;
+
+int head[MAXN], tot;
+
+struct Edge{
+	int to, next, val;
+}G[MAXM<<1];
+
+inline void addEdge(int u, int v, int w){
+	G[++tot].to = v;
+	G[tot].val = w;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, m, ans, imp, cre; 
+bool apr[MAXN], flag;
+char vis[MAXN];
+
+void init(){
+	ans = n;
+	for(int i = 1 ; i <= n ; ++i) apr[i] = vis[i] = head[i] = false;
+	tot = flag = 0;
+}
+
+inline void DFS(int np, bool isImp){
+	if(vis[np]) return ;
+	vis[np] = isImp?'i':'c';
+	if(vis[np]=='i') ++imp;
+	else ++cre;
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(G[i].val==1){
+			if(!vis[to]) DFS(to,!isImp);
+			else{
+				if(vis[to]=='i'&&isImp) flag = true;
+				else if(vis[to]=='c'&&!isImp) flag = true;
+			}
+		}else if(G[i].val==2){
+			if(!vis[to]) DFS(to,isImp);
+			else{
+				if(vis[to]=='c'&&isImp) flag = true;
+				else if(vis[to]=='i'&&!isImp) flag = true;
+			}
+		}else if(G[i].val==3){
+			if(!vis[to]) DFS(to,!isImp);
+			else{
+				if(vis[to]=='i'&&isImp) flag = true;
+				else if(vis[to]=='c'&&!isImp) flag = true;
+			}
+		}else if(G[i].val==4){
+			if(!vis[to]) DFS(to,isImp);
+			else{
+				if(vis[to]=='c'&&isImp) flag = true;
+				else if(vis[to]=='i'&&!isImp) flag = true;
+			}
+		}
+	}
+}
+
+void solve(){
+	n = read();
+	m = read();
+	init();
+	for(int i = 1, u, v ; i <= m ; ++i){
+		u = read();
+		v = read();
+		apr[u] = apr[v] = true;
+		char type = getchar();
+		if(type=='i'){
+			addEdge(u,v,1);
+			addEdge(v,u,3);
+		}else{
+			addEdge(u,v,2);
+			addEdge(v,u,4);
+		}
+	}
+	int tmp = 0;
+	for(int i = 1 ; i <= n ; ++i){
+		if(apr[i]){
+			--ans;
+			imp = cre = 0;
+			DFS(i,true);
+			// for(int j = 1 ; j <= n ; ++j) printf("%c%c",vis[j]," \n"[j==n]);
+			ans += max(cre,imp);
+		}
+	}
+	if(flag){
+		puts("-1");
+		return ;
+	}
+	printf("%d\n",ans);
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+
+/*
+https://codeforces.com/contest/1594/problem/E1
+E1. Rubik's Cube Coloring (easy version)
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+It is the easy version of the problem. The difference is that in this version, there are no nodes with already chosen colors.
+
+Theofanis is starving, and he wants to eat his favorite food, sheftalia. However, he should first finish his homework. Can you help him with this problem?
+
+You have a perfect binary tree of 2k−1 nodes — a binary tree where all vertices i from 1 to 2k−1−1 have exactly two children: vertices 2i and 2i+1. Vertices from 2k−1 to 2k−1 don't have any children. You want to color its vertices with the 6 Rubik's cube colors (White, Green, Red, Blue, Orange and Yellow).
+
+Let's call a coloring good when all edges connect nodes with colors that are neighboring sides in the Rubik's cube.
+
+	
+A picture of Rubik's cube and its 2D map.
+More formally:
+
+a white node can not be neighboring with white and yellow nodes;
+a yellow node can not be neighboring with white and yellow nodes;
+a green node can not be neighboring with green and blue nodes;
+a blue node can not be neighboring with green and blue nodes;
+a red node can not be neighboring with red and orange nodes;
+an orange node can not be neighboring with red and orange nodes;
+You want to calculate the number of the good colorings of the binary tree. Two colorings are considered different if at least one node is colored with a different color.
+
+The answer may be too large, so output the answer modulo 109+7.
+
+Input
+The first and only line contains the integers k (1≤k≤60) — the number of levels in the perfect binary tree you need to color.
+
+Output
+Print one integer — the number of the different colorings modulo 109+7.
+*/
+
+/*
+ * 主要是读懂题意：有k层的完全二叉树，现涂色每个节点，规定相邻节点的颜色必须是魔方中相邻的颜色，问有几个方案
+ * 节点1方案为6，其他数方案为4，相乘到答案
+ */
+ 
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <cmath>
+#include <algorithm>
+#include <iostream>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9, MOD = 1e9 + 7;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+ll ans = 6, n;
+
+ll qpow(ll x, ll n, ll p = MOD){
+    ll res = 1;
+    while(n){
+        if(n&1) res = res * x % p;
+        n>>=1;
+        x = x * x % p;
+    }
+    return res % p;
+}
+
+void solve(){
+	n = read();
+	ll t = 2;
+	for(int i = 2 ; i <= n ; ++i){
+		ans = ans * qpow(4,t) % MOD;
+		t <<= 1;
+	}
+	printf("%lld\n",ans);
+}
+
+int main(){
+    int t = 1;
+    // t = read();
+    while(t--) solve();
+    return 0;
+}

@@ -1,0 +1,96 @@
+/*
+https://codeforces.com/contest/1493/problem/C
+C. K-beautiful Strings
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You are given a string s consisting of lowercase English letters and a number k. Let's call a string consisting of lowercase English letters beautiful if the number of occurrences of each letter in that string is divisible by k. You are asked to find the lexicographically smallest beautiful string of length n, which is lexicographically greater or equal to string s. If such a string does not exist, output −1.
+
+A string a is lexicographically smaller than a string b if and only if one of the following holds:
+
+a is a prefix of b, but a≠b;
+in the first position where a and b differ, the string a has a letter that appears earlier in the alphabet than the corresponding letter in b.
+Input
+The first line contains a single integer T (1≤T≤10000) — the number of test cases.
+
+The next 2⋅T lines contain the description of test cases. The description of each test case consists of two lines.
+
+The first line of the description contains two integers n and k (1≤k≤n≤105) — the length of string s and number k respectively.
+
+The second line contains string s consisting of lowercase English letters.
+
+It is guaranteed that the sum of n over all test cases does not exceed 105.
+
+Output
+For each test case output in a separate line lexicographically smallest beautiful string of length n, which is greater or equal to string s, or −1 if such a string does not exist.
+*/
+
+/*
+ * 从后往前枚举第一个可能修改的字符选项，第一个找到的就是字典序最小的解，复杂度O(C^2*N)C是26
+ */
+
+#include <cstdio>
+
+using namespace std;
+const int MAXN = 100005;
+
+int n, m, occ['z'+5];
+char s[MAXN];
+
+void solve(){
+	scanf("%d %d\n",&n,&m);
+	scanf("%s",s+1);
+	if(n%m){
+		puts("-1");
+		return ;
+	}
+	for(int i = 'a' ; i <= 'z' ; ++i) occ[i] = 0;
+	for(int i = 1 ; i <= n ; ++i) ++occ[s[i]];
+	for(int k = 'a' ; k <= 'z' ; ++k){
+		if(occ[k]%m) break;
+		if(k=='z'){
+			puts(s+1);
+			return ;
+		}
+	}
+	for(int i = n ; i ; --i){
+		--occ[s[i]];
+		for(int j = s[i] + 1 ; j <= 'z' ; ++j){
+			++occ[j];
+			int need = 0;
+			for(int k = 'a' ; k <= 'z' ; ++k){
+				if(!(occ[k]%m)) continue;
+				need += (occ[k]/m+1)*m-occ[k];
+			}
+			if(n-i-need>=0&&(n-i-need)%m==0){
+				// printf("test=%d\n",n-i-need);
+				// answer
+				int idx = 'a';
+				s[i] = j;
+				int cnt = 0;
+				for(int k = i + 1 ; k <= n ; ++k){
+					if(cnt<n-i-need){
+						s[k] = 'a';
+						++cnt;
+						// printf("cnt=%d\n",cnt);
+						continue;
+					}
+					while(!(occ[idx]%m)&&idx<='z') ++idx;
+					s[k] = idx;
+					++occ[idx];
+				}
+				puts(s+1);
+				return ;
+			}
+			--occ[j];
+		}
+	}
+}
+
+int main(){
+	int t;
+	scanf("%d ",&t);
+	while(t--) solve();
+	return 0;
+}

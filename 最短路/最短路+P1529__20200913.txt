@@ -1,0 +1,95 @@
+/*
+现在是晚餐时间，而母牛们在外面分散的牧场中。
+
+Farmer John 按响了电铃，所以她们开始向谷仓走去。 你的工作是要指出哪只母牛会最先到达谷仓（在给出的测试数据中，总会有且只有一只最快的母牛）。在挤奶的时候（晚餐前），每只母牛都在她自己的牧场上，一些牧场上可能没有母牛。
+
+每个牧场由一条条道路和一个或多个牧场连接（可能包括自己）。有时，两个牧场（可能是字母相同的）之间会有超过一条道路相连。至少有一个牧场和谷仓之间有道路连接。因此，所有的母牛最后都能到达谷仓，并且母牛总是走最短的路径。当然，母牛能向着任意一方向前进，并且她们以相同的速度前进。牧场被标记为 A…Y，在用大写字母表示的牧场中有一只母牛，小写字母中则没有。 谷仓的标记是Z，注意没有母牛在谷仓中。
+
+**注意 m 和 M 不是同一个牧场。
+
+输入格式
+第一行一个整数 P（1≤P≤1e4），表示连接牧场（谷仓）的道路的数目。
+
+接下来 P行，每行用空格分开的两个字母和一个正整数：被道路连接牧场的标号和道路的长度（道路长度均不超过 10^3）。
+
+输出格式
+单独的一行包含二个项目：最先到达谷仓的母牛所在的牧场的标号，和这只母牛走过的路径的长度。
+*/
+
+/*
+ * char转换成int存图再用SPFA
+ */
+
+//package P1529;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+	
+	static int P, dis[], ans;
+	static char res;
+	static ArrayList<Edge> node[];
+	
+	public static void main(String[] args) throws IOException {
+		init();
+		P = Integer.parseInt(br.readLine());
+		for(int i = 1 ; i <= P ; ++i) {
+			String tmp = br.readLine();
+			int u = tmp.charAt(0), v = tmp.charAt(2), w = Integer.parseInt(tmp.substring(4,tmp.length()));
+			node[u].add(new Edge(v,w));
+			node[v].add(new Edge(u,w));
+		}
+		SPFA();
+		for(int i = 'A' ; i < 'Z' ; ++i) {
+			if(ans>dis[i]) {
+				ans = dis[i];
+				res = (char)i;
+			}
+		}
+		System.out.println(res+" "+ans);
+	}
+	
+	public static void SPFA() {
+		Queue<Integer> q = new LinkedList<Integer>();
+		boolean vis[] = new boolean[123];
+		q.add((int)'Z');
+		vis[(int)'Z'] = true;
+		dis[(int)'Z'] = 0;
+		while(!q.isEmpty()){
+			int cur = q.poll();
+			vis[cur] = false;
+			for(int i = 0 ; i < node[cur].size() ; ++i) {
+				Edge aft = node[cur].get(i);
+				if(dis[aft.to]>dis[cur]+aft.v) {
+					dis[aft.to]=dis[cur]+aft.v;
+					if(!vis[aft.to]) {
+						q.add(aft.to);
+						vis[aft.to] = true;
+					}
+				}
+			}
+		}
+	}
+	
+	static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+	public static void init() {
+		// z = 122;
+		node = new ArrayList[123];
+		for(int i = 65 ; i <= 122 ; ++i) {
+			node[i] = new ArrayList<Edge>();
+		}
+		dis = new int[123];
+		Arrays.fill(dis,0x7fffffff);
+		ans = 0x7fffffff;
+	}
+}
+
+class Edge{
+	int to, v;
+	public Edge(int to, int v) {
+		this.to = to;
+		this.v = v;
+	}
+}

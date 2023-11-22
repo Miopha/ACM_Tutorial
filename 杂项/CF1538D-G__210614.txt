@@ -1,0 +1,441 @@
+/*
+https://codeforces.com/problemset/problem/1538/D
+D. Another Problem About Dividing Numbers
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You are given two integers a and b. In one turn, you can do one of the following operations:
+
+Take an integer c (c>1 and a should be divisible by c) and replace a with ac;
+Take an integer c (c>1 and b should be divisible by c) and replace b with bc.
+Your goal is to make a equal to b using exactly k turns.
+
+For example, the numbers a=36 and b=48 can be made equal in 4 moves:
+
+c=6, divide b by c ⇒ a=36, b=8;
+c=2, divide a by c ⇒ a=18, b=8;
+c=9, divide a by c ⇒ a=2, b=8;
+c=4, divide b by c ⇒ a=2, b=2.
+For the given numbers a and b, determine whether it is possible to make them equal using exactly k turns.
+
+Input
+The first line contains one integer t (1≤t≤104). Then t test cases follow.
+
+Each test case is contains three integers a, b and k (1≤a,b,k≤109).
+
+Output
+For each test case output:
+
+"Yes", if it is possible to make the numbers a and b equal in exactly k turns;
+"No" otherwise.
+The strings "Yes" and "No" can be output in any case.
+*/
+
+/*
+ * 质因数分解+贪心，留着最后两步把两个数除以自己变成1
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int a, b, k, c;
+
+void solve(){
+	a = read();
+	b = read();
+	k = read();
+	if(k==1){
+		if((!(a%b)||!(b%a))&&(a^b)){
+			puts("YES");
+		}else puts("NO");
+		return ;
+	}
+	c = 0;
+	for(int i = 2 ; i * i <= a ; ++i){
+		while(!(a%i)) ++c, a /= i;
+	}
+	if(a^1) ++c;
+	for(int i = 2 ; i * i <= b ; ++i){
+		while(!(b%i)) ++c, b /= i;
+	}
+	if(b^1) ++c;
+	if(k>c){
+		puts("NO");
+		return ;
+	}
+	puts("YES");
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://codeforces.com/problemset/problem/1538/E
+E. Funny Substrings
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Polycarp came up with a new programming language. There are only two types of statements in it:
+
+"x := s": assign the variable named x the value s (where s is a string). For example, the statement var := hello assigns the variable named var the value hello. Note that s is the value of a string, not the name of a variable. Between the variable name, the := operator and the string contains exactly one space each.
+"x = a + b": assign the variable named x the concatenation of values of two variables a and b. For example, if the program consists of three statements a := hello, b := world, c = a + b, then the variable c will contain the string helloworld. It is guaranteed that the program is correct and the variables a and b were previously defined. There is exactly one space between the variable names and the = and + operators.
+All variable names and strings only consist of lowercase letters of the English alphabet and do not exceed 5 characters.
+
+The result of the program is the number of occurrences of string haha in the string that was written to the variable in the last statement.
+
+Polycarp was very tired while inventing that language. He asks you to implement it. Your task is — for given program statements calculate the number of occurrences of string haha in the last assigned variable.
+
+Input
+The first line contains an integer t (1≤t≤103). Then t test cases follow.
+
+The first line of each test case contains a single integer n (1≤n≤50) — the number of statements in the program. All variable names and strings are guaranteed to consist only of lowercase letters of the English alphabet and do not exceed 5 characters.
+
+This is followed by n lines describing the statements in the format described above. It is guaranteed that the program is correct.
+
+Output
+For each set of input data, output the number of occurrences of the haha substring in the string that was written to the variable in the last statement.
+*/
+
+/*
+ * 直接模拟时空复杂度都是O(2^n)
+ * 除了直接从原a,b字符串中找到"haha"出现次数直接加到x中，对答案做出贡献的还可能有a中后缀和b中前缀连接时增加的"haha"
+ * 所以记录各字符串的前三位缀和后三位缀特殊处理即可
+ */
+ 
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <map>
+#include <algorithm>
+#include <cmath>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int count(const string& s, const string& p) {
+    int cnt = 0;
+    for (int i = 0; i + p.size() <= s.size(); i++) {
+        if (s.substr(i, p.size()) == p) {
+            cnt++;
+        }
+    }
+    return cnt;
+}
+
+map<string,ll> res;
+map<string,string> prefix, suffix;
+int n;
+
+void solve(){
+	res.clear();
+	prefix.clear();
+	suffix.clear();
+	n = read();
+	for(int i = 1 ; i <= n ; ++i){
+		string cmd;
+		getline(cin,cmd);
+		if(cmd.find(':')^EOF){ // name = val;
+			string name = cmd.substr(0,cmd.find(':')-1);
+			string val = cmd.substr(cmd.find('=')+2);
+			prefix[name] = suffix[name] = val;
+			res[name] = count(val,"haha");
+			if(i==n) printf("%lld\n",res[name]);
+		}else{ // a = b + c;
+			string a = cmd.substr(0,cmd.find('=')-1);
+			cmd = cmd.substr(cmd.find('=')+2);
+			string b = cmd.substr(0,cmd.find('+')-1);
+			string c = cmd.substr(cmd.find('+')+2);
+			string p = suffix[b].substr(max((int)(suffix[b].length()-3),0)) + prefix[c].substr(0,3);
+			if(prefix[b].length()<=3){
+				prefix[a] = prefix[b] + prefix[c];
+			}else prefix[a] = prefix[b];
+			if(suffix[c].length()<=3){
+				suffix[a] = suffix[b] + suffix[c];
+			}else suffix[a] = suffix[c];
+			res[a] = res[b] + res[c] + count(p,"haha");
+			/*
+			CHECK(p);
+			CHECK(res[a]);
+			*/
+			if(i==n) printf("%lld\n",res[a]);
+		}
+	}
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://codeforces.com/contest/1538/problem/F
+F. Interesting Function
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You are given two integers l and r, where l<r. We will add 1 to l until the result is equal to r. Thus, there will be exactly r−l additions performed. For each such addition, let's look at the number of digits that will be changed after it.
+
+For example:
+
+if l=909, then adding one will result in 910 and 2 digits will be changed;
+if you add one to l=9, the result will be 10 and 2 digits will also be changed;
+if you add one to l=489999, the result will be 490000 and 5 digits will be changed.
+Changed digits always form a suffix of the result written in the decimal system.
+
+Output the total number of changed digits, if you want to get r from l, adding 1 each time.
+
+Input
+The first line contains an integer t (1≤t≤104). Then t test cases follow.
+
+Each test case is characterized by two integers l and r (1≤l<r≤109).
+
+Output
+For each test case, calculate the total number of changed digits if you want to get r from l, adding one each time.
+*/
+
+/*
+ * 观察到1到10变化了11位，10到100变化了111位.....
+ * 使用结论模拟即可
+ */ 
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear
+#define mp make_pair
+#define int ll
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int l, r, digit[10];
+ll ans;
+ll nums[11];
+
+void solve(int thisCase){
+	ans = 0;
+	l = read();
+	r = read();
+	for(int i = 9 ; i ; --i){
+		int tmp = l, tmpL = l + (r - l) / nums[i] * nums[i];
+		for(int j = 1 ; j <= 9 && nums[j] <= r ; ++j){
+			if((tmp%nums[j+1]/nums[j]) ^ (tmpL%nums[j+1]/nums[j])) ++ans;
+		}
+		if(tmp^tmpL) --ans;
+		ans += (r - l) / nums[i] * digit[i];
+		l = l + (r - l) / nums[i] * nums[i];
+	}
+	while(r^l){
+		int tmp = l, tmpL = ++l;
+		for(int i = 0 ; i <= 9 && nums[i] <= r ; ++i){
+			if((tmp%nums[i+1]/nums[i]) ^ (tmpL%nums[i+1]/nums[i])) ++ans;
+		}
+	}
+	printf("%lld\n",ans);
+}
+
+signed main(){
+	nums[0] = digit[0] = 1;
+	for(int i = 1 ; i <= 9 ; ++i){
+		digit[i] = digit[i-1] * 10ll + 1;
+		nums[i] = nums[i-1] * 10ll;
+	}
+	nums[10] = 10ll * 1000000000;
+    int t = 1;
+    t = read();
+    for(int i = 1 ; i <= t ; ++i) solve(i);
+    return 0;
+}
+
+/*
+https://codeforces.com/contest/1538/problem/G
+G. Gift Set
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Polycarp has x of red and y of blue candies. Using them, he wants to make gift sets. Each gift set contains either a red candies and b blue candies, or a blue candies and b red candies. Any candy can belong to at most one gift set.
+
+Help Polycarp to find the largest number of gift sets he can create.
+
+For example, if x=10, y=12, a=5, and b=2, then Polycarp can make three gift sets:
+
+In the first set there will be 5 red candies and 2 blue candies;
+In the second set there will be 5 blue candies and 2 red candies;
+In the third set will be 5 blue candies and 2 red candies.
+Note that in this example there is one red candy that Polycarp does not use in any gift set.
+
+Input
+The first line contains an integer t (1≤t≤104). Then t test cases follow.
+
+Each test case consists of a single string containing four integers x, y, a, and b (1≤x,y,a,b≤109).
+
+Output
+For each test case, output one number — the maximum number of gift sets that Polycarp can make.
+*/
+
+/*
+ * 先保证a>b，设一共做n个set，其中k(k<=n,k>0)个采用第一个方案那么有k*a+(n-k)*b<=x, k*b+(n-k)*a<=y，移项得k<=(x-n*b)/(a-b), k >= (n*a-y)/(a-b)
+ * 观察不等式发现n如果越大，k的范围就越小，于是问题变成找出最大的n使得存在k∈Z, k<=n, k>=0且满足上面两个不等式，因为前面说的n大小与k范围的单调性，所以可以用二分来做 
+ */
+ 
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+ll x, y, a, b;
+
+void solve(){
+	x = read();
+	y = read();
+	a = read();
+	b = read();
+	if(a<b){
+		// swap(x,y);
+		swap(a,b);
+	}else if(a==b){
+		printf("%lld\n",min(x,y)/a);
+		return ;
+	}
+	ll l = 0, r = 1e9;
+	ll ans = 0;
+	while(l+1<r){
+		int mid = (l+r)>>1;
+		int k1 = floor(1.0 * (x - mid * b) / (a - b));
+		double k2 = 1.0 * (mid * a - y) / (a - b);
+		if(max(k2,0.0)<=min(k1,mid)){ // this n is legit
+			ans = mid;
+			l = mid;
+		}else{
+			r = mid;
+		}
+	}
+	printf("%lld\n",ans);
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}

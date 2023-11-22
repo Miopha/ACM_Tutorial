@@ -1,0 +1,391 @@
+/*
+https://codeforces.com/problemset/problem/1494/A
+A. ABC String
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You are given a string a, consisting of n characters, n is even. For each i from 1 to n ai is one of 'A', 'B' or 'C'.
+
+A bracket sequence is a string containing only characters "(" and ")". A regular bracket sequence is a bracket sequence that can be transformed into a correct arithmetic expression by inserting characters "1" and "+" between the original characters of the sequence. For example, bracket sequences "()()" and "(())" are regular (the resulting expressions are: "(1)+(1)" and "((1+1)+1)"), and ")(", "(" and ")" are not.
+
+You want to find a string b that consists of n characters such that:
+
+b is a regular bracket sequence;
+if for some i and j (1≤i,j≤n) ai=aj, then bi=bj.
+In other words, you want to replace all occurrences of 'A' with the same type of bracket, then all occurrences of 'B' with the same type of bracket and all occurrences of 'C' with the same type of bracket.
+
+Your task is to determine if such a string b exists.
+
+Input
+The first line contains a single integer t (1≤t≤1000) — the number of testcases.
+
+Then the descriptions of t testcases follow.
+
+The only line of each testcase contains a string a. a consists only of uppercase letters 'A', 'B' and 'C'. Let n be the length of a. It is guaranteed that n is even and 2≤n≤50.
+
+Output
+For each testcase print "YES" if there exists such a string b that:
+
+b is a regular bracket sequence;
+if for some i and j (1≤i,j≤n) ai=aj, then bi=bj.
+Otherwise, print "NO".
+
+You may print every letter in any case you want (so, for example, the strings yEs, yes, Yes and YES are all recognized as positive answer).
+*/
+
+/*
+ * 必须的，第一个字母取'('最后一个字母取')'，枚举剩下一种字母的情况即可
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int len, col[4], cnt['Z'];
+char s[MAXN];
+// A B C
+bool flag['Z'];
+
+void solve(){
+	cin>>s+1;
+	flag[1] = flag[2] = flag[3] = false;
+	len = 1;
+	while(s[len]^'\0') ++len;
+	--len;
+	if(s[1]==s[len]){
+		puts("NO");
+		return ;
+	}
+	flag[s[1]-'A'+1] = flag[s[len]-'A'+1] = true;
+	col[s[1]-'A'+1] = '(';
+	col[s[len]-'A'+1] = ')';
+	int idx = 1;
+	while(flag[idx]) ++idx;
+	col[idx] = '(';
+	int left = 0;
+	for(int i = 1 ; i <= len ; ++i){
+		if(col[s[i]-'A'+1]=='(') ++left;
+		else if(left) --left;
+		else break;
+		if(i==len&&!left){
+			puts("YES");
+			return ;
+		}
+	}
+	col[idx] = ')';
+	left = 0;
+	for(int i = 1 ; i <= len ; ++i){
+		if(col[s[i]-'A'+1]=='(') ++left;
+		else if(left) --left;
+		else break;
+		if(i==len&&!left){
+			puts("YES");
+			return ;
+		}
+	}
+	puts("NO");
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+B. Berland Crossword
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Berland crossword is a puzzle that is solved on a square grid with n rows and n columns. Initially all the cells are white.
+
+To solve the puzzle one has to color some cells on the border of the grid black in such a way that:
+
+exactly U cells in the top row are black;
+exactly R cells in the rightmost column are black;
+exactly D cells in the bottom row are black;
+exactly L cells in the leftmost column are black.
+Note that you can color zero cells black and leave every cell white.
+
+Your task is to check if there exists a solution to the given puzzle.
+
+Input
+The first line contains a single integer t (1≤t≤1000) — the number of testcases.
+
+Then the descriptions of t testcases follow.
+
+The only line of each testcase contains 5 integers n,U,R,D,L (2≤n≤100; 0≤U,R,D,L≤n).
+
+Output
+For each testcase print "YES" if the solution exists and "NO" otherwise.
+
+You may print every letter in any case you want (so, for example, the strings yEs, yes, Yes and YES are all recognized as positive answer).
+*/
+
+/*
+ * 搜索将四个角的涂色情况全部枚举出来就容易判断是否可以合法了
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, U, R, D, L;
+bool col[5], flag;
+
+void DFS(int x){
+	if(x==5){
+		int nu = 0, nr = 0, nd = 0, nl = 0;
+		if(col[1]){++nu;++nl;}
+		if(col[2]){++nu;++nr;}
+		if(col[3]){++nr;++nd;}
+		if(col[4]){++nd;++nl;}
+		if(nu>U||nr>R||nd>D||nl>L) return ;
+		// ÖÁÉÙÓÐÒ»
+		if(n-U==1&&nu==0) return ;
+		if(n-R==1&&nr==0) return ;
+		if(n-D==1&&nd==0) return ;
+		if(n-L==1&&nl==0) return ;
+		// ÓÐ¶þ
+		if(n==U&&nu<=1) return ;
+		if(n==R&&nr<=1) return ;
+		if(n==D&&nd<=1) return ;
+		if(n==L&&nl<=1) return ;
+		puts("YES");
+		flag = true;
+	}
+	for(int i = 0 ; i <= 1 && !flag ; ++i){
+		col[x] = i;
+		DFS(x+1);
+	}
+}
+
+void solve(){
+	n = read();
+	U = read();
+	R = read();
+	D = read();
+	L = read();
+	flag = false;
+	DFS(1);
+	if(!flag) puts("NO");
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://codeforces.com/problemset/problem/1494/C
+C. 1D Sokoban
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You are playing a game similar to Sokoban on an infinite number line. The game is discrete, so you only consider integer positions on the line.
+
+You start on a position 0. There are n boxes, the i-th box is on a position ai. All positions of the boxes are distinct. There are also m special positions, the j-th position is bj. All the special positions are also distinct.
+
+In one move you can go one position to the left or to the right. If there is a box in the direction of your move, then you push the box to the next position in that direction. If the next position is taken by another box, then that box is also pushed to the next position, and so on. You can't go through the boxes. You can't pull the boxes towards you.
+
+You are allowed to perform any number of moves (possibly, zero). Your goal is to place as many boxes on special positions as possible. Note that some boxes can be initially placed on special positions.
+
+Input
+The first line contains a single integer t (1≤t≤1000) — the number of testcases.
+
+Then descriptions of t testcases follow.
+
+The first line of each testcase contains two integers n and m (1≤n,m≤2⋅105) — the number of boxes and the number of special positions, respectively.
+
+The second line of each testcase contains n distinct integers in the increasing order a1,a2,…,an (−109≤a1<a2<⋯<an≤109; ai≠0) — the initial positions of the boxes.
+
+The third line of each testcase contains m distinct integers in the increasing order b1,b2,…,bm (−109≤b1<b2<⋯<bm≤109; bi≠0) — the special positions.
+
+The sum of n over all testcases doesn't exceed 2⋅105. The sum of m over all testcases doesn't exceed 2⋅105.
+
+Output
+For each testcase print a single integer — the maximum number of boxes that can be placed on special positions.
+*/
+
+/*
+ * 容易发现最后最优停止的位置都是在b里面
+ * 所以枚举停止的位置，再用二分得出被推箱子数量、箱子被推后形成的连续段和连续段覆盖的b点
+ * 至于原来就在特殊位置的箱子，枚举前先用前缀和记录，枚举过程中得出被推箱子数量后就可以快速得出未被推且原来就在特殊位置的箱子的数量
+ * 分成正位置和负位置分别实现，时间复杂度O(mlogn)
+ * 思路不难想到，难度在实现。。
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, m, a[MAXN], b[MAXN], a1[MAXN], cnta, b1[MAXN], cntb, prefix[MAXN], mx, ans;
+
+void sol(){
+	b1[cntb+1] = INF<<1;
+	a1[cnta+1] = INF<<1;
+	sort(a1+1,a1+1+cnta);
+	sort(b1+1,b1+1+cntb);
+	/*
+	for(int i = 1 ; i <= cnta ; ++i) printf("%d ",a1[i]);
+	puts("a1");
+	for(int i = 1 ; i <= cntb ; ++i) printf("%d ",b1[i]);
+	puts("b1");
+	*/
+	// get the prefix
+	for(int i = 1, idx = 1 ; i <= cnta ; ++i){
+		while(b1[idx]<a1[i]&&idx<=cntb) ++idx;
+		prefix[i] = prefix[i-1] + (b1[idx]==a1[i]);
+	}
+	mx = prefix[cnta];
+	// stop in b1[i]
+	for(int i = 1 ; i <= cntb ; ++i){
+		int move = lower_bound(a1+1,a1+1+cnta,b1[i]) - a1;
+		// fix
+		if(a1[move]>b1[i]) --move;
+		// printf("initailly %d\n",move);
+		while(true){
+			int forceMove = lower_bound(a1+1,a1+1+cnta,b1[i]+move-1) - a1;
+			// fix
+			if(a1[forceMove]>b1[i]+move-1) --forceMove;
+			// break, no more box moved passively
+			if(forceMove<=move) break;
+			move = forceMove;
+		}
+		// printf("%d boxes has been moved\n",move);
+		if(move<=0) continue;
+		// sequence b1[i] to e has boxes
+		int e = b1[i] + move - 1;
+		// i ~ t special postions have boxes
+		int t = lower_bound(b1+1,b1+1+cntb,e) - b1;
+		// fix
+		if(b1[t]>e) --t;
+		mx = max(mx,t-i+1+(prefix[cnta]-prefix[move]));
+		// printf("b1[%d]=%d e=%d\n",i,b1[i],e);
+		// printf("t=%d i=%d prefix[cnta]=%d prefix[%d]=%d\n",t,i,prefix[cnta],move,prefix[move]);
+	}
+	// printf("mx=%d\n",mx);
+}
+
+void solve(){
+	ans = cnta = cntb = 0;
+	n = read();
+	m = read();
+	// initial
+	for(int i = 1 ; i <= max(n,m) + 2 ; ++i) a[i] = b[i] = 0;
+	for(int i = 1 ; i <= n ; ++i) a[i] = read();
+	for(int i = 1 ; i <= m ; ++i) b[i] = read();
+	// initial
+	for(int i = 1 ; i <= max(n,m) + 2 ; ++i) a1[i] = b1[i] = prefix[i] = 0;
+	for(int i = 1 ; a[i] < 0 ; ++i) a1[++cnta] = -a[i];
+	for(int i = 1 ; b[i] < 0 ; ++i) b1[++cntb] = -b[i];
+	sol();
+	ans += mx;
+	cnta = cntb = 0;
+	// initial
+	for(int i = 1 ; i <= max(n,m) + 2 ; ++i) a1[i] = b1[i] = prefix[i] = 0;
+	for(int i = 1 ; i <= n ; ++i) if(a[i]>0) a1[++cnta] = a[i];
+	for(int i = 1 ; i <= m ; ++i) if(b[i]>0) b1[++cntb] = b[i];
+	sol();
+	ans += mx;
+	printf("%d\n",min(ans,m));
+}
+
+int main(){
+    int t = read();
+    while(t--) solve();
+    return 0;
+}

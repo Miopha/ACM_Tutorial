@@ -1,0 +1,141 @@
+/*
+https://www.acwing.com/problem/content/description/2881/
+2878. 限高杆
+某市有 n 个路口，有 m 段道路连接这些路口，组成了该市的公路系统。
+
+其中一段道路两端一定连接两个不同的路口。
+
+道路中间不会穿过路口。
+
+由于各种原因，在一部分道路的中间设置了一些限高杆，有限高杆的路段货车无法通过。
+
+在该市有两个重要的市场 A 和 B，分别在路口 1 和 n 附近，货车从市场 A 出发，首先走到路口 1，然后经过公路系统走到路口 n，才能到达市场 B。
+
+两个市场非常繁华，每天有很多货车往返于两个市场之间。
+
+市长发现，由于限高杆很多，导致货车可能需要绕行才能往返于市场之间，这使得货车在公路系统中的行驶路程变长，增加了对公路系统的损耗，增加了能源的消耗，同时还增加了环境污染。
+
+市长决定要将两段道路中的限高杆拆除，使得市场 A 和市场 B 之间的路程变短。
+
+请问最多能减少多长的距离？
+
+输入格式
+输入的第一行包含两个整数 n,m，分别表示路口的数量和道路的段数。
+
+接下来 m 行，每行四个整数 a,b,c,d，表示路口 a 和路口 b 之间有一段长度为 c 的道路。如果 d 为 0，表示这段道路上没有限高杆；如果 d 为 1，表示这段道路上有限高杆。
+
+两个路口之间可能有多段道路。
+
+输入数据保证在不拆除限高杆的情况下，货车能通过公路系统从路口 1 正常行驶到路口 n。
+
+输出格式
+输出一行，包含一个整数，表示拆除两段道路的限高杆后，市场 A 和市场 B 之间的路程最大减少多长距离。
+
+数据范围
+对于 30% 的评测样例，2≤n≤10，1≤m≤20,1≤c≤100。
+对于 50% 的评测样例，2≤n≤100，1≤m≤1000,1≤c≤1000。
+对于 70% 的评测样例，2≤n≤1000，1≤m≤10000,1≤c≤10000。
+对于所有评测样例，2≤n≤10000，2≤m≤100000,1≤c≤10000，至少有两段道路有限高杆。
+
+输入样例：
+5 7
+1 2 1 0
+2 3 2 1
+1 3 9 0
+5 3 8 0
+4 3 5 1
+4 3 9 0
+4 5 4 0
+输出样例：
+6
+样例解释
+只有两段道路有限高杆，全部拆除后，1 到 n 的路程由原来的 17 变为了 11，减少了 6。
+*/
+
+/*
+ * 容易想到用各种最短路算法，那怎么处理要解除最多两条限高杆的限制？
+ * 因为影响的最多只有两条边，所以可以多层建图，把边的所有状态表示出来
+ * 可以建三层，每层图里只留下没有限制的边，第一层到第二层解除第一条限高杆限制，二到三解除第二条限高杆限制
+ * 然后再SPFA
+ * 有可能不去掉限高杆和只去掉一条限高杆，记得取min
+ */
+
+#include <cstdio>
+#include <iostream>
+#include <queue>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+
+using namespace std;
+const int MAXN = 10005, MAXM = 100005, INF = 0x3f3f3f3f;
+
+int tot, head[MAXN*3];
+
+struct Edge{
+	int u, to, val, next;
+}G[MAXM*6];
+
+inline void addEdge(int u, int v, int w){
+	G[++tot].u = u;
+	G[tot].to = v;
+	G[tot].val = w;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+int n, m, dis[MAXN*3], ans;
+bool inq[MAXN*3];
+deque<int> dq;
+
+void add(int u, int v, int w, int c){
+	if(!c){
+		// 1 --> 1
+		addEdge(u,v,w);
+		addEdge(v,u,w);
+		// 2 --> 2
+		addEdge(u+n,v+n,w);
+		addEdge(v+n,u+n,w);
+		// 3 --> 3
+		addEdge(u+(n<<1),v+(n<<1),w);
+		addEdge(v+(n<<1),u+(n<<1),w);
+	}else{
+		// 1 --> 2
+		addEdge(u,v+n,w);
+		addEdge(v,u+n,w);
+		// 2 --> 3
+		addEdge(u+n,v+(n<<1),w);
+		addEdge(v+n,u+(n<<1),w);
+	}
+}
+
+void SPFA(int s){
+	for(int i = 1 ; i <= n * 3 ; ++i) dis[i] = INF;
+	dis[s] = 0;
+	dq.push_front(s);
+	inq[s] = true;
+	while(!dq.empty()){
+		int np = dq.front(); dq.pop_front();
+		inq[np] = false;
+		for(int i = head[np], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(dis[to]>dis[np]+G[i].val){
+				dis[to] = dis[np] + G[i].val;
+				if(!inq[to]){
+					inq[to] = true;
+					if(dq.empty()||dq.front()>=dis[to]) dq.push_front(to);
+					else dq.push_back(to);
+				}
+			}
+		}
+	}
+}
+
+int main(){
+	scanf("%d %d",&n,&m);
+	for(int i = 1, u, v, w, c ; i <= m ; ++i){
+		scanf("%d %d %d %d",&u,&v,&w,&c);
+		add(u,v,w,c);
+	}
+	SPFA(1);
+	printf("%d\n",dis[n]-min(dis[n],min(dis[n*3],dis[n<<1])));
+	return 0;
+}

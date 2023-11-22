@@ -1,0 +1,305 @@
+/*
+A. Eshag Loves Big Arrays
+time limit per test1 second
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Eshag has an array a consisting of n integers.
+
+Eshag can perform the following operation any number of times: choose some subsequence of a and delete every element from it which is strictly larger than AVG, where AVG is the average of the numbers in the chosen subsequence.
+
+For example, if a=[1,4,3,2,4] and Eshag applies the operation to the subsequence containing a1, a2, a4 and a5, then he will delete those of these 4 elements which are larger than a1+a2+a4+a54=114, so after the operation, the array a will become a=[1,3,2].
+
+Your task is to find the maximum number of elements Eshag can delete from the array a by applying the operation described above some number (maybe, zero) times.
+
+A sequence b is a subsequence of an array c if b can be obtained from c by deletion of several (possibly, zero or all) elements.
+
+Input
+The first line contains an integer t (1≤t≤100) — the number of test cases. The description of the test cases follows.
+
+The first line of each test case contains an integer n (1≤n≤100) — the length of the array a.
+
+The second line of each test case contains n integers a1,a2,…,an (1≤ai≤100) — the elements of the array a.
+
+Output
+For each test case print a single integer — the maximum number of elements Eshag can delete from the array a.
+*/
+
+/*
+ * 思维
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, a[MAXN], mn, ans;
+
+void solve(){
+	ans = 0;
+	mn = 105;
+	n = read();
+	for(int i = 1 ; i <= n ; ++i){
+		a[i] = read();
+		mn = min(a[i],mn);
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		if(mn^a[i]) ++ans;
+	}
+	cout<<ans<<endl;
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://codeforces.com/contest/1529/problem/B
+B. Sifid and Strange Subsequences
+time limit per test1 second
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+A sequence (b1,b2,…,bk) is called strange, if the absolute difference between any pair of its elements is greater than or equal to the maximum element in the sequence. Formally speaking, it's strange if for every pair (i,j) with 1≤i<j≤k, we have |ai−aj|≥MAX, where MAX is the largest element of the sequence. In particular, any sequence of length at most 1 is strange.
+
+For example, the sequences (−2021,−1,−1,−1) and (−1,0,1) are strange, but (3,0,1) is not, because |0−1|<3.
+
+Sifid has an array a of n integers. Sifid likes everything big, so among all the strange subsequences of a, he wants to find the length of the longest one. Can you help him?
+
+A sequence c is a subsequence of an array d if c can be obtained from d by deletion of several (possibly, zero or all) elements.
+
+Input
+The first line contains an integer t (1≤t≤104) — the number of test cases. The description of the test cases follows.
+
+The first line of each test case contains an integer n (1≤n≤105) — the length of the array a.
+
+The second line of each test case contains n integers a1,a2,…,an (−109≤ai≤109) — the elements of the array a.
+
+It is guaranteed that the sum of n over all test cases doesn't exceed 105.
+
+Output
+For each test case output a single integer — the length of the longest strange subsequence of a.
+*/
+
+/*
+ * 数+思维
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, a[MAXN];
+
+void solve(){
+	n = read();
+	for(int i = 1 ; i <= n ; ++i) a[i] = read();
+	sort(a+1,a+1+n);
+	int mnAbs = INF;
+	for(int i = 2 ; i <= n ; ++i){
+		mnAbs = min(mnAbs,abs(a[i]-a[i-1]));
+		if(a[i]>mnAbs){
+			printf("%d\n",i-1);
+			return ;
+		}
+	}
+	printf("%d\n",n);
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://codeforces.com/contest/1529/problem/C
+C. Parsa's Humongous Tree
+time limit per test1 second
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Parsa has a humongous tree on n vertices.
+
+On each vertex v he has written two integers lv and rv.
+
+To make Parsa's tree look even more majestic, Nima wants to assign a number av (lv≤av≤rv) to each vertex v such that the beauty of Parsa's tree is maximized.
+
+Nima's sense of the beauty is rather bizarre. He defines the beauty of the tree as the sum of |au−av| over all edges (u,v) of the tree.
+
+Since Parsa's tree is too large, Nima can't maximize its beauty on his own. Your task is to find the maximum possible beauty for Parsa's tree.
+
+Input
+The first line contains an integer t (1≤t≤250) — the number of test cases. The description of the test cases follows.
+
+The first line of each test case contains a single integer n (2≤n≤105) — the number of vertices in Parsa's tree.
+
+The i-th of the following n lines contains two integers li and ri (1≤li≤ri≤109).
+
+Each of the next n−1 lines contains two integers u and v (1≤u,v≤n,u≠v) meaning that there is an edge between the vertices u and v in Parsa's tree.
+
+It is guaranteed that the given graph is a tree.
+
+It is guaranteed that the sum of n over all test cases doesn't exceed 2⋅105.
+
+Output
+For each test case print the maximum possible beauty for Parsa's tree.
+*/
+
+/*
+ * 树形DP
+ */
+ 
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 100005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int head[MAXN], tot;
+
+struct Edge{
+    int u, to, next;
+}G[MAXN<<1];
+
+inline void addEdge(int u, int v){
+    G[++tot].u = u;
+    G[tot].to = v;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+int n;
+// 0, choose the min val
+// 1, choose the max val
+P dif[MAXN];
+ll DP[MAXN][2];
+
+inline void DFS(int np, int fat){
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(to==fat) continue;
+		DFS(to,np);
+		DP[np][0] += max(DP[to][1]+abs(dif[np].first-dif[to].second),DP[to][0]+abs(dif[np].first-dif[to].first));
+		DP[np][1] += max(DP[to][1]+abs(dif[np].second-dif[to].second),DP[to][0]+abs(dif[np].second-dif[to].first));
+	}
+}
+
+void solve(){
+	n = read();
+	tot = 0;
+	for(int i = 1 ; i <= n ; ++i){
+		head[i] = 0;
+		DP[i][1] = DP[i][0] = 0;
+		dif[i].first = read();
+		dif[i].second = read();
+	}
+	for(int i = 1, u, v ; i < n ; ++i){
+		u = read();
+		v = read();
+		addEdge(u,v);
+		addEdge(v,u);
+	}
+	DFS(1,0);
+	// CHECK(DP[2][0]);
+	cout<<max(DP[1][0],DP[1][1])<<endl;
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}

@@ -1,0 +1,230 @@
+/*
+https://codeforces.com/gym/103185/problem/D
+D. Dividing Candy
+time limit per test0.25 seconds
+memory limit per test1024 megabytes
+inputstandard input
+outputstandard output
+Bob and Charlie are two brothers that like powers of 2 a lot. Their mum decided to give them N boxes of candy, each of them containing a number of candy bars that is a power of 2.
+
+They want to split the boxes between them, that is, for each box, they will decide who gets it. Each box must be given to exactly one brother.
+
+Now they wonder: is it possible that, for each of the two brothers, the total amount of candy bars he receives is also a power of 2?
+
+For example, if N=4 and the boxes contain 4, 4, 32, and 8 candy bars, the answer would be yes, as one possible solution is giving the third box to Bob (32 candy bars), and the remaining boxes to Charlie (4+4+8=16 candy bars in total).
+
+Input
+The first line contains an integer N (1≤N≤105), the number of boxes the brothers want to split. The second line contains N integers A1,A2,…,AN (0≤Ai≤105 for i=1,2,…,N), indicating that the i-th box has 2Ai candy bars.
+
+Output
+Output a single line with the uppercase letter "Y" if it is possible to split the boxes so that the total amount of candy received by each brother is a power of 2, and the uppercase letter "N" otherwise.
+*/
+
+/*
+ * 题意：给定n个Ai，代表每个位置2^Ai，问是否最终能合并（加）成两个2的幂数
+ */
+
+#include <cstdio>
+
+using namespace std;
+
+int n, left;
+int vis[500005];
+
+int main(){
+	scanf("%d",&n);
+	for(int i = 1, a ; i <= n ; ++i){
+		scanf("%d",&a);
+		++vis[a];
+	}
+	for(int i = 0 ; i <= 200000 ; ++i){
+		if(vis[i]){
+			left += vis[i]&1;
+			vis[i+1] += vis[i]>>1;
+		}
+	}
+	if(left==2||(left==1&&n^1)) puts("Y");
+	else puts("N");
+}
+
+/*
+https://codeforces.com/gym/103185/problem/N
+Non-Integer Donuts
+Input file: standard input
+Output file: standard output
+Time limit: 0.25 seconds
+Memory limit: 1024 megabytes
+Neil is a very important lawyer with a very important bank account. Since Neil is such a successful lawyer
+with many clients, he deposits money to his account every single morning.
+After going to the bank and depositing money, Neil goes to work. And there lies Neil’s great weakness: a
+donut shop. You see, Neil is a recovering donut addict, and although he hasn’t eaten a donut in years, he
+can’t help but wonder how many $1.00 donuts he could buy with the money in his account if he were to
+relapse.
+Having $5.00 in his account means 5 donuts Neil could have, but what about $4.50? Well, that is more
+than 4 donuts for sure, but definitely less than 5. How would one even buy a non-integer amount of donuts?
+That concept confuses Neil, so every time his account balance is not an integer, he stops to ponder the
+nature of non-integer donuts and ends up being late to work.
+Now Neil has been late too many times and is starting to worry he will lose his job. He wants to know
+how many times he will be late to work during the next N days, given his initial account balance and the
+amount of money he will deposit each day. Please answer this for him, or else Neil will start pondering
+again.
+Input
+The first line contains an integer N (1 ≤ N ≤ 1000), the number of days Neil is interested in. Each of the
+next N +1 lines contains a string representing an amount of money. The first string is Neil’s account initial
+balance, while the following N strings are the amounts Neil will deposit to his account in the different
+days. Each string has the form $X.Y where X is a substring of length 1 or 2 indicating the whole money
+in the amount $X.Y , while Y is a substring of length exactly 2 denoting the cents in the amount $X.Y .
+Both X and Y are made of digits, at least one of them contains a non-zero digit, and X does not have
+leading zeros.
+Output
+Output a single line with an integer indicating how many times Neil will be late to work during the
+following N days.
+*/
+
+/*
+ * 题意：给初始的资金和后面N天增加的资金，问有几天的资产不是整数？
+ */
+
+#include <cstdio>
+#include <iostream>
+
+using namespace std;
+
+int n, ans, x, y;
+
+int main(){
+	scanf("%d\n",&n);
+	scanf("$%d.%d\n",&x,&y);
+	for(int i = 1, dx, dy ; i <= n ; ++i){
+		scanf("$%d.%d\n",&dx,&dy);
+		y += dy;
+		y %= 100;
+		ans += !!y;
+	}
+	printf("%d\n",ans);
+	return 0;
+}
+
+/*
+https://codeforces.com/gym/103185/problem/L
+L. Lola's Schedule
+time limit per test0.3 seconds
+memory limit per test1024 megabytes
+inputstandard input
+outputstandard output
+Lola is an energetic girl with many interests, making each day an ocean of possibilities for her, full of exciting activities she is more than willing to participate in. Unfortunately, many of the activities Lola participates in happen in closed spaces, and because of that her vitamin D levels are slightly below ideal. To help, a doctor prescribed a vitamin supplement that she must take daily every X minutes.
+
+Lola wrote an app to keep track of her activities. The main feature of the app is the scheduling of activities. Each activity consists of a title and its start and end times. The app also allows creating one-off reminders, consisting simply of a title and the moment she should receive a single notification, and recurring reminders, consisting of a title, the time for the first notification, and how often the reminder should repeat. After buying the supplement, Lola wants to add a recurring reminder to the app, that repeats every X minutes, to make sure she will get notified whenever it is time to take the supplement. Ideally, she prefers not to have to take the supplement while participating in an activity. With such a busy schedule, she is having a hard time coming up with the ideal moment to start taking it.
+
+Your task is to help Lola to choose the ideal time T after buying the supplement to take it for the first time. A time T is said to be ideal if it is at most 8 hours past the moment when Lola bought the supplement, the number of times when she needs to take the supplement which conflicts with her activities is minimum, and there's no other time earlier than T that would result in the same number of conflicts.
+
+For clarity purposes, suppose that Lola needs to take the supplement every 30 minutes, bought it a certain day at 10:00, and has a single activity scheduled from 18:00 to 18:30 during that day. If she chooses to take the supplement for the first time immediately, she would take it at 10:00, 10:30, ..., 17:30, 18:00, 18:30, .... Thus, she'd have two conflicts with her activity (one at 18:00 and the other at 18:30).
+
+Although Lola cannot wait until her activity ends to take the supplement for the first time (because of the 8 hours limit), she can reduce the number of conflicts by waiting 7 hours and 59 minutes. In that way she would take the supplement at 17:59, 18:29, 18:59, ..., with a single conflict at 18:29. Much better, isn't it? However, this is not ideal, because there is an earlier time that also produces a single conflict, which is waiting 1 minute and taking the supplement for the first time at 10:01, with a single conflict at 18:01. As it's not possible to completely avoid conflicts, the ideal time, in this case, is taking the supplement for the first time 1 minute after buying it.
+
+You'll be given a list of activities, exported from the app Lola wrote, containing information about all her activities starting after the time when she bought the supplement. Lola already did some pre-processing of the data and each activity is described by the number of minutes from the time she bought the supplement and its duration in minutes.
+
+Input
+The first line contains two integers N (1≤N≤104) and X (1≤X≤720), indicating that Lola has N upcoming activities exported from her app, and that she must take the supplement every X minutes. Each of the following N lines describes an activity with two integers S and D (1≤S,D≤105), representing that the activity starts S minutes after buying the supplement, and that its duration is D minutes. Activities do not overlap, that is, given any pair of different activities, one of them ends strictly before the other starts, or vice versa.
+
+Output
+Output a single line with two integers T and C, indicating respectively the ideal time for taking the supplement for the first time, expressed in minutes since buying the supplement, and the number of conflicts that taking the supplement at this time will lead to.
+*/
+
+/*
+ * 题意：给定N个活动，每个活动在Si开始，持续Di分钟，在T,T+X,T+X*2,.. 的时间会吃下补给，如果在与活动时间重合会导致吃不到，选定T(T<=8*60)使得吃不到的补给数C最小
+ */
+ 
+#include <cstdio>
+#include <algorithm>
+
+using namespace std;
+typedef pair<int,int> P;
+const int MAXN = 10005;
+
+int n, x, t, c = 0x3f3f3f3f;
+P sd[MAXN];
+
+int main(){
+	scanf("%d %d",&n,&x);
+	for(int i = 1 ; i <= n ; ++i) scanf("%d %d",&sd[i].first,&sd[i].second);
+	for(int i = 0 ; i <= 8 * 60 ; ++i){
+		int cnt = 0;
+		for(int j = 1 ; j <= n ; ++j){
+			int s = sd[j].first, e = sd[j].first + sd[j].second;
+			if(i>e) continue;
+			if(s<=i&&i<=e) cnt += (e - i) / x + 1;
+			else{
+				int t1 = i + (s - i) / x * x;
+				if(t1<s) t1 += x;
+				if(s<=t1&&t1<=e) cnt += (e - t1) / x + 1;
+			}
+			
+		}
+		if(cnt<c) t = i, c = cnt;
+	}
+	printf("%d %d\n",t,c);
+	return 0;
+}
+
+/*
+https://codeforces.com/gym/103185/problem/C
+C. Crisis at the Wedding
+time limit per test0.25 seconds
+memory limit per test1024 megabytes
+inputstandard input
+outputstandard output
+A famous football player just got married and is holding a party for his wedding guests. The guests are seated at tables around a circular pond in the garden of the player's villa. Each table accommodates exactly the same number of guests, and consecutive tables around the pond are at a unit distance.
+
+At the moment of the traditional Best Man toast a crisis erupted: although the total number of champagne glasses in the guests' tables is exactly the number of guests, the glasses could have been distributed unevenly over the tables, with some tables having more glasses than guests and some other tables having fewer glasses than guests.
+
+A single waiter is available to fix the glasses distribution, collecting surplus glasses from tables and delivering them to tables needing glasses. The cost of each glass fix is the distance the waiter carries the glass until he delivers it to a table. The total cost for the operation is the sum of the costs for all glasses. The waiter can start at any table, but the player is superstitious and will only allow the waiter to walk in a strict clockwise or counterclockwise direction when fixing the glasses distribution. That is, once the waiter starts in one direction (clockwise or counterclockwise) he cannot change the direction.
+
+Earn an autographed jersey from the football player by helping him to calculate the smallest possible total cost for fixing the glasses distribution.
+
+Input
+The first line contains an integer N (1≤N≤105) indicating the number of tables around the circular pond. The second line contains N integers G1,G2,…,GN (0≤Gi≤1000 for i=1,2,…,N), representing the number of glasses in the different tables. These numbers are given in clockwise order. It is guaranteed that N divides ∑Ni=1Gi.
+
+Output
+Output a single line with an integer indicating the smallest possible total cost for fixing the glasses distribution.
+*/
+
+/*
+ * 题意：N个人围成一个圆桌，每个人桌上有Ai个杯子，服务员可以从任意点出发顺/逆时针（不能改变方向）走，走一步的cost是带着的杯子数k，问把杯子分配均匀付出的最小cost，保证sum(Ai)能被N整除
+ * 贪心保证每个杯子走的步数最少就行了，即第一圈从1出发尽可能拿多点杯子填充缺口，第二圈从缺口最多的位置出发能保证平均分配
+ */ 
+ 
+#include <cstdio>
+#include <algorithm>
+#define int long long
+
+using namespace std;
+const int MAXN = 100005;
+
+int n, a[MAXN], avg, pre[MAXN], cost, ans, mn, suf[MAXN];
+
+signed main(){
+	scanf("%d",&n);
+	for(int i = 1 ; i <= n ; ++i){
+		scanf("%d",&a[i]);
+		avg += a[i];
+	}
+	avg /= n;
+	for(int i = 1 ; i <= n ; ++i){
+		a[i] -= avg;
+		pre[i] = pre[i-1] + a[i];
+		cost += pre[i];
+		mn = min(mn,pre[i]);
+	}
+	ans = cost = cost - mn * n;
+	cost = mn = 0;
+	for(int i = n ; i ; --i){
+		suf[i] = suf[i+1] + a[i];
+		cost += suf[i];
+		mn = min(mn,suf[i]);	
+
+	}
+	cost -= mn * n;
+	printf("%lld\n",min(ans,cost));
+	return 0;
+}

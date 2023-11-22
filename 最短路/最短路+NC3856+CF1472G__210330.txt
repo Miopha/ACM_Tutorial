@@ -1,0 +1,243 @@
+/*
+链接：https://ac.nowcoder.com/acm/problem/3856
+来源：牛客网
+
+题目描述 
+N个城市，标号从0到N-1，M条道路，第K条道路（K从0开始）的长度为2^K，求编号为0的城市到其他城市的最短距离
+输入描述:
+第一行两个正整数N（2<=N<=100）M(M<=500),表示有N个城市，M条道路
+接下来M行两个整数，表示相连的两个城市的编号
+输出描述:
+N-1行，表示0号城市到其他城市的最短路，如果无法到达，输出-1，数值太大的以MOD 100000 的结果输出。
+*/
+
+/*
+ * 因为数据不大，可java大数+dijkstra实现
+ */
+
+// package nc3856;
+
+import java.io.*;
+import java.math.BigInteger;
+import java.util.PriorityQueue;
+
+public class Main {
+
+	static StreamTokenizer cin = new StreamTokenizer(new BufferedReader(new InputStreamReader(System.in)));
+	static int n, m, head[], tot;
+	static Edge[] G;
+	static PriorityQueue<Point> pq = new PriorityQueue<>();
+	static BigInteger dis[], inf, two, p;
+	static boolean vis[];
+	static StringBuilder ans = new StringBuilder();
+	
+	public static void main(String[] args) throws IOException {
+		n = nextInt();
+		m =  nextInt();
+		init();
+		for(int i = 1, u, v ; i <= m ; ++i) {
+			u = nextInt();
+			v = nextInt();
+			addEdge(u,v,inf);
+			addEdge(v,u,inf);
+			inf = inf.multiply(two);
+		}
+		dijkstra();
+		for(int i = 1 ; i < n ; ++i) {
+			if(dis[i].compareTo(inf)==0) {
+				ans.append("-1\n");
+				continue;
+			}
+			ans.append(dis[i].mod(p).toString()).append('\n');
+		}
+		System.out.print(ans.toString());
+	}
+	
+	public static void dijkstra() {
+		for(int i = 1 ; i < n ; ++i) dis[i] = new BigInteger(inf.toByteArray());
+		dis[0] = new BigInteger("0");
+		pq.add(new Point(0,dis[0]));
+		while(!pq.isEmpty()) {
+			int np = pq.poll().p;
+			if(vis[np]) continue;
+			vis[np] = true;
+			for(int i = head[np], to ; i != 0 ; i = G[i].next) {
+				to = G[i].to;
+				if(!vis[to]&&dis[to].compareTo(new BigInteger(dis[np].add(G[i].val).toByteArray()))==1) {
+					dis[to] = new BigInteger(dis[np].add(G[i].val).toByteArray());
+					pq.add(new Point(to,dis[to]));
+				}
+			}
+		}
+	}
+	
+	public static int nextInt() throws IOException {
+		cin.nextToken();
+		return (int)cin.nval;
+	}
+	
+	public static void addEdge(int u, int v, BigInteger val) {
+		G[++tot].np = u;
+		G[tot].to = v;
+		G[tot].val = new BigInteger(val.toByteArray());
+		G[tot].next = head[u];
+		head[u] = tot;
+	}
+
+	public static void init() {
+		G = new Edge[(m<<1)|1];
+		for(int i = 1 ; i <= (m<<1) ; ++i) G[i] = new Edge();
+		head = new int[n+1];
+		dis = new BigInteger[n+1];
+		inf = new BigInteger("1");
+		two = new BigInteger("2");
+		vis = new boolean[n+1];
+		p = new BigInteger("100000");
+	}
+	
+}
+
+class Edge{
+	int np, to, next;
+	BigInteger val;
+}
+
+class Point implements Comparable<Point>{
+	int p;
+	BigInteger dis;
+	public Point(int p, BigInteger dis) {
+		this.p = p;
+		this.dis = dis;
+	}
+
+	@Override
+	public int compareTo(Point o) {
+		return this.dis.compareTo(o.dis);
+	}
+}
+
+/*
+https://codeforces.com/problemset/problem/1472/G
+G. Moving to the Capital
+time limit per test4 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+There are n cities in Berland. The city numbered 1 is the capital. Some pairs of cities are connected by a one-way road of length 1.
+
+Before the trip, Polycarp for each city found out the value of di — the shortest distance from the capital (the 1-st city) to the i-th city.
+
+Polycarp begins his journey in the city with number s and, being in the i-th city, chooses one of the following actions:
+
+Travel from the i-th city to the j-th city if there is a road from the i-th city to the j-th and di<dj;
+Travel from the i-th city to the j-th city if there is a road from the i-th city to the j-th and di≥dj;
+Stop traveling.
+Since the government of Berland does not want all people to come to the capital, so Polycarp no more than once can take the second action from the list. in other words, he can perform the second action 0 or 1 time during his journey. Polycarp, on the other hand, wants to be as close to the capital as possible.
+
+
+For example, if n=6 and the cities are connected, as in the picture above, then Polycarp could have made the following travels (not all possible options):
+
+2→5→1→2→5;
+3→6→2;
+1→3→6→2→5.
+Polycarp wants for each starting city i to find out how close he can get to the capital. More formally: he wants to find the minimal value of dj that Polycarp can get from the city i to the city j according to the rules described above.
+
+Input
+The first line contains one integer t (1≤t≤104) — the number of test cases. Then t test cases follow.
+
+Each test case is preceded by an empty line.
+
+The first line of each test case contains two integers n (2≤n≤2⋅105) and m (1≤m≤2⋅105) — number of cities and roads, respectively.
+
+This is followed by m lines describing the roads. Each road is characterized by two integers u and v (1≤u,v≤n,u≠v) — the numbers of cities connected by a one-way road.
+
+It is guaranteed that the sums of n and m over all test cases do not exceed 2⋅105.
+
+It is guaranteed that for each pair of different cities (u,v) there is at most one road from u to v (but a pair of roads from u to v and from v to u — is valid).
+
+It is guaranteed that there is a path from the capital to all cities.
+
+Output
+For each test case, on a separate line output n numbers, the i-th of which is equal to the minimum possible distance from the capital to the city where Polycarp ended his journey.
+
+Example
+*/
+
+/*
+ * BFS求距离再记搜
+ * O(n)
+ */
+
+#include <cstdio>
+#include <queue>
+#include <algorithm>
+#include <iostream>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+
+using namespace std;
+const int MAXN = 200005;
+
+int head[MAXN], tot;
+
+struct Edge{
+    int u, to, next;
+}G[MAXN];
+
+inline void addEdge(int u, int v){
+    G[++tot].u = u;
+    G[tot].to = v;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+int n, m, dis[MAXN], ans[MAXN];
+bool hasAns[MAXN];
+queue<int> q;
+
+inline void DFS(int np){
+	hasAns[np] = true;
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(dis[to]>dis[np]){
+			if(!hasAns[to]) DFS(to);
+			ans[np] = min(ans[np],ans[to]);
+		}
+		else ans[np] = min(ans[np],dis[to]);
+	}
+}
+
+void solve(){
+	scanf("%d %d",&n,&m);
+	for(int i = 1 ; i <= n ; ++i) head[i] = hasAns[i] = dis[i] = ans[i] = 0;
+	tot = 0;
+	for(int i = 1, u, v ; i <= m ; ++i){
+		scanf("%d %d",&u,&v);
+		addEdge(u,v);
+	}
+	
+	
+	q.push(1);
+	while(!q.empty()){
+		int np = q.front(); q.pop();
+		for(int i = head[np], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(dis[to]||to==1) continue;
+			dis[to] = dis[np] + 1;
+			q.push(to);
+		}
+	}
+	
+	for(int i = 1 ; i <= n ; ++i) ans[i] = dis[i];
+	hasAns[1] = true;
+	for(int i = 1 ; i <= n ; ++i){
+		if(!hasAns[i]) DFS(i);
+		printf("%d%c",ans[i]," \n"[i==n]);
+	}
+}
+
+int main(){
+	int t;
+	scanf("%d",&t);
+	while(t--) solve();
+	return 0;
+}

@@ -1,0 +1,209 @@
+/*
+https://vjudge.net/contest/415150#problem/A
+*/
+#include <cstdio>
+#include <iostream>
+
+using namespace std;
+typedef long long ll;
+
+
+int b1, b2, b3, a1, a2;
+ll moneyA, moneyB;
+
+int main(){
+	scanf("%d %d %d %d %d",&b1,&b2,&b3,&a1,&a2);
+	moneyA = (b2-b1)*b3;
+	while(moneyB<=moneyA){
+		moneyB += a2;
+		++a1;
+	}
+	printf("%d\n",a1);
+}
+
+
+/*
+https://vjudge.net/contest/415150#problem/B
+*/
+
+/*
+ * 误读了。。以为是求最小背包数量，迟迟没动手
+ * 用前缀和可以简单求出一段账单的和，每次二分找能容纳的最大和
+ * 再记忆化优化一下，百度说最后复杂度是个调和级数不是很懂
+ */
+ 
+#include <iostream>
+#include <cstdio>
+#include <algorithm>
+
+using namespace std;
+
+int n, a[200005], q, t[100005], mx, prefix[200005], ans[1000005];
+
+int ask(int x){
+	if(ans[x]) return ans[x];
+	int start = 0;
+	while(start<n){
+		int idx = lower_bound(prefix+start,prefix+n+1,prefix[start]+x) - prefix; 
+		if(prefix[idx]>prefix[start]+x) --idx;
+		/*
+		int l = start, r = n, tg = prefix[start] + x;
+		while(l<=r){ // 小于等于tg的最大数 
+			int mid = (l+r)>>1;
+			if(prefix[mid]<=tg) l = mid + 1;
+			else r = mid - 1;
+		}
+		start = r;
+		++ans[x];
+		*/
+		++ans[x];
+		start = idx;
+	}
+	return ans[x];
+}
+
+int main(){
+	scanf("%d",&n);
+	for(int i = 1 ; i <= n ; ++i){
+		scanf("%d",&a[i]);
+		prefix[i] = prefix[i-1] + a[i];
+		mx = max(a[i],mx);
+	}
+	scanf("%d",&q);
+	for(int i = 1 ; i <= q ; ++i){
+		scanf("%d",&t[i]);
+		if(t[i]<mx){
+			printf("Impossible\n");
+		}else{
+			printf("%d\n",ask(t[i]));
+		}
+	}
+	return 0;
+}
+
+/*
+https://vjudge.net/contest/415150#problem/C
+*/
+
+/*
+ * 直接BFS，走过m次的节点就是答案
+ */
+
+#include <cstdio>
+#include <iostream>
+#include <queue>
+
+using namespace std;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int head[MAXN], tot;
+
+struct Edge{
+    int to, next;
+}G[MAXN<<1];
+
+inline void addEdge(int u, int v){
+    G[++tot].to = v;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+int n, m, dis[MAXN], cnt[MAXN];
+bool hsTeam[MAXN], vis[MAXN];
+
+int main(){
+	n = read();
+	m = read();
+	for(int i = 1, u, v ; i < n ; ++i){
+		u = read();
+		v = read();
+		addEdge(u,v);
+		addEdge(v,u);
+	}
+	for(int i = 1 ; i <= m ; ++i) hsTeam[read()] = true;
+	if(m==1||n==1){
+		printf("YES\n1\n");
+		return 0;
+	}
+	queue<int> q;
+	for(int i = 1 ; i <= n ; ++i) 
+		if(hsTeam[i]){
+			q.push(i);
+			vis[i] = dis[i] = cnt[i] = true;
+		}
+	while(!q.empty()){
+		int nw = q.front(); q.pop();
+		for(int i = head[nw], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(!dis[to]) dis[to] = dis[nw] + 1;
+			if(dis[to]==dis[nw]+1){
+				cnt[to] += cnt[nw];
+				if(cnt[to]==m){
+					printf("YES\n%d\n",to);
+					return 0;
+				}
+				if(!vis[to]){
+					q.push(to);
+					vis[to] = true;
+				}
+			}
+		}
+	}
+	printf("NO\n"); 
+}
+
+/*
+https://vjudge.net/contest/415150#problem/E
+*/
+
+/*
+ * 正方形需要大于边长/sqrt(2)的圆容纳，将圆和正方形放在一起再贪心地转进地皮里
+ */
+
+#include <cstdio>
+#include <iostream>
+#include <cmath>
+#include <algorithm>
+
+using namespace std;
+const double EPS = 1e-6;
+
+int n, m, k, ans = 1;
+int a[105], b[105], c[105];
+double d[205];
+
+int main(){
+	scanf("%d %d %d",&n,&m,&k);
+	for(int i = 1 ; i <= n ; ++i) scanf("%d",&a[i]);
+	for(int i = 1 ; i <= m ; ++i){
+		scanf("%d",&b[i]);
+		d[i] = b[i];
+	}
+	for(int i = 1 ; i <= k ; ++i){
+		scanf("%d",&c[i]);
+		d[i+m] = c[i]/sqrt(2);
+	}
+	sort(a+1,a+1+n);
+	sort(d+1,d+1+m+k);
+	for(int i = 1 ; i <= n ; ++i){
+		if(a[i]>(d[ans]+1e-6)) ++ans;
+	}
+	// printf("%d\n",ans-1);
+	printf("%d\n",min(ans-1,m+k)); 
+	return 0;
+}

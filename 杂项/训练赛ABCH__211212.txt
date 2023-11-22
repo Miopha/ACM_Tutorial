@@ -1,0 +1,288 @@
+/*
+https://www.luogu.com.cn/problem/CF1175C?contestId=58444
+*/
+
+/*
+ * 观察到di=abs(ai-x)是点ai到点x的距离，fk(x)可理解成距离点x第k+1远的点
+ * 枚举点x可以得到最小的fk(x)，但这在复杂度上显然是不行的
+ * 所以我们枚举长度为k+1的区间，贪心地x就是区间的中点(第k+1远的点必然是第一个或最后一个点)，总复杂度O(n)
+ */
+
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <cmath>
+#include <algorithm>
+#include <iostream>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear	 
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, k, a[MAXN], fk, ans;
+
+void solve(){
+	ans = fk = 0x3f3f3f3f;
+	n = read();
+	k = read();
+	for(int i = 1 ; i <= n ; ++i) a[i] = read();
+	for(int l = 1, ctr, nfk ; l + k <= n ; ++l){
+		ctr = (a[l]+a[l+k])>>1;
+		nfk = max(a[l+k]-ctr,ctr-a[l]);
+		if(nfk<fk){
+			ans = ctr;
+			fk = nfk;
+		}
+	}
+	printf("%d\n",ans);
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://www.luogu.com.cn/problem/P1113?contestId=58444
+*/
+
+/*
+ * 从前往后模拟一下
+ */
+ 
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <cmath>
+#include <algorithm>
+#include <iostream>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear	 
+#define mp make_pair
+#define time time12
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 10005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, a[MAXN][105], len[MAXN], cnt[MAXN], time[MAXN], ans;
+
+void solve(){
+	n = read();
+	for(int i = 1, idx ; i <= n ; ++i){
+		idx = read();
+		len[idx] = read();
+		while(a[idx][++cnt[idx]]=read()) ;
+		--cnt[idx];
+	}
+	time[1] = len[1];
+	for(int i = 2 ; i <= n ; ++i){
+		// time[i] = 0x3f3f3f3f;
+		for(int j = 1 ; j <= cnt[i] ; ++j){
+			time[i] = max(time[i],time[a[i][j]]+len[i]);
+		}
+		ans = max(ans,time[i]);
+	}
+	printf("%d\n",ans);
+}
+
+int main(){
+    int t = 1;
+    // t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://www.luogu.com.cn/problem/P1883?contestId=58444
+*/
+
+/*
+ * n个单凹曲线取max得到的还是单凹函数
+ * 所以三分取最小值
+ * 精度要取到1e-9
+ */
+
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <cmath>
+#include <algorithm>
+#include <iostream>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear	 
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 1e4 + 5;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, a[MAXN], b[MAXN], c[MAXN];
+double ans;
+
+double check(double x){
+	double res = -0x3f3f3f3f;
+	for(int i = 1 ; i <= n ; ++i){
+		res = max(res,a[i]*x*x+b[i]*x+c[i]);
+	}
+	return res;
+}
+
+void solve(){
+	ans = 0x7fffffff;
+	n = read();
+	for(int i = 1 ; i <= n ; ++i){
+		a[i] = read();
+		b[i] = read();
+		c[i] = read();
+	}
+	double l = 0, r = 1000, esp = 1e-9;
+	while(l+esp<r){
+		double m1 = l+(r-l)/3.0, m2 = r-(r-l)/3.0;
+		// printf("%lf %lf %lf %lf\n",l,m1,m2,r);
+		if(check(m1)<check(m2)) r = m2;
+		else l = m1;
+	}
+	printf("%.4lf\n",check(l));
+}	
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://www.luogu.com.cn/problem/CF1379B?contestId=58444
+*/
+
+/*
+ * 移项得n=(m+c-b)/a
+ * 枚举a看当前是否有c-b使得n为正整数, c-b的取值范围为[l-r,r-l]
+ * 注意n不能为0，WA了两发。。特判一下即可
+ */ 
+ 
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <cmath>
+#include <algorithm>
+#include <iostream>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+#define pb push_back
+#define cl clear	 
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline ll read(){
+	ll x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+ll l, r, m;
+
+void solve(){
+	l = read();
+	r = read();
+	m = read();
+	for(int a = l ; a <= r; ++a){
+		int need, need1 = (a - m % a) % a, need2 = m % a * -1;
+		if(abs(need2)<need1&&m+need2) need = need2;
+		else need = need1;
+		if(need<=r-l&&need>=l-r){
+			if(need>0) printf("%lld %lld %lld\n",a,l,l+need);
+			else printf("%lld %lld %lld\n",a,l-need,l);
+			return ;
+		}
+	}
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}

@@ -1,0 +1,317 @@
+/*
+https://atcoder.jp/contests/abc218/tasks/abc218_d
+D - Rectangles  / 
+Time Limit: 4 sec / Memory Limit: 1024 MB
+
+Score : 400 points
+
+Problem Statement
+We have N distinct points on a two-dimensional plane, numbered 1,2,…,N. Point i (1≤i≤N) has the coordinates (x i ,y i​).
+
+How many rectangles are there whose vertices are among the given points and whose edges are parallel to the x- or y-axis?
+
+Constraints
+4≤N≤2000
+0≤x i,y i≤10 9 (x i​,y i​)=(x j,y j​) (i=j)
+All values in input are integers.
+*/
+
+#include <cstdio>
+#include <map>
+
+using namespace std;
+typedef pair<int,int> P;
+typedef long long ll;
+
+ll ans;
+int n, x[2005], y[2005];
+map<P,int> cntX;
+
+int main(){
+	scanf("%d",&n);
+	for(int i = 1 ; i <= n ; ++i){
+		scanf("%d %d",&x[i],&y[i]);
+		for(int j = 1 ; j < i ; ++j){
+			if(y[i]==y[j]) ++cntX[{x[i],x[j]}];
+		}
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		for(int j = i + 1 ; j <= n ; ++j){
+			if(y[i]==y[j]){
+				ans += cntX[{x[i],x[j]}];
+				ans += cntX[{x[j],x[i]}];
+				--ans;
+			}
+		}
+		for(int j = i + 1 ; j <= n ; ++j){
+			if(y[i]==y[j]) --cntX[{x[i],x[j]}];
+		}
+	}
+	printf("%lld\n",ans);
+	return 0;
+}
+
+/*
+https://atcoder.jp/contests/abc218/tasks/abc218_e
+E - Destruction  / 
+Time Limit: 2 sec / Memory Limit: 1024 MB
+
+Score : 500 points
+
+Problem Statement
+We have a connected undirected graph with N vertices and M edges.
+The vertices are numbered 1 through N, and the edges are numbered 1 through M. Edge i connects Vertices A i​ and B i .
+Takahashi is going to remove zero or more edges from this graph.
+When removing Edge i, a reward of C i  is given if C i ≥0, and a fine of ∣C i ∣ is incurred if C i <0.
+
+Find the maximum total reward that Takahashi can get when the graph must be connected after removing edges.
+
+Constraints
+2≤N≤2×10 5
+ 
+N−1≤M≤2×10 5
+ 
+1≤A i ,B i<=N
+−10 
+9
+ ≤C 
+i
+​
+ ≤10 
+9
+ 
+The given graph is connected.
+All values in input are integers.
+
+*/
+
+/*
+ * MST
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <algorithm>
+#define re register
+#define MAXN 200005
+#define MAXM 200005
+//kruskal
+using namespace std;
+
+typedef long long ll;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+struct Edge{
+    int u, v, w;
+}G[MAXM];
+
+bool cmp(Edge a, Edge b){
+    return a.w < b.w;
+}
+
+int N, M, parent[MAXN];
+ll sum;
+
+int Find(int x){
+    if(parent[x]!=x){
+        int last = parent[x];
+        parent[x] = Find(parent[x]);
+    }
+    return parent[x];
+}
+
+void Union(int x, int y){
+    parent[Find(x)] = Find(y);
+}
+
+ll kruskal(){
+    sort(G+1,G+1+M,cmp);
+    ll cnt = 0, ans = 0;
+    for(re int i = 1 ; i <= M ; ++i){
+        int pu = Find(G[i].u), pv = Find(G[i].v);
+        if(pu==pv) continue;
+        if(G[i].w > 0)ans += G[i].w;
+        parent[pu] = pv;
+        if(++cnt==N-1) break;
+    }
+    return ans;
+}
+
+int main(){
+    N = read();
+    M = read();
+    int x, y, z;
+    for(re int i = 1 ; i <= N ; ++i)
+        parent[i] = i;
+    for(re int i = 1 ; i <= M ; ++i){
+        G[i].u = read();
+        G[i].v = read();
+        G[i].w = read();
+        if(G[i].w > 0) sum += G[i].w;
+    }
+    printf("%lld\n",sum-kruskal());
+    return 0;
+}
+
+/*
+https://atcoder.jp/contests/abc218/tasks/abc218_f
+F - Blocked Roads  / 
+Time Limit: 2 sec / Memory Limit: 1024 MB
+
+Score : 500 points
+
+Problem Statement
+You are given a directed graph with N vertices and M edges. The vertices are numbered 1 through N, and the edges are numbered 1 through M. Edge i (1≤i≤M) goes from Vertex s 
+i
+​
+  to Vertex t 
+i
+​
+  and has a length of 1.
+
+For each i (1≤i≤M), find the shortest distance from Vertex 1 to Vertex N when all edges except Edge i are passable, or print -1 if Vertex N is unreachable from Vertex 1.
+
+Constraints
+2≤N≤400
+1≤M≤N(N−1)
+1≤s 
+i
+​
+ ,t 
+i
+​
+ ≤N
+s 
+i
+​
+ 
+
+=t 
+i
+​
+ 
+(s 
+i
+​
+ ,t 
+i
+​
+ )
+
+=(s 
+j
+​
+ ,t 
+j
+​
+ ) (i
+
+=j)
+All values in input are integers.
+*/
+
+/*
+ * BFS
+ */
+ 
+#include <cstdio>
+#include <queue>
+#include <algorithm>
+
+using namespace std;
+const int MAXN = 1e6 + 5, MAXM = 1e6 + 5;
+
+int head[MAXN<<1], tot;
+
+struct Edge{
+	int u, to, next;
+}G[MAXM<<1];
+
+inline void addEdge(int u, int v){
+	G[++tot].to = v;
+	G[tot].u = u;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+int n, m, dis[MAXN], pre[MAXN], ans;
+bool vis[MAXN];
+
+int BFS(){
+	for(int i = 1 ; i <= n ; ++i) dis[i] = 0x3f3f3f3f, vis[i] = false;
+	queue<int> q;
+	q.push(1);
+	dis[1] = 0;
+	vis[1] = true;
+	while(!q.empty()){
+		int np = q.front(); q.pop();
+		for(int i = head[np], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(dis[to]<=dis[np]+1) continue;
+			dis[to] = dis[np]+1;
+			pre[to] = np;
+			if(!vis[to]){
+				vis[to] = true;
+				q.push(to);
+			}
+		}
+	}
+	return dis[n]==0x3f3f3f3f?-1:dis[n];
+}
+
+int BFS1(int e){
+	for(int i = 1 ; i <= n ; ++i) dis[i] = 0x3f3f3f3f, vis[i] = false;
+	queue<int> q;
+	q.push(1);
+	dis[1] = 0;
+	vis[1] = true;
+	while(!q.empty()){
+		int np = q.front(); q.pop();
+		for(int i = head[np], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(i==e||dis[to]<=dis[np]+1) continue;
+			dis[to] = dis[np]+1;
+			pre[to] = np;
+			if(!vis[to]){
+				vis[to] = true;
+				q.push(to);
+			}
+		}
+	}
+	return dis[n]==0x3f3f3f3f?-1:dis[n];
+}
+
+int main(){
+	scanf("%d %d",&n,&m);
+	for(int i = 1, u, v ; i <= m ; ++i){
+		scanf("%d %d",&u,&v);
+		addEdge(u,v);
+	}
+	ans = BFS();
+	for(int i = 1 ; i <= m ; ++i){
+		bool flag = false;
+		int last = n;
+		while(pre[last]){
+			if(pre[last]==G[i].u&&last==G[i].to) flag = true;
+			last = pre[last];
+		}
+		if(flag) printf("%d\n",BFS1(i));
+		else printf("%d\n",ans);
+	}
+	return 0; 
+}

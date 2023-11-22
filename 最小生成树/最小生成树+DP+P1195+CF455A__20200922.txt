@@ -1,0 +1,150 @@
+/*
+https://www.luogu.com.cn/problem/P1195
+题目背景
+小杉坐在教室里，透过口袋一样的窗户看口袋一样的天空。
+
+有很多云飘在那里，看起来很漂亮，小杉想摘下那样美的几朵云，做成棉花糖。
+
+题目描述
+给你云朵的个数N，再给你M个关系，表示哪些云朵可以连在一起。
+
+现在小杉要把所有云朵连成K个棉花糖，一个棉花糖最少要用掉一朵云，小杉想知道他怎么连，花费的代价最小。
+
+输入格式
+每组测试数据的
+
+第一行有三个数N,M,K(1≤N≤1000,1≤M≤10000,1≤K≤10)
+
+接下来MM行每行三个数X,Y,L，表示XX云和YY云可以通过LL的代价连在一起。(1≤X,Y≤N,0≤L<10000)
+
+30%的数据 N≤100,M≤1000
+
+输出格式
+对每组数据输出一行，仅有一个整数，表示最小的代价。
+
+如果怎么连都连不出K个棉花糖，请输出'No Answer'。
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <algorithm>
+#define re register
+#define MAXN 1005
+#define MAXM 10005
+
+using namespace std;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+struct Edge{
+    int u, v, w;
+}G[MAXM];
+
+bool cmp(Edge a, Edge b){
+    return a.w < b.w;
+}
+
+int N, M, K, parent[MAXN];
+
+int Find(int x){
+    if(parent[x]!=x){
+        parent[x] = Find(parent[x]);
+    }
+    return parent[x];
+}
+
+void kurskal(){
+    int cnt = 0, ans = 0;
+    for(re int i = 1 ; i <= M ; ++i){
+        int pu = Find(G[i].u), pv = Find(G[i].v);
+        if(pu==pv) continue;
+        parent[pu] = pv;
+        ans += G[i].w;
+        ++cnt;
+        if(cnt==N-K){
+            printf("%d\n",ans);
+            return ;
+        }
+    }
+    printf("No Answer");
+}
+
+int main(){
+    N = read();
+    M = read();
+    K = read();
+    for(re int i = 1 ; i <= N ; ++i){
+        parent[i] = i;
+    }
+    for(re int i = 1 ; i <= M ; ++i){
+        G[i].u = read();
+        G[i].v = read();
+        G[i].w = read();
+    }
+    sort(G+1,G+M+1,cmp);
+    kurskal();
+    return 0;
+}
+
+/*
+https://codeforces.com/problemset/problem/455/A
+A. Boredom
+time limit per test1 second
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Alex doesn't like boredom. That's why whenever he gets bored, he comes up with games. One long winter evening he came up with a game and decided to play it.
+
+Given a sequence a consisting of n integers. The player can make several steps. In a single step he can choose an element of the sequence (let's denote it ak) and delete it, at that all elements equal to ak+1 and ak-1 also must be deleted from the sequence. That step brings ak points to the player.
+
+Alex is a perfectionist, so he decided to get as many points as possible. Help him.
+
+Input
+The first line contains integer n (1≤n≤10^5) that shows how many numbers are in Alex's sequence.
+
+The second line contains n integers a1, a2, ..., an (1≤ai≤10^5).
+
+Output
+Print a single integer — the maximum number of points that Alex can earn.
+*/
+
+#include <iostream>
+#include <cstdio>
+#define MAXN 100005
+
+using namespace std;
+typedef long long ll;
+
+//DP[i], 选了i删数的最大值
+ll DP[MAXN], cnt[MAXN], mx, ans;
+
+int main(){
+    int n;
+    cin>>n;
+    for(int i = 1 ; i <= n ; ++i){
+        ll tmp;
+        cin>>tmp;
+        ++cnt[tmp];
+        mx = max(mx,tmp);
+    }
+    DP[1] = cnt[1];
+    for(int i = 2 ; i <= mx ; ++i){
+        DP[i] = max(DP[i-1],DP[i-2]+cnt[i]*i);
+        ans = max(DP[i],ans);
+    }
+    printf("%lld\n",ans);
+    return 0;
+}

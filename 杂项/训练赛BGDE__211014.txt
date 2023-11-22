@@ -1,0 +1,287 @@
+/*
+https://vjudge.net/contest/462310#problem/B
+C2. Potions (Hard Version)
+time limit per test1 second
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+This is the hard version of the problem. The only difference is that in this version n≤200000. You can make hacks only if both versions of the problem are solved.
+
+There are n potions in a line, with potion 1 on the far left and potion n on the far right. Each potion will increase your health by ai when drunk. ai can be negative, meaning that potion will decrease will health.
+
+You start with 0 health and you will walk from left to right, from first potion to the last one. At each potion, you may choose to drink it or ignore it. You must ensure that your health is always non-negative.
+
+What is the largest number of potions you can drink?
+
+Input
+The first line contains a single integer n (1≤n≤200000) — the number of potions.
+
+The next line contains n integers a1, a2, ... ,an (−109≤ai≤109) which represent the change in health after drinking that potion.
+
+Output
+Output a single integer, the maximum number of potions you can drink without your health becoming negative.
+*/
+
+/*
+ * 先假设能把药全喝了，当生命值为负数的时候把之前喝过伤害最高的药水回溯不喝
+ */
+ 
+#include <cstdio>
+#include <algorithm>
+#include <queue>
+
+using namespace std;
+typedef pair<int,int> P;
+
+
+int n, a[200005], ans;
+long long sum;
+priority_queue<int,vector<int>,greater<int> > pq;
+
+int main(){
+	scanf("%d",&n);
+	ans = n;
+	for(int i = 1 ; i <= n ; ++i){
+		scanf("%d",&a[i]);
+		sum += a[i];
+		if(a[i]<0) pq.push(a[i]);
+		while(sum<0){
+			sum -= pq.top();
+			--ans;
+			pq.pop();
+		}
+	}
+	printf("%d\n",ans);
+	return 0;
+}
+
+/*
+https://vjudge.net/contest/462310#problem/G
+B. Symmetric Matrix
+time limit per test1 second
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Masha has n types of tiles of size 2×2. Each cell of the tile contains one integer. Masha has an infinite number of tiles of each type.
+
+Masha decides to construct the square of size m×m consisting of the given tiles. This square also has to be a symmetric with respect to the main diagonal matrix, and each cell of this square has to be covered with exactly one tile cell, and also sides of tiles should be parallel to the sides of the square. All placed tiles cannot intersect with each other. Also, each tile should lie inside the square. See the picture in Notes section for better understanding.
+
+Symmetric with respect to the main diagonal matrix is such a square s that for each pair (i,j) the condition s[i][j]=s[j][i] holds. I.e. it is true that the element written in the i-row and j-th column equals to the element written in the j-th row and i-th column.
+
+Your task is to determine if Masha can construct a square of size m×m which is a symmetric matrix and consists of tiles she has. Masha can use any number of tiles of each type she has to construct the square. Note that she can not rotate tiles, she can only place them in the orientation they have in the input.
+
+You have to answer t independent test cases.
+
+Input
+The first line of the input contains one integer t (1≤t≤100) — the number of test cases. Then t test cases follow.
+
+The first line of the test case contains two integers n and m (1≤n≤100, 1≤m≤100) — the number of types of tiles and the size of the square Masha wants to construct.
+
+The next 2n lines of the test case contain descriptions of tiles types. Types of tiles are written one after another, each type is written on two lines.
+
+The first line of the description contains two positive (greater than zero) integers not exceeding 100 — the number written in the top left corner of the tile and the number written in the top right corner of the tile of the current type. The second line of the description contains two positive (greater than zero) integers not exceeding 100 — the number written in the bottom left corner of the tile and the number written in the bottom right corner of the tile of the current type.
+
+It is forbidden to rotate tiles, it is only allowed to place them in the orientation they have in the input.
+
+Output
+For each test case print the answer: "YES" (without quotes) if Masha can construct the square of size m×m which is a symmetric matrix. Otherwise, print "NO" (withtout quotes).
+*/
+
+/*
+ * 阅读题，具体意思是给n种2*2的小砖块，问能否拼出m*m大小的关于对角线对称的大砖块（禁止旋转小砖块）
+ */
+ 
+#include <cstdio>
+
+using namespace std;
+
+int n, m;
+
+void solve(){
+	scanf("%d%d",&n,&m);
+	bool yes = false;
+	for(int i = 1, a, b, c, d ; i <= n ; ++i){
+		scanf("%d %d %d %d",&a,&b,&c,&d);
+		if(b==c) yes = true;
+	}
+	if(m&1||!yes) puts("NO");
+	else puts("YES");
+}
+
+int main(){
+	int t;
+	scanf("%d",&t);
+	while(t--) solve();
+	return 0;
+}
+
+/*
+https://vjudge.net/contest/462310#problem/D
+E. String Reversal
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You are given a string s. You have to reverse it — that is, the first letter should become equal to the last letter before the reversal, the second letter should become equal to the second-to-last letter before the reversal — and so on. For example, if your goal is to reverse the string "abddea", you should get the string "aeddba". To accomplish your goal, you can swap the neighboring elements of the string.
+
+Your task is to calculate the minimum number of swaps you have to perform to reverse the given string.
+
+Input
+The first line contains one integer n (2≤n≤200000) — the length of s.
+
+The second line contains s — a string consisting of n lowercase Latin letters.
+
+Output
+Print one integer — the minimum number of swaps of neighboring elements you have to perform to reverse the string.
+*/
+
+/*
+ * 从样例3中大胆猜每次是找距离自己最近的相同的字母移动到当前位置
+ * 关于找距离自己最近的相同的字母：可以用队列记录每一种字母的下标
+ * 关于每次移动对答案的贡献
+ * 每次移动会导致一个区间的字母后移
+ * 我们先定义一个树状数组sum(i)表示原字符串中第i个字符移动到第1个字符的操作数+1，默认a[i]都为1
+ * 每次操作修改区间的sum值即可
+ */
+
+#include <cstdio>
+#include <cmath>
+#include <queue>
+
+using namespace std;
+const int MAXN = 200005;
+
+int n, s[MAXN], rev[MAXN], tree[MAXN];
+long long ans;
+queue<int> q[27];
+
+int lowbit(int x){
+	return x & - x;
+}
+
+void add(int x, int val){
+	for( ; x <= n ; x += lowbit(x)) tree[x] += val;
+}
+
+int sum(int x){
+	long long res = 0;
+	for( ; x >= 1 ; x -= lowbit(x)) res += tree[x];
+	return res;
+}
+
+int main(){
+	scanf("%d\n",&n);
+	for(int i = 1 ; i <= n ; ++i){
+		rev[n-i+1] = s[i] = getchar();
+		q[s[i]-'a'+1].push(i);
+		add(i,1);
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		int np = rev[i] - 'a' + 1, fd = q[np].front();
+		q[np].pop();
+		ans += sum(fd) - i;
+		add(1,1);
+		add(fd,-1);
+		
+	}
+	printf("%lld\n",ans);
+	return 0;
+}
+
+/*
+https://vjudge.net/contest/462310#problem/E
+E. String Reversal
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You are given a string s. You have to reverse it — that is, the first letter should become equal to the last letter before the reversal, the second letter should become equal to the second-to-last letter before the reversal — and so on. For example, if your goal is to reverse the string "abddea", you should get the string "aeddba". To accomplish your goal, you can swap the neighboring elements of the string.
+
+Your task is to calculate the minimum number of swaps you have to perform to reverse the given string.
+
+Input
+The first line contains one integer n (2≤n≤200000) — the length of s.
+
+The second line contains s — a string consisting of n lowercase Latin letters.
+
+Output
+Print one integer — the minimum number of swaps of neighboring elements you have to perform to reverse the string.
+*/
+
+/*
+ * 0,1,2,3分类讨论来构造
+ * 0跳过
+ * 1开新的一行新建一个点
+ * 2必须要消耗一个①点
+ * 3要开新的一行，新建两个点，消耗一个③或②或①点
+ */
+
+#include <cstdio>
+#include <algorithm>
+#include <vector>
+#include <queue>
+
+using namespace std;
+typedef pair<int,int> P;
+const int MAXN = 100005;
+
+vector<P> ans, ones, twos;
+queue<P> threes;
+int n, a[MAXN], row;
+bool one[MAXN], two[MAXN];
+bool flag;
+
+int main(){
+	scanf("%d",&n);
+	row = n;
+	for(int i = 1 ; i <= n ; ++i) scanf("%d",&a[i]);	
+	ones.push_back(P{0,0x3f3f3f3f});
+	for(int i = 1 ; i <= n ; ++i){
+		if(a[i]==1){
+			ones.push_back(P{row,i});
+			ans.push_back(P{row--,i});
+		}
+	}
+	ones.push_back(P{0,0x3f3f3f3f});
+	twos.push_back(P{0,0x3f3f3f3f});
+	for(int i = 1, idx = 1 ; i <= n ; ++i){
+		if(a[i]==2){
+			while(ones[idx].second<i) ++idx;
+			if(ones[idx].second^0x3f3f3f3f){
+				twos.push_back(P{ones[idx].first,i});
+				ans.push_back(P{ones[idx].first,i});
+				one[idx++] = true;
+			}else flag = true;
+		}
+	}
+	twos.push_back(P{0,0x3f3f3f3f});
+	for(int i = n, idx1 = ones.size() - 2, idx2 = twos.size() - 2 ; i ; --i){
+		if(a[i]==3){
+			while(one[idx1]) ++idx1;
+			while(two[idx2]) ++idx2;
+			if(!threes.empty()){
+				ans.push_back(P{row,i});
+				ans.push_back(P{row--,threes.front().second});
+				threes.pop();
+				threes.push(P{row,i});
+			}else if(twos[idx2].second!=0x3f3f3f3f&&twos[idx2].second>i){
+				ans.push_back(P{row,i});
+				threes.push(P{row,i});
+				ans.push_back(P{row--,twos[idx2].second});
+				++idx2;
+			}else if(ones[idx1].second!=0x3f3f3f3f&&ones[idx1].second>i){
+				ans.push_back(P{row,i});
+				threes.push(P{row,i});
+				ans.push_back(P{row--,ones[idx1].second});
+				++idx1;
+			}else flag = true;
+		}
+	}
+	if(flag){
+		puts("-1");
+		return 0;
+	}
+	printf("%d\n",ans.size());
+	for(auto it : ans) printf("%d %d\n",it.first,it.second);
+	return 0;
+}

@@ -1,0 +1,194 @@
+/*
+链接：https://ac.nowcoder.com/acm/contest/22352/B
+来源：牛客网
+
+题目描述 
+阿强得到一份地图。这个地图包含n个点m条边的无重边无自环的无向图。每个节点都有一个正权值，每条路径也都含有一个正权值。他希望评估任意两点间的难度是多少。
+两点间的难度定义为：所有这两点间的路径中能得到的最小的路径最大点权乘以路径最大边权。
+输入描述:
+第一行两个整数n,m，分别表示无向图的点数和边数。
+
+第二行n个正整数，第i个正整数表示点i的点权。
+
+接下来m行每行三个正整数u_i,v_i,w_iu i ,v i​ ,w i ，分别描述一条边的两个端点和边权。
+1\leq n \leq 500, m \leq n * (n - 1) / 2，边权和点权为不超过10^9的正整数。1≤n≤500,m≤n∗(n−1)/2，边权和点权为不超过10 
+9
+ 的正整数。
+输出描述:
+共n行，每行n个整数，第i行第j个整数表示从i到j的路径的最小权值，如果从i不能到达j，则该值为-1。特别地，当i=j时输出0。
+*/
+
+/*
+ * 每次枚举点i来做MST,规定只有小于等于点i的权值才加到MST中,此时得到的是以点i作为最大权值点得到的答案,O(n*m)
+ * 在树上暴力,做n次DFS得到答案,O(n*n*n)
+ * 常数很大,需要卡常才能通过
+ */
+
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <algorithm>
+
+using namespace std;
+typedef pair<int,int> P;
+typedef long long ll;
+const int MAXN = 505;
+
+int head[MAXN], tot;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+inline void print(ll x) {
+    if(x < 0) putchar('-'), x = -x;
+    if(x > 9) print(x / 10);
+    putchar(x % 10 + '0');
+}
+
+struct Edge{
+	int np, to, val, next;
+}MST[MAXN*MAXN*2], G[MAXN*MAXN];
+
+inline void addEdge(int u, int v, int w){
+	MST[++tot].to = v;
+	MST[tot].val = w;
+	MST[tot].next = head[u];
+	head[u] = tot;
+}
+
+ll ans[MAXN][MAXN];
+int n, m, parent[MAXN], val[MAXN];
+
+bool cmp(Edge a, Edge b){
+	return a.val < b.val;
+}
+
+void init_MST(){
+	for(int i = 1 ; i <= n ; ++i) head[i] = 0, parent[i] = i;
+	tot = 0;
+}
+
+inline int find(int x){
+	if(parent[x]==x) return x;
+	return parent[x] = find(parent[x]);
+}
+
+void DFS(int np, int fat, int from, int maxa, int maxe){
+	if(ans[np][from]==0x3f3f3f3f3f3f3f3f||ans[np][from]>1ll*maxa*maxe)
+		ans[np][from] = ans[from][np] = 1ll*maxa*maxe;
+	for(int i = head[np], to ; i ; i = MST[i].next){
+		to = MST[i].to;
+		if(to==fat) continue;
+		DFS(to,np,from,max(maxa,val[to]),max(maxe,MST[i].val));
+		
+	}
+}
+
+int main(){
+	n = read();
+	m = read();
+	for(int i = 1 ; i <= n ; ++i){
+		val[i] = read();
+		for(int j = 1 ; j <= n ; ++j) ans[i][j] = 0x3f3f3f3f3f3f3f3f;
+	}
+	for(int i = 1 ; i <= m ; ++i) G[i] = {read(),read(),read()};
+	sort(G+1,G+1+m,cmp);
+	for(int i = 1 ; i <= n ; ++i){
+		init_MST();
+		for(int j = 1 ; j <= m ; ++j){
+			Edge it = G[j];
+			if(val[it.np]>val[i]||val[it.to]>val[i]) continue;
+			int fu = find(it.np), fv = find(it.to);
+			if(fu==fv) continue;
+			parent[fu] = fv;
+			addEdge(it.np,it.to,it.val);
+			addEdge(it.to,it.np,it.val);
+		}
+		for(int j = 1 ; j <= n ; ++j) DFS(j,0,j,val[j],0);
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		for(int j = 1 ; j <= n ; ++j){
+			print((ans[i][j]==0x3f3f3f3f3f3f3f3f)?-1:ans[i][j]);
+			putchar(' ');
+		}
+		putchar('\n');
+	}
+	return 0;
+}
+
+/*
+链接：https://ac.nowcoder.com/acm/contest/22352/J
+来源：牛客网
+
+题目描述 
+阿强和阿珍在玩游戏。
+他们在一个n∗m的棋盘上下棋。他们在上面放一些棋子，为了让棋盘看起来很漂亮，使得任意一个n∗n的区域里都有k个棋子。
+阿珍问阿强：你能找到多少合法方案呢？请你帮阿强解决这个问题。结果对1e9+7取模
+输入描述:
+一行包含三个整数n,m,k(1≤n≤100,n≤m≤1e18,0≤k≤n*n)
+输出描述:
+输出方案数，结果对1e9+7取模
+*/
+
+#include <cstdio>
+#include <algorithm>
+
+using namespace std;
+const int MOD = 1e9 + 7, MAXN = 105;
+typedef long long ll;
+
+ll n, m, k, t, q, dp[MAXN][MAXN*MAXN], c[MAXN][MAXN], pre[MAXN];
+
+void init(){
+	c[0][0] = 1;
+	for(int i = 1 ; i <= 100 ; ++i){
+		c[i][0] = 1;
+		for(int j = 1 ; j <= i ; ++j){
+			c[i][j] = (c[i-1][j]+c[i-1][j-1]) % MOD;
+		}
+	}
+}
+
+ll qpow(ll x, ll n, int p = MOD){
+	ll res = 1;
+	while(n){
+		if(n&1) res = res * x % MOD;
+		x = x * x % MOD;
+		n >>= 1;
+	}
+	return res % MOD;
+}
+
+int main(){
+	init();
+	scanf("%lld %lld %lld",&n,&m,&k);
+	t = m / n;
+	q = m % n;
+	dp[0][0] = 1;
+	for(int i = 0 ; i <= n ; ++i){
+		pre[i] = qpow(c[n][i],t);
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		for(int j = 0 ; j <= k ; ++j){
+			for(int l = 0 ; l <= min(1ll*j,n) ; ++l){
+				if(i<=q) dp[i][j] = (dp[i][j] + dp[i-1][j-l] * pre[l] % MOD * c[n][l] % MOD) % MOD;
+				else dp[i][j] = (dp[i][j] + dp[i-1][j-l] * pre[l] % MOD) % MOD;
+			}
+		}
+	}
+	
+	printf("%lld\n",dp[n][k]);
+	return 0;
+}

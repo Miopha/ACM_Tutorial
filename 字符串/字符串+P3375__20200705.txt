@@ -1,0 +1,72 @@
+/*
+https://www.luogu.com.cn/problem/P3375
+题目描述
+给出两个字符串 s1和s2 ，若 s1的区间 [l, r] 子串与 s2完全相同，则称s2在s1中出现了，其出现位置为 l。
+现在请你求出 s2在s1中所有出现的位置。
+
+定义一个字符串 s 的 border 为 s 的一个非 s 本身的子串 t，满足 t 既是 s 的前缀，又是 s 的后缀。
+对于 s2
+ ，你还需要求出对于其每个前缀 s'的最长 border t' 的长度
+
+输入格式
+第一行为一个字符串，即为 s1
+第二行为一个字符串，即为 s2
+输出格式
+首先输出若干行，每行一个整数，按从小到大的顺序输出 s2在 s1中出现的位置。
+最后一行输出 |s2| 个整数，第 i 个整数表示 s2 的长度为 i 的前缀的最长 border 长度
+*/
+
+/*
+ * prefix数组存储s2 的长度为i的前缀的最长border长度+1
+ * 两字符串不等于或成功匹配到一个子字符串的时候将s2的prefix[idx2]位与不相等的字符对齐再继续进行比较
+ */
+ 
+#include <bits/stdc++.h>
+#define re register
+#define MAXN 1000005
+
+char s1[MAXN], s2[MAXN];
+int prefix[MAXN];
+
+using namespace std;
+
+int main(){
+    cin>>(s1+1);
+    cin>>(s2+1);
+    int l1 = strlen(s1+1), l2 = strlen(s2+1);
+    int j = 0;
+    for(re int i = 2 ; i <= l2 ; i++){
+        while(j&&s2[i]!=s2[j+1])
+            j = prefix[j];
+        if(s2[j+1]==s2[i])
+            j++;
+        prefix[i] = j;
+    }
+    j = 0;
+    for(re int i = l2 ; i >= 1 ; i--){
+        prefix[i+1] = prefix[i];
+        prefix[i+1]++;
+    }
+    int idx1 = 1, idx2 = 1, ans = 0;
+    while(l2-idx2<=l1-idx1){
+        if(s1[idx1]==s2[idx2]){
+            idx1++; idx2++;
+        }else{
+            if(prefix[idx2])
+                idx2 = prefix[idx2];
+            else
+                idx1++;
+        }
+        if(idx2-1==l2){
+            printf("%d\n",idx1-l2);
+            idx2=prefix[idx2-1];
+            idx1--;
+            ans++;
+            continue;
+        }
+    }
+    for(int i = 2 ; i <= l2 + 1; i++)
+        printf("%d ",prefix[i]-1);
+    printf("\n");
+    return 0;
+}

@@ -1,0 +1,72 @@
+/*
+Boy Valera likes strings. And even more he likes them, when they are identical. That's why in his spare time Valera plays the following game. He takes any two strings, consisting of lower case Latin letters, and tries to make them identical. According to the game rules, with each move Valera can change one arbitrary character Ai in one of the strings into arbitrary character Bi, but he has to pay for every move a particular sum of money, equal to Wi. He is allowed to make as many moves as he needs. Since Valera is a very economical boy and never wastes his money, he asked you, an experienced programmer, to help him answer the question: what minimum amount of money should Valera have to get identical strings.
+
+Input
+The first input line contains two initial non-empty strings s and t, consisting of lower case Latin letters. The length of each string doesn't exceed 105. The following line contains integer n (0≤n≤500) — amount of possible changings. Then follow n lines, each containing characters Ai and Bi (lower case Latin letters) and integer Wi (0≤Wi≤100), saying that it's allowed to change character Ai into character Bi in any of the strings and spend sum of money Wi.
+
+Output
+If the answer exists, output the answer to the problem, and the resulting string. Otherwise output -1 in the only line. If the answer is not unique, output any.
+*/
+ 
+//package CF33B;
+
+import java.io.*;
+
+public class Main {
+
+	static int value[][] = new int[27][27];
+	
+	public static void main(String[] args) throws Exception {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		StringBuilder s1 = new StringBuilder(br.readLine());
+		StringBuilder s2 = new StringBuilder(br.readLine());
+		if(s1.length()!=s2.length()) {
+			System.out.println(-1);
+			return;
+		}
+		int m = Integer.parseInt(br.readLine());
+		for(int i = 1 ; i <= 26 ; i++)
+			for(int j = 1 ; j <= 26 ; j++) {
+				if(i==j)continue;
+				value[i][j] = Integer.MAX_VALUE/2;
+			}
+		for(int i = 1 ; i <= m ; i++) {
+			String tmp = br.readLine();
+			int x = tmp.charAt(0) - 'a' + 1 , y = tmp.charAt(2) - 'a' + 1 , z = Integer.parseInt(tmp.substring(4,tmp.length()));
+			value[x][y]=Math.min(z,value[x][y]);
+		}
+		//读取完成
+		
+		floyd();
+		
+		//修改字符串
+		long ans = 0;
+		for(int i = 0 ; i < s1.length() ; i++) {
+			int c1 = s1.charAt(i) - 'a' + 1 , c2 = s2.charAt(i) - 'a' + 1 , minV = Integer.MAX_VALUE;
+			if(c1==c2)continue;
+			for(int j = 1 ; j <= 26 ; j++) {
+				int x1 = value[c1][j] , x2 = value[c2][j];
+				if(x1!=Integer.MAX_VALUE/2&&x2!=Integer.MAX_VALUE/2&&x1+x2<minV) {
+					minV=x1+x2;
+					s1.setCharAt(i,(char)(j+'a'-1));
+					s2.setCharAt(i,(char)(j+'a'-1));
+				}
+			}
+			ans+=minV;
+		}
+		if(!s1.toString().equals(s2.toString()))
+			System.out.println(-1);
+		else {
+			System.out.println(ans);
+			System.out.println(s1.toString());
+		}
+	}
+	
+	public static void floyd() {
+		for(int k = 1 ; k <= 26 ; k++)
+			for(int i = 1 ; i <= 26 ; i++)
+				for(int j = 1 ; j <= 26 ; j++)
+					value[i][j] = Math.min(value[i][j],value[i][k]+value[k][j]);
+	}
+
+}

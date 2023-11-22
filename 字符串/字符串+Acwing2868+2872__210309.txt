@@ -1,0 +1,120 @@
+/*
+https://www.acwing.com/problem/content/2871/
+对于一个字符串 S，我们定义 S 的分值 f(S) 为 S 中恰好出现一次的字符个数。
+
+例如 f(“aba”)=1，f(“abc”)=3, f(“aaa”)=0。
+
+现在给定一个字符串 S[0…n−1]（长度为 n），请你计算对于所有 S 的非空子串 S[i…j](0≤i≤j<n)， f(S[i…j]) 的和是多少。
+
+输入格式
+输入一行包含一个由小写字母组成的字符串 S。
+
+输出格式
+输出一个整数表示答案。
+
+数据范围
+对于 20% 的评测用例，1≤n≤10；
+对于 40% 的评测用例，1≤n≤100；
+对于 50% 的评测用例，1≤n≤1000；
+对于 60% 的评测用例，1≤n≤10000；
+对于所有评测用例，1≤n≤100000。
+输入样例：
+ababc
+输出样例：
+21
+*/
+
+/*
+ * 记录每个字符出现的位置，从而求出这个位置的字符有效出现的次数
+ */
+
+#include <cstdio>
+#include <vector>
+#define pb push_back
+
+using namespace std;
+typedef long long ll;
+const int MAXN = 100005;
+
+char s[MAXN];
+int len, cnt[27];
+vector<int> idx[27];
+ll ans;
+
+int main(){
+	scanf("%s",s+1);
+	for(int i = 1 ; i <= 26 ; ++i) idx[i].pb(0);
+	for(int i = 1 ; s[i] ^ '\0' ; ++i) idx[s[i]-'a'+1].pb(i), len = max(len,i);
+	for(int i = 1 ; i <= 26 ; ++i) idx[i].pb(len+1), cnt[i] = 1;
+	// printf("len=%d\n",len);
+	for(int i = 1 ; i <= len ; ++i){
+		char c = s[i] - 'a' + 1;
+		int l = idx[c][cnt[c]] - idx[c][cnt[c]-1] - 1, r = idx[c][cnt[c]+1] - idx[c][cnt[c]] - 1;
+		// printf("l=%d r=%d\n",l,r);
+		++cnt[c];
+		ans += l + r + 1 + 1ll * l * r;
+	}
+	printf("%lld\n",ans);
+	return 0;
+}
+/*
+https://www.acwing.com/problem/content/2875/
+对于一个字符串 S，我们定义 S 的分值 f(S) 为 S 中出现的不同的字符个数。
+
+例如 f(“aba”)=2，f(“abc”)=3,f(“aaa”)=1。
+
+现在给定一个字符串 S[0..n−1]（长度为 n），请你计算对于所有 S 的非空子串 S[i..j](0≤i≤j<n)，f(S[i..j]) 的和是多少。
+
+输入格式
+输入一行包含一个由小写字母组成的字符串 S。
+
+输出格式
+输出一个整数表示答案。
+
+数据范围
+对于 20% 的评测用例，1≤n≤10；
+对于 40% 的评测用例，1≤n≤100；
+对于 50% 的评测用例，1≤n≤1000；
+对于 60% 的评测用例，1≤n≤10000；
+对于所有评测用例，1≤n≤100000。
+
+输入样例：
+ababc
+输出样例：
+28
+*/
+
+/*
+ * 和上一题差不多，有效出现的条件修改了一下
+ */
+
+#include <cstdio>
+#include <vector>
+#define pb push_back
+
+using namespace std;
+const int MAXN = 100005;
+typedef long long ll;
+
+
+int len, cnt[27];
+ll ans;
+char s[MAXN];
+vector<int> idx[27];
+
+int main(){
+	scanf("%s",s+1);
+	for(int i = 1 ; s[i] ^ '\0' ; ++i) idx[s[i]-'a'+1].pb(i), len = max(len,i);
+	for(int i = 1 ; i <= 26 ; ++i) idx[i].pb(len+1);
+	for(int i = 1 ; i <= len ; ++i){
+		char c = s[i] - 'a' + 1; 
+		int l, r;
+		if(!cnt[c]) l = idx[c][0] - 1;
+		else l = idx[c][cnt[c]] - idx[c][cnt[c]-1] - 1;
+		r = len - idx[c][cnt[c]];
+		ans += l + r + 1 + 1ll * l * r;
+		++cnt[c];
+	}
+	printf("%lld\n",ans);
+	return 0;
+}

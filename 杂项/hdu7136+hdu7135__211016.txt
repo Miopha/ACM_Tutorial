@@ -1,0 +1,213 @@
+/*
+http://acm.hdu.edu.cn/showproblem.php?pid=7136
+Jumping Monkey
+Time Limit: 8000/4000 MS (Java/Others)    Memory Limit: 262144/262144 K (Java/Others)
+Total Submission(s): 1845    Accepted Submission(s): 708
+
+
+Problem Description
+There is a tree with n nodes and n−1 edges that make all nodes connected. Each node i has a distinct weight ai. A monkey is jumping on the tree. In one jump, the monkey can jump from node u to node v if and only if av is the greatest of all nodes on the shortest path from node u to node v. The monkey will stop jumping once no more nodes can be reached.
+
+For each integer k∈[1,n], calculate the maximum number of nodes the monkey can reach if he starts from node k.
+ 
+
+Input
+The first line of the input contains an integer T (1≤T≤104), representing the number of test cases.
+
+The first line of each test case contains an integer n (1≤n≤105), representing the number of nodes.
+
+Each of the following n−1 lines contains two integers u,v (1≤u,v≤n), representing an edge connecting node u and node v. It is guaranteed that the input will form a tree.
+
+The next line contains n distinct integers a1,a2,…,an (1≤ai≤109), representing the weight of each node.
+
+It is guaranteed that the sum of n over all test cases does not exceed 8×105.
+ 
+
+Output
+For each test case, output n lines. The k-th line contains an integer representing the answer when the monkey starts from node k.
+*/
+
+#include <cstdio>
+#include <vector>
+#include <algorithm>
+#include <set>
+
+using namespace std;
+const int MAXN = 1005;
+typedef pair<int,int> P;
+
+set<int> p;
+int n, m, f[MAXN<<1], deg[MAXN<<1];
+vector<P> ans;
+
+void init(){
+	p.clear();
+	for(int i = 1 ; i <= (n<<1) ; ++i) f[i] = i, deg[i] = 0;
+}
+
+int ffind(int x){
+	if(f[x]==x) return x;
+	return f[x] = ffind(f[x]);
+}
+
+inline void addEdge(int u, int v){
+	++deg[u];
+	++deg[v];
+	ans.push_back(P{u,v-n});
+    f[ffind(u)] = ffind(v);
+}
+ 
+void solve(){
+	scanf("%d %d",&n,&m);
+	init();
+	for(int i = 1, u, v ; i <= m ; ++i){
+		scanf("%d %d",&u,&v);
+		addEdge(u,v+n);
+	}
+	ans.clear();
+	for(int i = 1 ; i <= n ; ++i) p.insert(i);
+	
+	for(int i = 1 ; i <= n ; ++i){
+		for(auto it = p.begin() ; it != p.end() ; ){
+			if(deg[i]>=2) break;
+			int pu = ffind(i), pv = ffind((*it)+n);
+			if(pu!=pv) addEdge(i,(*it)+n);
+			if(deg[(*it)+n]>=2){
+				p.erase(it++);
+				continue;
+			}
+			++it;
+		}
+	}
+	int u = 0, v = 0;
+	for(int i = 1 ; i <= n ; ++i) if(deg[i]==1) u = i;
+	for(int i = n + 1 ; i <= n<<1 ; ++i) if(deg[i]==1) v = i-n;
+	ans.push_back({u,v});
+	sort(ans.begin(),ans.end());
+	printf("%d\n",ans.size());
+	for(auto it : ans) printf("%d %d\n",it.first,it.second);
+}
+
+int main(){
+	int t;
+	scanf("%d",&t);
+	while(t--) solve();
+	return 0;
+}
+
+/*
+http://acm.hdu.edu.cn/showproblem.php?pid=7135
+Bigraph Extension
+Time Limit: 4000/2000 MS (Java/Others)    Memory Limit: 262144/262144 K (Java/Others)
+Total Submission(s): 794    Accepted Submission(s): 219
+
+
+Problem Description
+There are 2n vertices (n is even), n of which belong to set A, and the rest n belong to set B. Initially, there are m undirected edges in the graph, where the two vertices of each edge are not in the same set. In addition, there is no common vertex between any two edges.
+
+You are required to do the following operation multiple times:
+
+- Choose a vertex from set A and another from set B on the condition that these two vertices are not directly connected by an edge. Then add an edge to connect the two vertices.
+
+After that, when you choose any vertex in set A and any vertex in set B, the following conditions must be satisfied:
+
+- The two vertices are connected, which means there exists a path that leads from one vertex to the other.
+- The number of edges in the longest simple path between the two vertices is strictly greater than n. (In a simple path, each vertex is visited no more than once.)
+
+Please minimize the number of edges you add.
+ 
+
+Input
+The first line contains a single integer T (1≤T≤103), representing the number of test cases.
+
+For each test case, the first line of the input contains two integers n and m (2≤n≤103,0≤m≤n, n is even), representing the number of vertices in one set and the number of initial edges.
+
+In the following m lines, each line contains two integers u and v (1≤u,v≤n), indicating an edge between the u-th vertex in set A and the v-th vertex in set B. It's guaranteed that there is no common vertex between any two edges.
+*/
+
+#include <algorithm>
+#include <cstdio>
+#include <map>
+#include <set>
+
+using namespace std;
+const int MAXN = 1e5 + 5;
+typedef pair<int,int> P;
+
+int head1[MAXN], tot1, head2[MAXN], tot2;
+
+struct Edge{
+	int to, next;
+};
+
+Edge G1[MAXN<<1], G2[MAXN<<1];
+int n, f[MAXN], vals[MAXN], ans[MAXN];
+P val[MAXN];
+
+inline void addEdge1(int u, int v){
+	G1[++tot1].to = v;
+	G1[tot1].next = head1[u];
+	head1[u] = tot1;
+}
+
+inline void addEdge2(int u, int v){
+	G2[++tot2].to = v;
+	G2[tot2].next = head2[u];
+	head2[u] = tot2;
+}
+
+void init(){
+	tot1 = tot2 = 0;
+	for(int i = 1 ; i <= n ; ++i) head1[i] = head2[i] = 0;
+	for(int i = 1 ; i <= n ; ++i) f[i] = i;
+}
+
+int ffind(int x){
+	if(f[x]==x) return x;
+	return f[x] = ffind(f[x]);
+}
+
+inline void DFS(int np, int fat){
+	ans[np] = ans[fat] + 1 ;
+	for(int i = head2[np], to ; i ; i = G2[i].next){
+		to = G2[i].to;
+		if(to==fat) continue;
+		DFS(to,np);
+	}
+}
+
+void solve(){
+	scanf("%d",&n);
+	init();
+	for(int i = 1, u, v ; i < n ; ++i){
+		scanf("%d %d",&u,&v);
+		addEdge1(u,v);
+		addEdge1(v,u);
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		scanf("%d",&val[i].first);
+		vals[i] = val[i].first;
+		val[i].second = i;
+	}
+	sort(val+1,val+1+n);
+	for(int i = 1 ; i <= n ; ++i){
+		int u = val[i].second;
+		for(int j = head1[u], to ; j ; j = G1[j].next){
+			to = G1[j].to;
+			if(vals[to]>vals[u]) continue;
+			int fv = ffind(to);
+			addEdge2(u,fv);
+			addEdge2(fv,u);
+			f[fv] = u;
+		}
+	}
+	DFS(val[n].second,0);
+	for(int i = 1 ; i <= n ; ++i) printf("%d\n",ans[i]);
+}
+
+int main(){
+	int t;
+	scanf("%d\n",&t);
+	while(t--) solve();
+	return 0;
+}

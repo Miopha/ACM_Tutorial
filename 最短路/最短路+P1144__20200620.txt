@@ -1,0 +1,98 @@
+/*
+给出一个N个顶点M条边的无向无权图，顶点编号为1 - N。问从顶点1开始，到其他每个点的最短路有几条。
+输入格式
+第一行包含2个正整数N, M，为图的顶点数与边数。
+接下来M行，每行2个正整数x, y,示有一条顶点x连向顶点y的边,请注意可能有自环与重边。
+输出格式
+共N行，每行一个非负整数,第i行输出从顶点1到顶点有多少条不同的最短路,由于答案有可能会很大,
+你只需要输出ans mod 100003后的结果即可。如果无法到达顶点则输出0。
+*/
+
+/*
+ * 用BFS求出节点1到每个节点的最短路
+ * 图的存储:用一个ArrayList[i]存储相连节点,比如输入#1中node[1]={2,3}
+ * 在BFS中遍历每个可能走向的节点的时候:
+ * 如果走前节点的最短路径是走后节点的最短路径-1,那么可以从这个前节点走出最短路径,将前节点的最短路径条数加到后节点上
+ */
+ 
+//package P1144;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+
+	static int maxn = 1000005 , dis[] , alter[];
+	
+	static Queue<Integer> queue = new LinkedList<Integer>();
+	static ArrayList<Integer>[] map;
+	
+	public static void main(String[] args) {
+		int N = cin.nextInt() , M = cin.nextInt(); dis = new int[N+1]; alter = new int[N+1]; map = new ArrayList[N+1];
+		for(int i = 1 ; i <= N ; i++)
+			map[i] = new ArrayList<Integer>();
+		for(int i = 1 ; i <= M ; i++) {
+			int x = cin.nextInt() , y = cin.nextInt();
+			map[x].add(y);
+			map[y].add(x);
+		}
+		
+		BFS(1);
+		
+		for(int i = 1 ; i <= N ; i++)
+			out.println(alter[i]);
+		out.flush();
+	}
+	
+	public static void BFS(int s) {
+		queue.offer(s);
+		alter[s]=dis[s]=1;
+		while(!queue.isEmpty()) {
+			int cur = queue.poll();
+			for(int i = 0 ; i < map[cur].size() ; i++) {
+				int aft = map[cur].get(i);
+				if(dis[aft]!=0) {
+					if(dis[aft]==dis[cur]+1)
+						alter[aft]=(alter[aft]+alter[cur])%100003;
+					continue;
+				}
+				alter[aft]=alter[cur];
+				dis[aft]=dis[cur]+1;
+				queue.offer(aft);
+			}
+		}
+	}
+
+	static PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+	static FastScanner cin = new FastScanner(System.in);
+	static class FastScanner{
+		BufferedReader br;
+		StringTokenizer st;
+		public FastScanner(InputStream in) {
+			br = new BufferedReader(new InputStreamReader(in),16384);
+			st = new StringTokenizer("");
+		}
+		public String nextLine() {
+			try {
+				return br.readLine();
+			} catch (IOException e) {
+				return null;
+			}
+		}
+		public boolean hasNext() {
+			while(!st.hasMoreTokens()) {
+				String s = nextLine();
+				if(s==null) return false;
+				st = new StringTokenizer(s);
+			}
+			return true;
+		}
+		public String next() {
+			hasNext();
+			return st.nextToken();
+		}
+		public int nextInt() {
+			return Integer.parseInt(next());
+		}
+	}
+}

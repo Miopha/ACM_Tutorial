@@ -1,0 +1,106 @@
+/*
+https://www.luogu.com.cn/problem/P2543
+输入格式
+输入文件中包含两个字符串X和Y。当中两字符串非0即1。序列长度均小于9999。
+
+输出格式
+X和Y的最长公共子序列长度。
+输入输出样例
+输入 #1
+01010101010 00000011111
+输出 #1
+6
+输入 #2
+01011 010010101111111111
+输出 #2
+5
+*/
+
+/*
+ * LCS,DP[i][j]表示字符串a下标为i之前在字符串b中最长的公共子序列
+ * 状态转移方程DP[i][j] = DP[i-1][j-1]+1 if a[i]=[j],不满足条件在DP[i-1][j],DP[i][j-1]选最大的数
+ * a和b的长度可达9999,状态方程只需要用到上个DP[i][]的状态,所以可以数组可以开小点
+ */
+ 
+//package P2543;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+
+	public static void main(String[] args) throws IOException {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		StringTokenizer st = new StringTokenizer(br.readLine());
+		String str1 = st.nextToken(), str2 = st.nextToken();
+		int l1 = str1.length(), l2 = str2.length(), DP[][] = new int[2][l2+1];
+		for(int i = 1 ; i <= l1 ; ++i)
+			for(int j = 1 ; j <= l2 ; ++j)
+				if(str1.charAt(i-1)==str2.charAt(j-1))
+					DP[i&1][j] = DP[(i-1)&1][j-1]+1;
+				else
+					DP[i&1][j] = Math.max(DP[(i-1)&1][j],DP[i&1][j-1]);
+		System.out.println(DP[l1&1][l2]);
+					
+	}
+
+}
+
+/*
+https://www.luogu.com.cn/problem/P1439
+题目描述
+给出 1,2,…,n 的两个排列 P1和 P2 ，求它们的最长公共子序列。
+
+输入格式
+第一行是一个数 n。
+
+接下来两行，每行为 n 个数，为自然数 1,2,...,n 的一个排列。
+
+输出格式
+一个数，即最长公共子序列的长度。
+*/
+
+/*
+ * LCS[O(n^2)]离散化之后转化成LIS问题[O(nlogn)]
+ */
+ 
+//package P1439;
+
+import java.io.*;
+import java.util.Arrays;
+
+public class Main {
+
+	public static void main(String[] args) throws IOException {
+		StreamTokenizer st = new StreamTokenizer(new BufferedReader(new InputStreamReader(System.in)));
+		st.nextToken();
+		int n = (int)st.nval, a[] = new int[n+1], b[] = new int[n+1], mp[] = new int[n+1], LIS[] = new int[n+1], len;
+		for(int i = 1 ; i <= n ; ++i) {
+			st.nextToken(); a[i] = (int)st.nval; mp[a[i]]=i;
+		}
+		for(int i = 1 ; i <= n ; ++i) {
+			st.nextToken(); b[i] = (int)st.nval;
+		}
+		Arrays.fill(LIS,0x7fffffff);
+		len = LIS[0] = 0;
+		//System.out.println(Arrays.toString(mp));
+		for(int i = 1 ; i <= n ; ++i) {
+			if(mp[b[i]]>LIS[len]) 
+				LIS[++len]=mp[b[i]];
+			else {
+				int l = 0, r = len, mid;
+				while(l<r) {
+					mid = (l+r)>>1;
+					if(LIS[mid]>mp[b[i]]) r = mid;
+					else l = mid+1;
+				}
+				LIS[l] = Math.min(mp[b[i]],LIS[l]);
+			}
+			//System.out.println(Arrays.toString(LIS));
+		}
+		System.out.println(len);
+	}
+
+}
+
+

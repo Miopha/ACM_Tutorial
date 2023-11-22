@@ -1,0 +1,85 @@
+/*
+题目描述
+如题，给出一个有向图，请输出从某一点出发到所有点的最短路径长度。
+
+输入格式
+第一行包含三个整数 n,m,s，分别表示点的个数、有向边的个数、出发点的编号。
+
+接下来 mm 行每行包含三个整数 u,v,w，表示一条 u→v 的，长度为 w 的边。
+
+输出格式
+输出一行 n 个整数，第 ii 个表示 ss 到第 ii 个点的最短路径，若不能到达则输出 0x7fffffff
+*/
+
+/*
+ * dijskra,实际上就是BFS,如果当前距离小于之前计算过的距离（dis[]初始化为最大值）,那么把这个节点放进队列,注意如果已经在队列里就不用放了
+ */
+ 
+//package P3371;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+
+	static Queue<Integer> list = new LinkedList<Integer>();
+	static int dis[] , n , m , s;
+	static ArrayList<Integer>[] node, w;
+	
+	public static void main(String[] args) throws Exception {
+		StreamTokenizer cin = new StreamTokenizer(new BufferedReader(new InputStreamReader(System.in)));
+		cin.nextToken();
+		n = (int)cin.nval;
+		cin.nextToken();
+		m = (int)cin.nval;
+		cin.nextToken();
+		s = (int)cin.nval;
+		node = new ArrayList[n+1]; w = new ArrayList[n+1];
+		dis = new int[n+1];
+		for(int i = 1 ; i <= n ; i++) {
+			node[i] = new ArrayList<Integer>();
+			w[i] = new ArrayList<Integer>();
+		}
+		
+		for(int i = 0 ; i <= n ; i++) dis[i]=0x7fffffff;
+		for(int i = 1 ; i <= m ; i++) {
+			cin.nextToken();
+			int u = (int)cin.nval;
+			cin.nextToken();
+			int v = (int)cin.nval;
+			node[u].add(v);
+			cin.nextToken();
+			w[u].add((int)cin.nval);
+		}
+		//input ended
+		DFS(s);
+		
+		StringBuilder out = new StringBuilder();
+		for(int i = 1 ; i <= n ; i++)
+			out.append(dis[i]).append(" ");
+		
+		System.out.println(out.toString());
+	}
+	
+	public static void DFS(int s) {
+		list.add(s);
+		dis[s]=0;
+		boolean vis[] = new boolean[n+1];
+		vis[s]=true;
+		while(!list.isEmpty()) {
+			int cur = list.poll();
+			vis[cur] = false;
+			for(int i = 0 ; i < node[cur].size() ; i++) {
+				int aft = node[cur].get(i);
+				if(dis[aft]>dis[cur]+w[cur].get(i)) {
+					dis[aft]=dis[cur]+w[cur].get(i);
+					if(!vis[aft]) {
+						list.add(aft);
+						vis[aft]=true;
+					}
+				}
+			}
+		}
+	}
+
+}

@@ -1,0 +1,61 @@
+/*
+https://ac.nowcoder.com/acm/contest/7591/K
+*/
+
+/*
+ * 暴力求解回文串,API判断是否是合法日期
+ */
+
+package NC7591K;
+
+import java.io.*;
+import java.text.*;
+
+public class Main {
+
+	static String s1;
+	static int len;
+	static long ans;
+	static StringBuilder print = new StringBuilder();
+	
+	public static void main(String[] args) throws IOException {
+		s1 = br.readLine();
+		while(!s1.equals("#")) {
+			ans = 0;
+			len = s1.length();
+			for(int l = 0, r = 7 ; r < len ; ++l, ++r) {
+				for(int L = l, R = r; L < R && s1.charAt(L) == s1.charAt(R) ; ++L, --R) {
+					if(R-L==1) {
+						String tmp1 = s1.substring(l,r+1);
+						if(!tmp1.contains(" ")&&isValidDate(tmp1))
+							++ans;
+					}
+				}
+			}
+			print.append(ans).append('\n');
+			s1 = br.readLine();
+		}
+		out.print(print.toString());
+		out.flush();
+	}
+	
+	static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	static StreamTokenizer st = new StreamTokenizer(br);
+	static PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+	public static int nextInt() throws Exception {
+		st.nextToken();
+		return (int)st.nval;
+	}
+
+	public static boolean isValidDate(String str) {
+	      boolean convertSuccess = true;
+	       SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+	       try {
+	          format.setLenient(false);
+	          format.parse(str);
+	       } catch (ParseException e) {
+	          convertSuccess = false;
+	       }
+	       return convertSuccess;
+	}
+}

@@ -1,0 +1,112 @@
+/*
+https://codeforces.com/gym/103118/problem/B
+Build Roads
+Input file: standard input
+Output file: standard output
+Time limit: 2 seconds
+Memory limit: 256 megabytes
+In the cat country, there are n cities. The cat country king wants to build n − 1 roads to connect all the
+cities. The i-th city has a construction company with an experience value of ai
+. To build a road between
+the i-th city and the j-th city, the two cities’ construction companies need to cooperate with each other.
+However, in the process of building a road, the two construction companies may have conflicts due to poor
+communication, and it will result in a waste of building materials. Formally, building a road between the
+i-th city and the j-th city will waste gcd(ai
+, aj ) building materials.
+Can you help the cat country king choose to build n − 1 roads that connect all the cities and minimize
+the waste of building materials?
+To decrease the input size, the king of the cat country gives you a random integer generator and 3
+parameters L, R, seed. The following C language code shows how to generate n integers a1, a2, . . . , an,
+and a[i] stores the experience value of the construction company of the i-th city. You can use the code
+directly in your submissions.
+Input
+The only line contains four integers n, L, R, seed (2 ≤ n ≤ 2×105
+, 1 ≤ L ≤ R ≤ 2×105
+, 1 ≤ seed ≤ 1018).
+Output
+Print one integer – the minimum waste of connecting all the cities.
+*/
+
+/*
+ * 如果ai和aj互质，那么他们的边权就是1
+ * 如果有ai是质数，那么MST为n-1
+ * 且n很大时容易找出一对互质的数，所以答案也为n-1
+ * 特判L==R时边权只有一种答案为L*(n-1)
+ * 其他情况暴力求MST即可，O(n*n*log(max(L,R)))
+ */
+
+#include <algorithm>
+#include <cstdio>
+#include <vector>
+#include <cmath>
+
+using namespace std;
+const int MAXN = 200005;
+int n, L, R, a[MAXN];
+unsigned long long seed;
+
+unsigned long long xorshift64(){
+	unsigned long long x = seed;
+	x ^= x << 13;
+	x ^= x >> 7;
+	x ^= x << 17;
+	return seed = x;
+}
+
+int gen(){
+	return xorshift64() % (R - L + 1) + L;
+}
+
+struct Edge{
+	int np, to, val;
+	Edge(int _np, int _to, int _val){
+		np = _np;
+		to = _to;
+		val = _val;
+	}
+};
+
+bool cmp(const Edge e1, const Edge e2){
+	return e1.val < e2.val;
+}
+
+vector<Edge> G;
+int parent[MAXN];
+long long ans;
+
+inline int ffind(int x){
+	if(parent[x]==x) return x;
+	return parent[x] = ffind(parent[x]);
+}
+
+int main(){
+	scanf("%d %d %d %llu",&n,&L,&R,&seed);
+	for(int i = 1 ; i <= n ; ++i) a[i] = gen();
+	if(L==R){
+		printf("%lld\n",1ll*L*(n-1));
+		return 0;
+	}
+	if(n>=5000){
+		printf("%d\n",n-1);
+		return 0;
+	}
+	
+	for(int i = 1 ; i <= n ; ++i)
+		for(int j = i + 1 ; j <= n ; ++j){
+			G.push_back(Edge(i,j,__gcd(a[i],a[j])));
+		}
+		
+	for(int i = 1 ; i <= n ; ++i) parent[i] = i;
+	
+	sort(G.begin(),G.end(),cmp);
+	
+	for(auto it : G){
+		int pu = ffind(it.np), pv = ffind(it.to);
+		if(pu==pv) continue;
+		ans += it.val;
+		parent[pu] = pv;
+	}
+	
+	printf("%lld\n",ans);
+	return 0;
+}

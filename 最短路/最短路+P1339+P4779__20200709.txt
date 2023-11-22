@@ -1,0 +1,167 @@
+/*
+题目描述
+有一个 n 个点 m 条边的无向图，请求出从 s 到 t 的最短路长度。
+
+输入格式
+第一行四个正整数 n,m,s,t。 接下来 m 行，每行三个正整数 u,v,w，表示一条连接 u,v，长为 w 的边。
+
+输出格式
+输出一行一个整数，表示答案。
+
+说明/提示
+【数据范围】
+对于 100% 的数据，1<= n <= 2500, 1<=m<=6200,1<=w<=1000
+*/
+
+/*
+ * SPFA类似于BFS
+ * 满足dis[aft]>dis[cur]+ws[aft][cur]的时候松弛,更新dis[aft]和把点加进队列(如果已经在队列就不用重复加了)
+ */
+
+//package P1339;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+
+	static ArrayList<Integer>[] node;
+	static int ws[][], n, m, s, t, dis[];
+	static Queue<Integer> q = new LinkedList<Integer>();
+	
+	public static void main(String[] args) throws IOException {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		String tmp[] = br.readLine().split(" ");
+		n = Integer.parseInt(tmp[0]); m = Integer.parseInt(tmp[1]); s = Integer.parseInt(tmp[2]); t = Integer.parseInt(tmp[3]);
+		node = new ArrayList[n+1];
+		ws = new int[n+1][n+1];
+		dis = new int[n+1];
+		for(int i = 1 ; i <= n ; i++)
+			dis[i] = 0x7fffffff;
+		for(int i = 1 ; i <= n ; i++)
+			node[i] = new ArrayList<Integer>();
+		for(int i = 1 ; i <= m ; i++) {
+			tmp = br.readLine().split(" ");
+			int u = Integer.parseInt(tmp[0]), v = Integer.parseInt(tmp[1]), w = Integer.parseInt(tmp[2]);
+			node[u].add(v);node[v].add(u);
+			if(ws[u][v]!=0) ws[u][v] = ws[v][u] = Math.min(w,ws[u][v]);
+			else ws[u][v] = ws[v][u] = w;
+		}
+		//input ended
+		
+		SPFA(s);
+		
+		System.out.println(dis[t]);
+	}
+	
+	public static void SPFA(int s) {
+		boolean vis[] = new boolean[n+1];
+		q.add(s);
+		vis[s]=true;
+		dis[s]=0;
+		while(!q.isEmpty()) {
+			int cur = q.poll();
+			vis[cur] = false;
+			for(int i = 0 ; i < node[cur].size() ; i++) {
+				int aft = node[cur].get(i);
+				if(dis[aft]>dis[cur]+ws[aft][cur]) {
+					dis[aft]=dis[cur]+ws[aft][cur];
+					if(!vis[aft]) {
+						q.add(aft);
+						vis[aft] = true;
+					}
+				}
+			}
+		}
+	}
+
+}
+
+/*
+题目描述
+给定一个 n 个点，m 条有向边的带非负权图，请你计算从 s 出发，到每个点的距离。
+
+数据保证你能从 s 出发到任意点。
+
+输入格式
+第一行为三个正整数 n, m,s。 第二行起 m 行，每行三个非负整数 ui,vi,wi,表示从ui到vi有一条值为wi的有向边。
+
+输出格式
+输出一行 n 个空格分隔的非负整数，表示 s 到每个点的距离。
+*/
+
+/*
+ * dijkstra+heap,要用到优先队列,BFS的时候我们把每条边（Edge,存储这条边通往的下一个节点和当前的路径长度）放到PriorityQueue里面
+ * PriorityQueue会每次弹出当前路径最小的边（贪心）（需要重写compareTo方法来实现）来计算下一个节点的最小的路径长度
+ * 写法与SPFA类似,但 dijkstra+heap不同的是先看这个点是否有用,再松弛
+ */
+ 
+//package P4779;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+
+	static int n, m, s, dis[];
+	static ArrayList<Edge>[] G;
+	static PriorityQueue<Edge> q = new PriorityQueue<Edge>();
+	
+	public static void main(String[] args) throws Exception {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		String tmp[] = br.readLine().split(" ");
+		n = Integer.parseInt(tmp[0]); m = Integer.parseInt(tmp[1]); s = Integer.parseInt(tmp[2]);
+		G = new ArrayList[n+1];
+		dis = new int[n+1];
+		Arrays.fill(dis,0x7fffffff);
+		for(int i = 1 ; i <= n ; i++)
+			G[i] = new ArrayList<Edge>();
+		for(int i = 1 ; i <= m ; i++) {
+			tmp = br.readLine().split(" ");
+			int u = Integer.parseInt(tmp[0]), v = Integer.parseInt(tmp[1]), w = Integer.parseInt(tmp[2]);
+			G[u].add(new Edge(v,w));
+		}
+		//input ended
+		dijkstra(s);
+		
+		StringBuilder ans = new StringBuilder();
+		for(int i = 1 ; i <= n ; i++)
+			ans.append(dis[i]).append(" ");
+		
+		System.out.println(ans.toString());
+	}
+	
+	public static void dijkstra(int s) {
+		boolean vis[] = new boolean[n+1];
+		q.add(new Edge(s,0));
+		dis[s] = 0;
+		while(!q.isEmpty()) {
+			int cur = q.poll().v;
+			if(vis[cur]) continue;
+			vis[cur] = true;
+			for(int i = 0 ; i < G[cur].size() ; i++) {
+				Edge aft = G[cur].get(i);
+				if(dis[aft.v]>dis[cur]+aft.w) {
+					dis[aft.v]=dis[cur]+aft.w;
+					q.add(new Edge(aft.v,dis[aft.v]));
+				}
+			}
+		}
+	}
+
+}
+
+class Edge implements Comparable<Edge>{
+	//v, next node
+	//w, distance to next node
+	int v, w;
+	
+	Edge(int a, int b){
+		v = a; w = b;
+	}
+	
+	public int compareTo(Edge obj) {
+		return this.w - obj.w;
+	}
+	
+}

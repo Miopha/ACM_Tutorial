@@ -1,0 +1,133 @@
+/*
+https://codeforces.com/problemset/problem/20/C
+C. Dijkstra?
+time limit per test1 second
+memory limit per test64 megabytes
+inputstandard input
+outputstandard output
+You are given a weighted undirected graph. The vertices are enumerated from 1 to n. Your task is to find the shortest path between the vertex 1 and the vertex n.
+
+Input
+The first line contains two integers n and m (2 ≤ n ≤ 105, 0 ≤ m ≤ 105), where n is the number of vertices and m is the number of edges. Following m lines contain one edge each in form ai, bi and wi (1 ≤ ai, bi ≤ n, 1 ≤ wi ≤ 106), where ai, bi are edge endpoints and wi is the length of the edge.
+
+It is possible that the graph has loops and multiple edges between pair of vertices.
+
+Output
+Write the only integer -1 in case of no path. Write the shortest path in opposite case. If there are many solutions, print any of them.
+*/
+
+/*
+ * dijkstra/SPFA求最短路,用pre记录路径前驱
+ */
+ 
+#include <iostream>
+#include <cstdio>
+#include <queue>
+#define re register
+#define MAXN 100005
+
+using namespace std;
+typedef long long ll;
+typedef pair<ll,int> P;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int head[MAXN], tot;
+
+struct Edge{
+    int u, to, val, next;
+}G[MAXN<<1];
+
+inline void addEdge(int u, int to, int val){
+    G[++tot].u = u;
+    G[tot].to = to;
+    G[tot].val = val;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+int n, m, ans[MAXN], cnt, pre[MAXN];
+long long int dis[MAXN];
+bool vis[MAXN], visit[MAXN];
+
+int dijkstra(int start){
+    priority_queue<P,vector<P>,greater<P>> q;
+    dis[start] = 0;
+    q.push({0,start});
+    while(!q.empty()){
+        P nw = q.top(); q.pop();
+        if(nw.first>dis[nw.second]) continue;
+        int u = nw.second;
+        for(re int i = head[u] ; i ; i = G[i].next){
+            int aft = G[i].to;
+            if(dis[aft]>dis[u]+G[i].val){
+                pre[aft] = u;
+                dis[aft] = dis[u] + G[i].val;
+                q.push({dis[aft],aft});
+            }
+        }
+    }
+}
+
+int SPFA(int start){
+    queue<int> q;
+    dis[start] = 0;
+    vis[start] = true;
+    q.push(start);
+    while(!q.empty()){
+        int nw = q.front(); q.pop();
+        vis[nw] = false;
+        for(re int i = head[nw] ; i ; i = G[i].next){
+            int to = G[i].to;
+            if(dis[to]>dis[nw]+G[i].val){
+                dis[to]=dis[nw]+G[i].val;
+                pre[to] = nw;
+                if(!vis[to]){
+                    q.push(to);
+                    vis[to] = true;
+                }
+            }
+        }
+    }
+}
+
+int main(){
+    n = read();
+    m = read();
+    int u, v, w;
+    for(re int i = 1 ; i <= m ; ++i){
+        u = read();
+        v = read();
+        w = read();
+        addEdge(u,v,w);
+        addEdge(v,u,w);
+    }
+    for(re int i = 1 ; i <= n ; ++i)
+        dis[i] = 9223372036854775806;
+    dijkstra(1);
+    if(dis[n]==9223372036854775806)
+        printf("-1\n");
+    else{
+        for(int t = n ; t ; t = pre[t]){
+            ans[++cnt] = t;
+        }
+        for(re int i = cnt ; i ; --i){
+            printf("%d ",ans[i]);
+        }
+        printf("\n");
+    }
+    return 0;
+}

@@ -1,0 +1,120 @@
+/*
+https://codeforces.com/gym/103145/problem/K
+K. City
+time limit per test3 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Lucida occupies n cities connected by m undirected roads, and each road has a strength ki. The enemy will attack to destroy these roads. When the enemy launches an attack with damage x, all roads with strength less than x will be destroyed.
+
+Now Lucida has Q questions to ask you, how many pairs of cities are reachable to each other if the enemy launches an attack with damage pi. City x and city y are reachable, which means that there is a path from x to y, and every road's strength in that path is greater than or equal to pi.
+
+Input
+This problem contains multiple test cases.
+
+The first line contains a single integer T (1≤T≤10).
+
+Then T test cases follow.
+
+For each test case, the first line contains 3 integers n,m,Q (2≤n≤105, 1≤m≤2×105, 1≤Q≤2×105), which represent the number of cities, the number of roads, and the number of queries.
+
+The next m lines, each line contains three integers x,y,k (1≤x,y≤n, 1≤k≤109), which represent the road connecting city x and city y, and the strength of this road is k.
+
+The next Q lines, each line contains an integer pi (1≤pi≤109), asking how many pairs of cities are reachable to each other if the enemy launches an attack with damage pi.
+
+Output
+Output ∑T1Q lines, each line contains an integer, representing the answer for each question.
+*/
+
+/*
+ * 将查询离线化，建立MST的同时记录当前答案
+ */
+
+#include <cstdio>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+typedef pair<int,int> P;
+const int MAXN = 100005;
+
+struct Edge{
+	int np, to, val;
+	Edge(int _np, int _to, int _val){
+		np = _np;
+		to = _to;
+		val = _val;
+	}
+};
+
+bool cmp(const Edge e1, const Edge e2){
+	return e1.val > e2.val;
+}
+
+vector<Edge> G;
+int n, m, q, parent[MAXN], nodes[MAXN];
+P ques[MAXN];
+long long nans, ans[MAXN];
+
+bool cmp1(const P a, const P b){
+	return a.first > b.first;
+}
+
+inline int ffind(int x){
+	if(parent[x]==x) return x;
+	return parent[x] = ffind(parent[x]);
+}
+
+long long f(int x){
+	return 1ll*x*(x-1)>>1;
+}
+
+void solve(){
+	nans = 0;
+	G.clear();
+	scanf("%d %d %d",&n,&m,&q);
+	for(int i = 1, u, v, val ; i <= m ; ++i){
+		scanf("%d %d %d",&u,&v,&val);
+		G.push_back(Edge(u,v,val));
+	}
+	
+	sort(G.begin(),G.end(),cmp);
+	
+	for(int i = 1 ; i <= n ; ++i) parent[i] = i, nodes[i] = 1;
+	for(int i = 1 ; i <= q ; ++i){
+		scanf("%d",&ques[i].first);
+		ques[i].second = i;
+	}
+	
+	sort(ques+1,ques+1+q,cmp1);
+	
+	int pos = 1;
+	for(int i = 1 ; i <= q ; ++i){
+		while(pos<=m&&G[pos-1].val>=ques[i].first){
+			int pu = ffind(G[pos-1].np), pv = ffind(G[pos-1].to);
+			if(pu==pv){
+				++pos;
+				continue;
+			}
+			parent[pu] = pv;
+			
+			nans -= f(nodes[pu]);
+			nans -= f(nodes[pv]);
+			
+			nodes[pv] += nodes[pu];
+			
+			nans += f(nodes[pv]);
+			++pos;
+		}
+		ans[ques[i].second] = nans;
+	}
+	
+	for(int i = 1 ; i <= q ; ++i) printf("%lld\n",ans[i]);
+}
+
+int main(){
+	int t;
+	scanf("%d",&t);
+	while(t--) solve();
+	return 0;
+}

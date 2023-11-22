@@ -1,0 +1,131 @@
+/*
+https://codeforces.com/problemset/problem/1468/J
+J. Road Reform
+time limit per test2 seconds
+memory limit per test512 megabytes
+inputstandard input
+outputstandard output
+There are n cities and m bidirectional roads in Berland. The i-th road connects the cities xi and yi, and has the speed limit si. The road network allows everyone to get from any city to any other city.
+
+The Berland Transport Ministry is planning a road reform.
+
+First of all, maintaining all m roads is too costly, so m−(n−1) roads will be demolished in such a way that the remaining (n−1) roads still allow to get to any city from any other city. Formally, the remaining roads should represent an undirected tree.
+
+Secondly, the speed limits on the remaining roads might be changed. The changes will be done sequentially, each change is either increasing the speed limit on some road by 1, or decreasing it by 1. Since changing the speed limit requires a lot of work, the Ministry wants to minimize the number of changes.
+
+The goal of the Ministry is to have a road network of (n−1) roads with the maximum speed limit over all roads equal to exactly k. They assigned you the task of calculating the minimum number of speed limit changes they have to perform so the road network meets their requirements.
+
+For example, suppose the initial map of Berland looks like that, and k=7:
+
+
+Then one of the optimal courses of action is to demolish the roads 1–4 and 3–4, and then decrease the speed limit on the road 2–3 by 1, so the resulting road network looks like that:
+
+
+Input
+The first line contains one integer t (1≤t≤1000) — the number of test cases.
+
+The first line of each test case contains three integers n, m and k (2≤n≤2⋅105; n−1≤m≤min(2⋅105,n(n−1)2); 1≤k≤109) — the number of cities, the number of roads and the required maximum speed limit, respectively.
+
+Then m lines follow. The i-th line contains three integers xi, yi and si (1≤xi,yi≤n; xi≠yi; 1≤si≤109) — the cities connected by the i-th road and the speed limit on it, respectively. All roads are bidirectional.
+
+The road network in each test case is connected (that is, it is possible to reach any city from any other city by traveling along the road), and each pair of cities is connected by at most one road.
+
+The sum of n over all test cases does not exceed 2⋅105. Similarly, the sum of m over all test cases does not exceed 2⋅105.
+
+Output
+For each test case, print one integer — the minimum number of changes the Ministry has to perform so that the maximum speed limit among the remaining (n−1) roads is exactly k.
+*/
+
+/*
+ * 先求最小生成树，如果生成树里有边大于k的话，那么就需要大于k的边减少w[i]-k次
+ * 如果没有边大于k，那么费用就是k与生成树里最大的w[i]的差，此时可能存在更优解，根据生成树的定义，增加一条边，那么会有另一条边会被删除
+ * 所以遍历所有边，找到最小的abs(w[i]-k)就是答案
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#define min(a,b) ((a) < (b) ? (a) : (b))
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+struct Edge{
+	int u, v, w;
+}G[MAXN];
+
+int n, m, k, cnt, parent[MAXN];
+
+int Find(int x){
+	if(parent[x]^x) parent[x] = Find(parent[x]);
+	return parent[x];
+}
+
+bool cmp(Edge a, Edge b){
+    return a.w < b.w;
+}
+
+void solve(){
+	n = read();
+	m = read();
+	k = read();
+	for(int i = 1 ; i <= n ; ++i) parent[i] = i;
+	for(int i = 1, u, v, w ; i <= m ; ++i){
+		u = read();
+		v = read();
+		w = read();
+		G[i].u = u; G[i].v = v; G[i].w = w;
+	}
+	// printf("n=%d m=%d k=%d\n",n,m,k);
+	sort(G+1,G+1+m,cmp);
+	/*
+	for(int i = 1 ; i <= m ; ++i) printf("%d ",G[i].w);
+	printf("\n------------\n");
+	*/
+	ll ans = 0;
+	int cnt = 0;
+	for(int i = 1 ; i <= m ; ++i){
+		int pu = Find(G[i].u), pv = Find(G[i].v);
+		if(pu==pv) continue;
+		parent[pu] = pv;
+		if(G[i].w>k) ans += (G[i].w - k);
+		if(++cnt==n-1) break;
+	}
+	if(ans) printf("%lld\n",ans);
+	else{
+		ans = INF;
+		for(int i = 1 ; i <= m ; ++i) ans = min(ans,abs(k-G[i].w));
+		printf("%lld\n",ans);
+	}
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
