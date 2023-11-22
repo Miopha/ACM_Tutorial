@@ -1,0 +1,93 @@
+/*
+https://codeforces.com/contest/1443/problem/A
+A. Kids Seating
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Today the kindergarten has a new group of n kids who need to be seated at the dinner table. The chairs at the table are numbered from 1 to 4n. Two kids can't sit on the same chair. It is known that two kids who sit on chairs with numbers a and b (a≠b) will indulge if:
+
+gcd(a,b)=1 or,
+a divides b or b divides a.
+gcd(a,b) — the maximum number x such that a is divisible by x and b is divisible by x.
+
+For example, if n=3 and the kids sit on chairs with numbers 2, 3, 4, then they will indulge since 4 is divided by 2 and gcd(2,3)=1. If kids sit on chairs with numbers 4, 6, 10, then they will not indulge.
+
+The teacher really doesn't want the mess at the table, so she wants to seat the kids so there are no 2 of the kid that can indulge. More formally, she wants no pair of chairs a and b that the kids occupy to fulfill the condition above.
+
+Since the teacher is very busy with the entertainment of the kids, she asked you to solve this problem.
+
+Input
+The first line contains one integer t (1≤t≤100) — the number of test cases. Then t test cases follow.
+
+Each test case consists of one line containing an integer n (1≤n≤100) — the number of kids.
+
+Output
+Output t lines, which contain n distinct integers from 1 to 4n — the numbers of chairs that the kids should occupy in the corresponding test case. If there are multiple answers, print any of them. You can print n numbers in any order.
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cmath>
+#include <algorithm>
+#define re register
+#define pb push_back
+#define cl clear
+#define MAXN 405
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int gcd(int a , int b) {
+	return b==0?a:gcd(b,a%b);
+}
+
+int n, cnt, arr[MAXN];
+
+void solve(){
+    n = read();
+    cnt = 0;
+    arr[++cnt] = n<<2;
+    for(re int a = n<<2 ; a >= 1 && cnt <= n ; --a){
+        bool indulge = false;
+        for(re int i = 1 ; i <= cnt ; ++i){
+            if(gcd(arr[i],a)==1||!(arr[i]%a)){
+                indulge = true;
+                break;
+            }
+        }
+        if(!indulge){
+            arr[++cnt] = a;
+        }
+    }
+    for(re int i = 1 ; i <= n ; ++i)
+        printf("%d%c",arr[i],i==n?'\n':' ');
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+

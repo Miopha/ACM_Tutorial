@@ -1,0 +1,67 @@
+/*
+https://codeforces.com/gym/102992/problem/F
+Fireworks
+Input file: standard input
+Output file: standard output
+Time limit: 1 second
+Memory limit: 256 megabytes
+Kotori is practicing making fireworks for the upcoming hanabi taikai1
+. It takes her n minutes to make a
+single firework, and as she is not really proficient in making fireworks, each firework only has a probability
+of p × 10−4
+to be perfect.
+After she finishes making a firework, she can just start making the next firework, or take m minutes to
+light all the remaining fireworks finished before. If there is at least one perfect firework among the lit ones,
+she will be happy and go to rest. Otherwise, she will continue practicing. Can you tell her the minimum
+expected practicing time before she goes to rest if she takes the optimal strategy?
+Notice that no matter how many fireworks remain, it always takes m minutes to light them all.
+Input
+There are multiple test cases. The first line of the input contains an integer T (1 ≤ T ≤ 104
+) indicating
+the number of test cases. For each test case:
+The first and only line contains three integers n, m and p (1 ≤ n, m ≤ 109
+, 1 ≤ p ≤ 104
+).
+Output
+For each test case, output one line containing one number indicating the minimum expected practicing
+time.
+Your answer will be considered correct if and only if the absolute or relative error does not exceed 10−4
+.
+*/
+
+#include <cstdio>
+#include <cmath>
+
+using namespace std;
+typedef long long ll;
+
+int t, n, m;
+long double p;
+
+inline double fun(ll k){
+	return (double)(k*n+m)/(double)(1.0-pow(1.0-p,k));
+}
+
+void solve(){
+	scanf("%d %d %Lf",&n,&m,&p);
+	p = p * 1e-4;
+	// dabiao
+	/*
+	for(int i = 1 ; i <= 1e4 ; ++i){
+		printf("%.10lf\n",(double)(i*n+m)/(double)(1.0-pow(1.0-p,i)));
+	}
+	*/
+	ll l = 1, r = 0xffffffff;
+	while(l<r){
+		ll mid1 = l + (r - l) / 3, mid2 = r - (r - l) / 3;
+		if(fun(mid1)<fun(mid2)) r = mid2 - 1;
+		else l = mid1 + 1;
+	}
+	printf("%.10lf\n",fun(l));
+}
+
+int main(){
+	scanf("%d",&t);
+	while(t--) solve();
+	return 0;
+}

@@ -1,0 +1,113 @@
+/*
+https://codeforces.com/contest/1417/problem/D
+D. Make Them Equal
+time limit per test1 second
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You are given an array a consisting of n positive integers, numbered from 1 to n. You can perform the following operation no more than 3n times:
+
+choose three integers i, j and x (1≤i,j≤n; 0≤x≤109);
+assign ai:=ai−x⋅i, aj:=aj+x⋅i.
+After each operation, all elements of the array should be non-negative.
+
+Can you find a sequence of no more than 3n operations after which all elements of the array are equal?
+
+Input
+The first line contains one integer t (1≤t≤104) — the number of test cases. Then t test cases follow.
+
+The first line of each test case contains one integer n (1≤n≤104) — the number of elements in the array. The second line contains n integers a1,a2,…,an (1≤ai≤105) — the elements of the array.
+
+It is guaranteed that the sum of n over all test cases does not exceed 104.
+
+Output
+For each test case print the answer to it as follows:
+
+if there is no suitable sequence of operations, print −1;
+otherwise, print one integer k (0≤k≤3n) — the number of operations in the sequence. Then print k lines, the m-th of which should contain three integers i, j and x (1≤i,j≤n; 0≤x≤109) for the m-th operation.
+If there are multiple suitable sequences of operations, print any of them. Note that you don't have to minimize k.
+
+题意：
+有一种操作：
+1.选择i,j,x
+2.令a[i]=a[i]-x*i,a[j]=a[j]+x*i;
+先给一个数列，问是否能在少于3n次操作令数列内所有值相等
+*/
+
+/*
+ * 操作过后数列总和不变，所以数列和与n不能除尽时不能令所有值相等，输出-1
+ * ①先令a2,a3,...,an的值先加到ai上 ②ai平均分配到a2,a3,...,an上
+ * ①操作如果a[i]能被i整除，直接选择(i,1,arr[i]/i)否则先令a[i]能被i整除(1,i,i-arr[i]%i)，最多产生2(n-1)次操作
+ * ②操作(1,i,average),最多产生n次操作
+ */
+ 
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#define re register
+#define pb push_back
+#define MAXN 10005
+
+using namespace std;
+typedef long long ll;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, arr[MAXN], sum, aver, cnt;
+vector<int> I, J, X;
+
+inline void cal(int i, int j, int x){
+    ++cnt;
+    I.pb(i);
+    J.pb(j);
+    X.pb(x);
+    arr[i] = arr[i] - x*i;
+    arr[j] = arr[j] + x*i;
+}
+
+int main(){
+    int t = read();
+    while(t--){
+        n = read();
+        cnt = sum = 0;
+        I.clear();
+        J.clear();
+        X.clear();
+        for(re int i = 1 ; i <= n ; ++i){
+            arr[i] = read();
+            sum += arr[i];
+        }
+        if(sum%n){
+            printf("-1\n");
+            continue;
+        }
+        aver = sum / n;
+        for(re int i = 2 ; i <= n ; ++i){
+            if(arr[i]%i){
+                cal(1,i,i-arr[i]%i);
+            }
+            cal(i,1,arr[i]/i);
+        }
+        for(re int i = 2 ; i <= n ; ++i){
+            cal(1,i,aver);
+        }
+        printf("%d\n",cnt);
+        for(re int i = 0 ; i < cnt ; ++i){
+            printf("%d %d %d\n",I[i],J[i],X[i]);
+        }
+    }
+    return 0;
+}

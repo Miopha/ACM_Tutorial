@@ -1,0 +1,47 @@
+/*
+题目描述
+有一种宝石串，由绿宝石和红宝石串成，仅当绿宝石和红宝石数目相同的时候，宝石串才最为稳定，不易断裂。安安想知道从给定的宝石串中，可以截取一段最长的稳定的宝石串，有多少颗宝石组成。请你帮助他。
+
+绿宝石用‘G’表示，红宝石用‘R'表示。
+
+输入格式
+一行由G和R组成的字符串
+
+输出格式
+最长的稳定的宝石串有多少颗宝石组成
+
+说明/提示
+宝石数<=1000000
+*/
+
+/*
+ * 用前缀和求出绿宝石数量，再枚举区间长度，如果绿宝石数量==区间长度/2，则为稳定的宝石串
+ */
+ 
+//package P2687;
+
+import java.util.Scanner;
+
+public class Main {
+
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		String s = sc.next();
+		sc.close();
+		int n = s.length() , ans = 0;
+		int[] G = new int[n+1];
+		for(int i = 0 ; i < n ; i++)
+			if(s.charAt(i)=='G')G[i+1] += G[i] + 1;
+			else G[i+1] += G[i];
+		
+		for(int len = 2 ; len <= n ; len+=2)
+			for(int l = 1 , r = l + len - 1 ; r <= n ; r++ , l++)
+				if(G[r]-G[l-1]==len/2) {
+					ans = len;
+					break;
+				}
+		
+		System.out.println(ans);
+	}
+
+}

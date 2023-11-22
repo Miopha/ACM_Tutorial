@@ -1,0 +1,46 @@
+/*
+题目描述
+监狱有 n 个房间，每个房间关押一个犯人，有 m 种宗教，每个犯人会信仰其中一种。如果相邻房间的犯人的宗教相同，就可能发生越狱，求有多少种状态可能发生越狱。
+
+答案对 100,003 取模。
+
+输入格式
+输入只有一行两个整数，分别代表宗教数 m 和房间数 n。
+
+输出格式
+输出一行一个整数代表答案。
+*/
+
+/*
+ * 先算出所以犯人选宗教的情况，再减去不能越狱的情况
+ * 对于不能越狱的情况，第一个犯人能选m个宗教，后n-1的犯人分别能选m-1个宗教
+ * 所以ans=(m^n-(m*(m-1)^(n-1)))%1000003
+ */
+
+//package P3197;
+
+import java.util.Scanner;
+
+public class Main {
+
+	static int p = 100003;
+	
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		long m = sc.nextLong() , n = sc.nextLong();
+		sc.close();
+		System.out.println(( qpow(m%p,n,p) - m % p * qpow((m-1)%p,n-1,p) % p + p )%p);
+	}
+	
+	public static long qpow(long a , long n , long p) {
+		long ans = 1;
+		a%=p;
+		while(n!=0) {
+			if((n&1)==1) ans=ans*a%p;
+			a=a*a%p;
+			n=n>>1;
+		}
+		return ans;
+	}
+
+}

@@ -1,0 +1,88 @@
+/*
+n 个小朋友站成一排。
+
+现在要把他们按身高从低到高的顺序排列，但是每次只能交换位置相邻的两个小朋友。
+
+每个小朋友都有一个不高兴的程度。
+
+开始的时候，所有小朋友的不高兴程度都是 0。
+
+如果某个小朋友第一次被要求交换，则他的不高兴程度增加 1，如果第二次要求他交换，则他的不高兴程度增加 2（即不高兴程度为 3），依次类推。当要求某个小朋友第 k 次交换时，他的不高兴程度增加 k。
+
+请问，要让所有小朋友按从低到高排队，他们的不高兴程度之和最小是多少。
+
+如果有两个小朋友身高一样，则他们谁站在谁前面是没有关系的。
+
+输入格式
+输入的第一行包含一个整数 n，表示小朋友的个数。
+
+第二行包含 n 个整数 H1,H2,…,Hn，分别表示每个小朋友的身高。
+
+输出格式
+输出一行，包含一个整数，表示小朋友的不高兴程度和的最小值。
+
+数据范围
+1≤n≤100000,
+0≤Hi≤1000000
+*/
+
+//package acwing1215;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StreamTokenizer;
+import java.util.Arrays;
+
+public class Main {
+
+	static long ans, pair[];
+	static int n, a[], tree[] = new int[1000005];
+	
+	public static void main(String[] args) throws IOException {
+		n = nextInt();
+		a = new int[n+1];
+		pair = new long[n+1];
+		for(int i = 1 ; i <= n ; ++i) {
+			a[i] = nextInt();
+			add(a[i],1);
+			pair[i] += (i - sum(a[i]));
+		}
+		Arrays.fill(tree,0);
+		for(int i = n ; i >= 1 ; --i) {
+			add(a[i]+1,1);
+			pair[i] += sum(a[i]);
+		}
+		for(int i = 1 ; i <= n ; ++i) {
+			ans += ((1 + pair[i])*pair[i])>>1;
+		}
+		System.out.println(ans);
+
+	}
+	
+	public static int sum(int x) {
+		int res = 0;
+		for( ; x > 0 ; res += tree[x], x -= lowbit(x)) ;
+		return res;
+	}
+	
+	public static void add(int x, int val) {
+		for( ; x <= 1000000 ; tree[x] += val, x += lowbit(x)) ;
+	}
+	
+	public static int lowbit(int x) {
+		return x&-x;
+	}
+	
+	static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	static StreamTokenizer st = new StreamTokenizer(br);
+	static PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+	public static int nextInt() throws IOException {
+		st.nextToken();
+		return (int)st.nval;
+	}
+
+}

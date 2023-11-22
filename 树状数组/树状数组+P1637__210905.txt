@@ -1,0 +1,98 @@
+/*
+https://www.luogu.com.cn/problem/P1637
+ 展开
+题目描述
+Erwin 最近对一种叫 thair 的东西巨感兴趣。。。
+
+在含有 nn 个整数的序列 a_1,a_2,\ldots,a_na 
+1
+​
+ ,a 
+2
+​
+ ,…,a 
+n
+​
+  中，三个数被称作thair当且仅当 i<j<ki<j<k 且 a_i<a_j<a_ka 
+i
+​
+ <a 
+j
+​
+ <a 
+k
+​
+ 。
+
+求一个序列中 thair 的个数。
+
+输入格式
+开始一行一个正整数 nn,
+
+以后一行 nn 个整数 a_1,a_2,\ldots,a_na 
+1
+​
+ ,a 
+2
+​
+ ,…,a 
+n
+​
+ 。
+
+输出格式
+一行一个整数表示 thair 的个数。
+*/
+
+/*
+ * 先离散化
+ * 定义树状数组tree1用于记录当前位置小于a[i]的数字有多少，tree2记录a[i]作为三元数组中第二元时的方案数，则每次add2(b[i],query1(a[i]-1))，ans += query2(a[i]-1);
+ */
+
+#include <cstdio>
+#include <algorithm>
+
+using namespace std;
+typedef long long ll;
+typedef pair<ll,int> P;
+const int MAXN = 3e4 + 5;
+
+inline int lowbit(int x){
+	return x&-x;
+}
+
+ll tree1[MAXN], tree2[MAXN], ans;
+int n, b[MAXN];
+P a[MAXN];
+
+void add(ll* t, int x, ll val){
+	for(;x<=n;x+=lowbit(x)) *(t+x) += val;
+}
+
+ll query(ll* t, int x){
+	ll res = 0;
+	for(;x>=1;x-=lowbit(x)) res += *(t+x);
+	return res;
+}
+
+int main(){
+	scanf("%d",&n);
+	for(int i = 0 ; i < n ; ++i){
+		scanf("%lld",&a[i].first);
+		a[i].second = i;
+	}
+	// 离散化
+	sort(a,a+n);
+	for(int i = 0, rank = 1 ; i < n ; ++i){
+		rank += (i>0)&&(a[i].first^a[i-1].first);
+		b[a[i].second] = rank;
+	}
+	// 树状数组
+	for(int i = 0 ; i < n ; ++i){
+		ans += query(tree2,b[i]-1);
+		add(tree1,b[i],1);
+		add(tree2,b[i],query(tree1,b[i]-1));
+	}
+	printf("%lld\n",ans);
+	return 0;
+}

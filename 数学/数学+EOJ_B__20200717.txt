@@ -1,0 +1,110 @@
+/*
+https://acm.ecnu.edu.cn/contest/292/problem/B/
+B. 线上考试
+单点时限: 1.0 sec
+
+内存限制: 512 MB
+
+Cuber QQ 迎来了他在华师大的最后一次期末考试。由于情况特殊，这场考试改为线上进行。
+
+这是为毕业班特别准备的一次期末考试，命题老师为了让各位考生顺利毕业，设计了如下考试规则：
+
+期末考试试卷共n(1<=n<=1000)道选择题，由单选题和多选题组成。每道题的选项个数可能不同，多选题保证至少有一个正确选项。考试允许多次提交（每次提交会提交整张试卷而不是某一道题），每次提交之后都会反馈每一道题是对是错（多选题当且仅当考生答案和标准答案完全一致时反馈”正确”）。
+
+当然，命题老师也不会任由考生们躺着通过，因此他足足出了一千道题目！
+
+Cuber QQ 这下彻底慌了，他想设计一个自动答题脚本，但是在开工前，他想请你帮忙完成一些准备工作。Cuber QQ 会给出所有题的题型和选项个数，请你求出，在最优策略下，至多多少次提交可以做对所有题。
+
+输入格式
+第一行输入一个整数n(1<=n<=1000)，表示题目个数。
+
+接下来n行，每行包含一个字符c（S 或者 M，S 表示该题为单选题，M 表示该题为多选题）和一个正整数 x(1<=x<=10)，分别表示各题的题型和选项个数。
+
+输出格式
+输出一个正整数，表示在最优策略下，至多多少次提交可以做对所有题。
+
+样例
+input
+2
+S 5
+M 2
+output
+5
+*/
+
+/*
+ * 单选题最多选x次
+ * 多选题枚举选项的个数,最多选次y = x sigma (i=1) C(xi)
+ * 输出得到的最大值
+ */	
+ 
+//package EOJ202007B;
+
+import java.io.*;
+import java.util.*;
+
+public class Main {
+
+	public static void main(String[] args) {
+		int n = cin.nextInt(), ans = 0, x, y;
+		for(int i = 1 ; i <= n ; i++) {
+			if(cin.next().equals("S")) {
+				ans = Math.max(cin.nextInt(),ans);
+			}else {
+				x = cin.nextInt();
+				y = 0;
+				for(int j = 1 ; j < x ; j++) {
+					y += c(x,j);
+				}
+				ans = Math.max(y,ans);
+			}
+		}
+		out.println(ans);
+		out.flush();
+	}
+	
+	public static int c(int n , int k) {//Cnk
+		int up = 1 , down = 1;
+		for(int i = n - k + 1 ; i <= n  ; i++) {
+			up *= i;
+		}
+		for(int i = 1 ; i <= k ; i++) {
+			down *= i;
+		}
+		return up / down;
+	}
+
+	static PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+	//快读2
+	static FastScanner cin = new FastScanner(System.in);
+	static class FastScanner{
+		BufferedReader br;
+		StringTokenizer st;
+		public FastScanner(InputStream in) {
+			br = new BufferedReader(new InputStreamReader(in),16384);
+			st = new StringTokenizer("");
+		}
+		public String nextLine() {
+			try {
+				return br.readLine();
+			} catch (IOException e) {
+				return null;
+			}
+		}
+		public boolean hasNext() {
+			while(!st.hasMoreTokens()) {
+				String s = nextLine();
+				if(s==null) return false;
+				st = new StringTokenizer(s);
+			}
+			return true;
+		}
+		public String next() {
+			hasNext();
+			return st.nextToken();
+		}
+		public int nextInt() {
+			return Integer.parseInt(next());
+		}
+	}
+}

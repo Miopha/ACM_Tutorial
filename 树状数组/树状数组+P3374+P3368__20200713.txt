@@ -1,0 +1,184 @@
+/*
+https://www.luogu.com.cn/problem/P3374
+题目描述
+如题，已知一个数列，你需要进行下面两种操作：
+
+将某一个数加上 x
+
+求出某区间每一个数的和
+
+输入格式
+第一行包含两个正整数 n,m，分别表示该数列数字的个数和操作的总个数。
+
+第二行包含 n 个用空格分隔的整数，其中第 i 个数字表示数列第 i 项的初始值。
+
+接下来 m 行每行包含 3 个整数，表示一个操作，具体如下：
+
+1 x k 含义：将第 x 个数加上 k
+
+2 x y 含义：输出区间 [x,y] 内每个数的和
+
+输出格式
+输出包含若干行整数，即为所有操作 2 的结果。
+
+说明/提示
+【数据范围】
+
+对于 30% 的数据，1<=n<=8，1<=m<=10；
+对于 70% 的数据，1<=n,m<=1e4
+对于 100% 的数据，1<=n,m<=5e5
+
+*/
+
+/*
+ * 树状数组是动态维护前缀和的数据结构
+ * lowbit()方法：非负整数n在二进制下表示最低位1与后面的0构成的数值
+ * 对于这一操作我们可以吧n取反加1再与n进行按位与即 (n&(~n+1)) 或者 (n&-n)
+ * t[x]节点覆盖的长度就是lowbit(x),t[x]节点的父节点是t[x+lowbit(x)],整棵树的深度为lowbit(n+1)
+ * 用这个思路我们可以写出代码,add(3,5)即第3个数加上5：从t[3]节点开始找父节点加上5,这个操作的最坏复杂度为O(lgN);
+ * 对于ask(4)即求前4个数的前缀和,只需要将下标-=lowbit(当前节点),并把这些节点的数加起来,那么求区间和用两次ask()操作即可
+ */
+ 
+//package P3374;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+	
+	static int n, m, t[];
+
+	public static void main(String[] args) throws IOException{
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		StreamTokenizer st = new StreamTokenizer(br);
+		PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+		st.nextToken();
+		n = (int)st.nval;
+		st.nextToken();
+		m = (int)st.nval;
+		t = new int[n+1];
+		for(int i = 1 ; i <= n ; i++) {
+			st.nextToken();
+			add(i,(int)st.nval);
+		}
+		StringBuilder ans = new StringBuilder();
+		int x, y, z;
+		for(int i = 1 ; i <= m ; i++) {
+			st.nextToken(); x = (int)st.nval;
+			st.nextToken(); y = (int)st.nval;
+			st.nextToken(); z = (int)st.nval;
+			if(x==1)
+				add(y,z);
+			else
+				ans.append(ask(z)-ask(y-1)).append("\n");
+		}
+		out.println(ans.toString());
+		out.flush();
+		
+	}
+	
+	public static int lowbit(int n) {
+		return n&-n;
+	}
+	
+	public static void add(int x, int k) {
+		for(; x <= n ; x += lowbit(x)) t[x] += k;
+	}
+	
+	public static int ask(int x) {
+		int ans = 0;
+		for(; x >= 1 ; x -= lowbit(x)) ans += t[x];
+		return ans;
+	}
+
+}
+
+/*
+https://www.luogu.com.cn/problem/P3368
+题目描述
+如题，已知一个数列，你需要进行下面两种操作：
+
+将某区间每一个数数加上 x；
+
+求出某一个数的值。
+
+输入格式
+第一行包含两个整数 N、M，分别表示该数列数字的个数和操作的总个数。
+
+第二行包含 N 个用空格分隔的整数，其中第 i 个数字表示数列第 i 项的初始值。
+
+接下来 M 行每行包含 2 或 4 个整数，表示一个操作，具体如下：
+
+操作 11： 格式：1 x y k 含义：将区间 [x,y] 内每个数加上 k；
+
+操作 22： 格式：2 x 含义：输出第 xx 个数的值。
+
+说明/提示
+【数据范围】
+
+对于 30% 的数据，1<=n<=8，1<=m<=10；
+对于 70% 的数据，1<=n,m<=1e4
+对于 100% 的数据，1<=n,m<=5e5,1<=x,y<=n,保证任意时刻序列中任意元素的绝对值都不大于2^30
+*/
+
+/*
+ * 引入差分数组b[],每次加的时候add(l,x); add(r+1,-x)
+ * 查询的结果就是差分数组的前n项前缀和
+ */
+ 
+#include <bits/stdc++.h>
+#define maxn 500005
+
+using namespace std;
+
+inline int read(){
+    int x = 0, f = 1;
+    char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x=(x<<1)+(x<<3)+(ch^48);
+        ch = getchar();
+    }
+    return x*f;
+}
+
+int n, m, b[500005];
+
+int lowbit(int n){
+    return n&-n;
+}
+
+void add(int x, int k){
+    for(; x <= n ; x += lowbit(x)) b[x] += k;
+}
+
+int ask(int x){
+    int ans = 0;
+    for(; x >= 1 ; x -= lowbit(x)) ans += b[x];
+    return ans;
+}
+
+
+int main(){
+    n = read(); m = read();
+    int x, y, z, k;
+    for(register int i = 1 ; i <= n ; i++){
+        x = read();
+        add(i,x); add(i+1,-x);
+    }
+    for(register int i = 1 ; i <= m ; i++){
+        int x = read();
+        if(x==1){
+            y = read(); z = read(); k = read();
+            add(y,k); add(z+1,-k);
+        }else{
+            y = read() ;
+            printf("%d\n",ask(y));
+        }
+    }
+    return 0;
+}

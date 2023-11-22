@@ -1,0 +1,109 @@
+/*
+https://codeforces.com/contest/1499/problem/D
+D. The Number of Pairs
+time limit per test2 seconds
+memory limit per test512 megabytes
+inputstandard input
+outputstandard output
+You are given three positive (greater than zero) integers c, d and x.
+
+You have to find the number of pairs of positive integers (a,b) such that equality c⋅lcm(a,b)−d⋅gcd(a,b)=x holds. Where lcm(a,b) is the least common multiple of a and b and gcd(a,b) is the greatest common divisor of a and b.
+
+Input
+The first line contains one integer t (1≤t≤104) — the number of test cases.
+
+Each test case consists of one line containing three integer c, d and x (1≤c,d,x≤107).
+
+Output
+For each test case, print one integer — the number of pairs (a,b) such that the above equality holds.
+*/
+
+/*
+ * 记i=a/gcd(a,b), j=b/gcd(a,b), 那么gcd(i,j)=1
+ * 带入原式得gcd(a,b)=x/(cij-d), 问题就变成x的因子y=cij-d中, 共有多少对(i,j)满足原式
+ * x的因子可以用O(sqrt(x))枚举, ij=(y+d)/c, 由于i和j互质, 那么i*j的质因子只能属于i或j
+ * 所以根据排列组合(i,j)的对数=2^(f((y+d)/c)), f(x)代表x有f(x)个不同的质因子
+ * f(x)可以在线性筛的时候预处理出来f(i*p) = f(i) when p|i, f(i) + 1 else
+ * 总的时间复杂度O(t*sqrt(x))
+ */ 
+ 
+#include <cstdio>
+#include <iostream>
+#include <vector>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+
+using namespace std;
+const int MAXN = 10000005, MAXX = 20000000;
+
+int isPrime[MAXX+5], f[MAXX+5];
+vector<int> primes;
+
+int qpow(int x, int n){
+	int res = 1;
+	while(n){
+		if(n&1) res *= x;
+		n >>= 1;
+		x *= x;
+	}
+	return res;
+}
+
+void sieve(){
+	for(int i = 2 ; i <= MAXX ; ++i) isPrime[i] = true;
+	for(int i = 2 ; i <= MAXX ; ++i){
+		if(isPrime[i]){
+			primes.push_back(i);
+			f[i] = 1;
+		}
+		for(auto it : primes){
+			if(it*i>MAXX) break;
+			isPrime[i*it] = false;
+			if(!(i%it)){
+				f[it*i] = f[i];
+				break;
+			}
+			f[it*i] = f[i] + 1;
+		}
+	}
+}
+
+int c, d, x;
+long long ans;
+
+int prime_kind(int num){
+	int res = 0;
+	for(auto it : primes){
+		if(it*it>num) break;
+		int tot = 0;
+		while(!(num%it)) num /= it, ++tot;
+		if(tot) ++res;
+	}
+	
+	if(num^1) ++res;
+	return res;
+}
+
+long long calc(int y){
+	if((y+d)%c) return 0;
+	return qpow(2,f[(y+d)/c]);
+	// return qpow(2,prime_kind((y+d)/c));
+}
+
+void solve(){
+	ans = 0;
+	scanf("%d %d %d",&c,&d,&x);
+	for(int i = 1 ; i * i <= x ; ++i){
+		if(!(x%i)){
+			ans += calc(i);
+			if((i*i)^x) ans += calc(x/i);
+		}
+	}
+	printf("%lld\n",ans);
+}
+
+int main(){
+	sieve();
+	int t;
+	scanf("%d",&t);
+	while(t--) solve();
+}

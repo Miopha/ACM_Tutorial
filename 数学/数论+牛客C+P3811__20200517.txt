@@ -1,0 +1,140 @@
+/*
+众所周知，环鸽是个热爱学习的好孩子，因此每次有人找环鸽打cf，环鸽都会咕咕咕，但这次的cf的BOSS非常具有挑战性，因此环鸽这次不打算咕咕咕。BOSS有 n 点血，环鸽可以进行 k 次正偶数攻击和 k 次正奇数攻击。偶数攻击即对BOSS造成任意正偶数点伤害，奇数攻击同理（0不算正偶数）。问环鸽能否恰好通过 2*k 次攻击将BOSS击败（BOSS视为击败为BOSS的体力值恰好降为0）。
+*/
+
+/*
+ * 偶数加上2还是偶数，奇数加上2还是奇数，且攻击选的数字可以是任意正整数。
+ * 因此我们可以让偶数最小或奇数最小，先把体力值减2*k，再判断减后的体力值是否能由k个任意奇数相加产生。
+ * 当然也可以反过来先吧体力值减1*k，再判断减后的体力值是否能由k个任意偶数相加产生。
+ */
+ 
+//package 0517厦门大学程序设计大赛月赛C;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+
+	static FastScanner cin = new FastScanner(System.in);
+	static PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+	
+	public static void main(String[] args) {
+		int T = cin.nextInt();
+		while(T-->0) {
+			int n = cin.nextInt() , k = cin.nextInt();
+			int base = n - 2 * k;
+			if(base >= k && k % 2 == 1 && base % 2 == 1 && (base - k ) % 2 == 0 )out.println("Yes");
+			else if(base >= k && k % 2 == 0 && base % 2 == 0 && (base - k ) % 2 == 0 ) out.println("Yes");
+			else out.println("No");
+			out.flush();
+		}
+	}
+	
+	static class FastScanner{
+		BufferedReader br;
+		StringTokenizer st;
+		public FastScanner(InputStream in) {
+			br = new BufferedReader(new InputStreamReader(in),16384);
+			st = new StringTokenizer("");
+		}
+		public String nextLine() {
+			try {
+				return br.readLine();
+			} catch (IOException e) {
+				return null;
+			}
+		}
+		public boolean hasNext() {
+			while(!st.hasMoreTokens()) {
+				String s = nextLine();
+				if(s==null) return false;
+				st = new StringTokenizer(s);
+			}
+			return true;
+		}
+		public String next() {
+			hasNext();
+			return st.nextToken();
+		}
+		public int nextInt() {
+			return Integer.parseInt(next());
+		}
+	}
+
+}
+
+/*
+题目背景:
+这是一道模板题
+题目描述
+给定n,p求1~n中所有整数在模p意义下的乘法逆元。
+输入格式
+一行两个正整数n,p。
+输出格式
+输出n行，第i行表示i在模p下的乘法逆元。
+*/
+
+/*
+ * 正常的解法是根据费马小定理，a对模p的乘法逆元为x=a^p-2%p，用快速幂求解即可。
+ * 但用在这题会有三个TLE。
+ * 设p=k*i+r(k=p/i,r=p%i)可推出k*i+r≡0(mod p)两边乘i的逆元并移项得i^-1≡-k/r(mod p)
+ * 最后的i^-1≡(-p/i*)*(p%i)^-1(mod p),可以利用前面的逆元推出后面逆元的解。
+ */
+ 
+//package P3811; 48分代码
+
+import java.util.Scanner;
+import java.io.*;
+
+public class Main {
+	
+	static PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		long n = sc.nextInt() , p = sc.nextInt();
+		sc.close();
+		for(int i = 1 ; i <= n ; i++) {
+			out.println(inverse(i,p));
+			out.flush();
+		}
+		
+	}
+
+	public static long inverse(long a , long p){
+		return (pow(a,p-2,p) % p);
+	}
+	
+	public static long pow(long base , long power ,long mod) {//a^b%p
+		long ans = 1;
+		while(power!=0) {
+			if((power&1)==1)ans = (ans % mod) * (base % mod) % mod;
+			base = (base % mod) * (base % mod) % mod;
+			power>>=1;
+		}
+		return (ans % mod);
+	}
+	
+}
+
+//AC代码
+
+#include <iostream>
+#include <stdio.h>
+#define ll long long
+
+using namespace std;
+
+int inv[3000005];
+
+int main(){
+    int n , p ;
+    scanf("%d%d",&n,&p);
+    printf("%d\n",inv[1]=1);
+    for(int i = 2 ; i <= n ; i++){
+        inv[i]=1ll*(p-p/i)*inv[p%i]%p;
+        printf("%d\n",inv[i]);
+    }
+    return 0;
+}
+

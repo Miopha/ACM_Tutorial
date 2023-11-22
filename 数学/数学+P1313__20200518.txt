@@ -1,0 +1,112 @@
+/*
+题目描述:
+给定一个多项式(a^x+b^y)^k,请求出多项式展开后x^n*y^m项的系数。
+输入格式:
+共行,包含5个整数,分别为a,b,k,n,m,每两个整数之间用一个空格隔开。
+输出格式:
+共1行,包含一个整数,表示所求的系数，这个系数可能很大,输出对10007取模后的结果。
+*/
+
+/*
+ * 根据二项式定理得出x幂为n时候的公式，算出来的数字可能会很大，记得随时取余
+ * 计算组合式Cnk的时候要用到除法取余，a/b%c=a*b的逆元%c，正好在求a^n的时候写了快速幂，所以b的逆元在这里通过费马小定理来求。
+ */
+
+//package P1313;
+
+import java.util.Scanner;
+
+public class Main {
+	
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		int a = sc.nextInt() , b = sc.nextInt() , k = sc.nextInt() , n = sc.nextInt() , m = sc.nextInt() , mod = 10007;
+		sc.close();
+		System.out.println(pow(a,n,mod) * pow(b,m,mod) % mod * c(k,Math.min(n, m),mod) % mod);
+	}
+	
+	public static int c(int n , int k , int mod) {//Cnk
+		int up = 1 , down = 1;
+		for(int i = n - k + 1 ; i <= n   ; i++) {
+			up *= i;
+			up %= mod;
+		}
+		for(int i = 1 ; i <= k ; i++) {
+			down *= i;
+			down %= mod;
+		}
+		//System.out.println("up="+up+" down="+down+" mod="+mod);
+		return up % mod * inv(down,mod) % mod;
+		/* 分配律
+		int ans = 1;
+		for(int i = 1 ; i <= k ; i++) 
+			ans = ans * (n-i+1)%mod*inv(i,mod)%mod;
+		return ans;
+		*/
+	}
+	
+	public static int inv(int a , int p) {
+		return pow(a,p-2,p);
+	}
+	
+	public static int pow(long base , long power ,int mod) {//a^b%p
+		long ans = 1;
+		base %= mod;
+		while(power!=0) {
+			if((power&1)==1)ans = ans * base % mod;
+			base = base * base % mod;
+			power>>=1;
+		}
+		return (int)(ans % mod);
+	}
+
+}
+
+/*
+题目描述
+监狱有 n 个房间，每个房间关押一个犯人，有 m 种宗教，每个犯人会信仰其中一种。如果相邻房间的犯人的宗教相同，就可能发生越狱，求有多少种状态可能发生越狱。
+
+答案对 100,003 取模。
+
+输入格式
+输入只有一行两个整数，分别代表宗教数 m 和房间数 n。
+
+输出格式
+输出一行一个整数代表答案。
+*/
+
+/*
+ * 先列出犯人选宗教的所有情况(m^n)，再减不能越狱的情况
+ * 不越狱的情况：第一个犯人可以选m种，后面每个犯人可以选(m-1)种
+ * 所以ans=m^n-(m-1)^(n-1)
+ * 计算的每一步对100003取模防止溢出
+ * 要注意(a+b)%p=(a%p+b%p+p)%p
+ */
+ 
+//package P3197;
+
+import java.util.Scanner;
+
+public class Main {
+
+	static int p = 100003;
+	
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		long m = sc.nextLong() , n = sc.nextLong();
+		sc.close();
+		System.out.println(( qpow(m%p,n,p) - m % p * qpow((m-1)%p,n-1,p) % p + p )%p);
+	}
+	
+	public static long qpow(long a , long n , long p) {
+		long ans = 1;
+		a%=p;
+		while(n!=0) {
+			if((n&1)==1) ans=ans*a%p;
+			a=a*a%p;
+			n=n>>1;
+		}
+		return ans;
+	}
+
+}

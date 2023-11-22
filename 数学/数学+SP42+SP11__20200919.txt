@@ -1,0 +1,88 @@
+/*
+https://www.spoj.com/problems/ADDREV/
+ADDREV - Adding Reversed Numbers
+#simple-math #ad-hoc-1
+The Antique Comedians of Malidinesia prefer comedies to tragedies. Unfortunately, most of the ancient plays are tragedies. Therefore the dramatic advisor of ACM has decided to transfigure some tragedies into comedies. Obviously, this work is very hard because the basic sense of the play must be kept intact, although all the things change to their opposites. For example the numbers: if any number appears in the tragedy, it must be converted to its reversed form before being accepted into the comedy play.
+
+Reversed number is a number written in arabic numerals but the order of digits is reversed. The first digit becomes last and vice versa. For example, if the main hero had 1245 strawberries in the tragedy, he has 5421 of them now. Note that all the leading zeros are omitted. That means if the number ends with a zero, the zero is lost by reversing (e.g. 1200 gives 21). Also note that the reversed number never has any trailing zeros.
+
+ACM needs to calculate with reversed numbers. Your task is to add two reversed numbers and output their reversed sum. Of course, the result is not unique because any particular number is a reversed form of several numbers (e.g. 21 could be 12, 120 or 1200 before reversing). Thus we must assume that no zeros were lost by reversing (e.g. assume that the original number was 12).
+
+Input
+The input consists of N cases (equal to about 10000). The first line of the input contains only positive integer N. Then follow the cases. Each case consists of exactly one line with two positive integers separated by space. These are the reversed numbers you are to add.
+
+Output
+For each case, print exactly one line containing only one integer - the reversed sum of two reversed numbers. Omit any leading zeros in the output.
+*/
+
+/*
+ * 给两个数a和b,ans=反转(反转(a)+反转(b)),删除前导0
+ */
+ 
+#include <iostream>
+#include <cstdio>
+
+using namespace std;
+typedef long long ll;
+
+ll rev(int a){
+    int res = 0;
+    while(a){
+        res = res * 10 + a % 10;
+        a /= 10;
+    }
+    return res;
+}
+
+int main(){
+    int t, a, b;
+    scanf("%d",&t);
+    while(t--&&scanf("%d %d",&a,&b)!=EOF)
+        printf("%lld\n",rev(rev(a)+rev(b)));
+    return 0;
+}
+
+/*
+https://www.spoj.com/problems/FCTRL/
+FCTRL - Factorial
+#math
+The most important part of a GSM network is so called Base Transceiver Station (BTS). These transceivers form the areas called cells (this term gave the name to the cellular phone) and every phone connects to the BTS with the strongest signal (in a little simplified view). Of course, BTSes need some attention and technicians need to check their function periodically.
+
+ACM technicians faced a very interesting problem recently. Given a set of BTSes to visit, they needed to find the shortest path to visit all of the given points and return back to the central company building. Programmers have spent several months studying this problem but with no results. They were unable to find the solution fast enough. After a long time, one of the programmers found this problem in a conference article. Unfortunately, he found that the problem is so called "Travelling Salesman Problem" and it is very hard to solve. If we have N BTSes to be visited, we can visit them in any order, giving us N! possibilities to examine. The function expressing that number is called factorial and can be computed as a product 1.2.3.4....N. The number is very high even for a relatively small N.
+
+The programmers understood they had no chance to solve the problem. But because they have already received the research grant from the government, they needed to continue with their studies and produce at least some results. So they started to study behaviour of the factorial function.
+
+For example, they defined the function Z. For any positive integer N, Z(N) is the number of zeros at the end of the decimal form of number N!. They noticed that this function never decreases. If we have two numbers N1<N2, then Z(N1) <= Z(N2). It is because we can never "lose" any trailing zero by multiplying by any positive number. We can only get new and new zeros. The function Z is very interesting, so we need a computer program that can determine its value efficiently.
+
+Input
+There is a single positive integer T on the first line of input (equal to about 100000). It stands for the number of numbers to follow. Then there are T lines, each containing exactly one positive integer number N, 1 <= N <= 1000000000.
+
+Output
+For every number N, output a single line containing the single non-negative integer Z(N).
+*/
+
+/*
+ * 求N的阶乘的后面有几个0
+ * 把所有后导0看做2*5产生,2会远多于5,所以计算一下5因子出现多少次即可
+ */
+
+#include <iostream>
+#include <cstdio>
+
+using namespace std;
+
+int main(){
+    int t, n, ans;
+    scanf("%d",&t);
+    while(t--&&scanf("%d",&n)!=EOF){
+        ans = 0;
+        while(n>=5){
+            ans += n / 5;
+            n /= 5;
+        }
+        printf("%d\n",ans);
+    }
+    return 0;
+}
+
+

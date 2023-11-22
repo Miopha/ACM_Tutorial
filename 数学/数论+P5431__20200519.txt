@@ -1,0 +1,55 @@
+/*
+题目描述:
+给定n个正整数ai,求它们在模p意义下的乘法逆元。.
+由于输出太多不好，所以将会给定常数k,你要输出的答案为:n sigma i=1 (k^i/ai)
+当然要对p取模。
+输入格式:
+第一行三个正整数n,p,k, 意义如题目描述。
+第二行n个正整数ai,是你要求逆元的数。
+输出格式:
+输出一行一个整数，表示答案。
+*/
+
+/*
+ * 先把分子和分母算出来，要通分，最后用除法逆元求解。
+ * 因为k^i通分不用乘ai,所以直接乘之前的分母。
+ */
+
+#include <iostream>
+#include <stdio.h>
+#define ll long long
+using namespace std;
+char ch;
+void read(ll &x){//不用快读就TLE
+	x=0;
+	for(ch=getchar();ch<'0'||ch>'9';ch=getchar());
+	for(;ch>='0'&&ch<='9';ch=getchar())
+		x=(x<<3)+(x<<1)+(ch&15);
+}
+
+ll qpow(ll a , ll n , ll p){ //a^n%p
+    ll ans = 1;
+    a %= p;
+    while(n){
+        if(n&1) ans = ans * a % p;
+        a = a * a % p;
+        n>>=1;
+    }
+    return ans;
+}
+
+ll inv(ll a , ll mod){
+    return qpow(a,mod-2,mod);
+}
+
+int main(){
+    ll n , p , k , temp , up = 0, down = 1;
+    read(n);read(p);read(k);
+    for(ll i = 1 ,c = k % p ; i <= n ; i++ , c = c * k % p){
+        read(temp);
+        up=(up*temp+down*c)%p;
+        down=down*temp%p;
+    }
+    printf("%lld\n",up * inv(down,p) % p);
+    return 0;
+}

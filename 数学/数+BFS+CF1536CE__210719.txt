@@ -1,0 +1,145 @@
+/*
+https://codeforces.com/contest/1536/problem/C
+C. Diluc and Kaeya
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+The tycoon of a winery empire in Mondstadt, unmatched in every possible way. A thinker in the Knights of Favonius with an exotic appearance.
+
+This time, the brothers are dealing with a strange piece of wood marked with their names. This plank of wood can be represented as a string of n characters. Each character is either a 'D' or a 'K'. You want to make some number of cuts (possibly 0) on this string, partitioning it into several contiguous pieces, each with length at least 1. Both brothers act with dignity, so they want to split the wood as evenly as possible. They want to know the maximum number of pieces you can split the wood into such that the ratios of the number of occurrences of 'D' to the number of occurrences of 'K' in each chunk are the same.
+
+Kaeya, the curious thinker, is interested in the solution for multiple scenarios. He wants to know the answer for every prefix of the given string. Help him to solve this problem!
+
+For a string we define a ratio as a:b where 'D' appears in it a times, and 'K' appears b times. Note that a or b can equal 0, but not both. Ratios a:b and c:d are considered equal if and only if a⋅d=b⋅c.
+
+For example, for the string 'DDD' the ratio will be 3:0, for 'DKD' — 2:1, for 'DKK' — 1:2, and for 'KKKKDD' — 2:4. Note that the ratios of the latter two strings are equal to each other, but they are not equal to the ratios of the first two strings.
+
+Input
+Each test contains multiple test cases. The first line contains the number of test cases t (1≤t≤1000). Description of the test cases follows.
+
+The first line of each test case contains an integer n (1≤n≤5⋅105) — the length of the wood.
+
+The second line of each test case contains a string s of length n. Every character of s will be either 'D' or 'K'.
+
+It is guaranteed that the sum of n over all test cases does not exceed 5⋅105.
+
+Output
+For each test case, output n space separated integers. The i-th of these numbers should equal the answer for the prefix s1,s2,…,si.
+*/
+
+/*
+ * 令(x,y)为(D出现的次数,K出现的次数)，从原点出发做一条线，线穿过的点就是答案
+ */
+
+#include <cstdio>
+#include <map>
+#include <algorithm>
+
+using namespace std;
+typedef pair<int,int> P;
+
+map<P,int> ans;
+int n;
+P xy[500005];
+char s[500005];
+
+void solve(){
+	ans.clear();
+	scanf("%d",&n);
+	getchar();
+	for(int i = 1 ; i <= n ; ++i){
+		s[i] = getchar();
+		int *x = &xy[i].first, *y = &xy[i].second;
+		*x = *(x-2) + (s[i]=='D');
+		*y = *(y-2) + (s[i]=='K');
+		
+		++ans[make_pair(*x,*y)];
+		
+		int g = __gcd(*x,*y);
+		int gx = *x / g, gy = *y / g;
+		if(gx==*x&&gy==*y){
+			printf("%d%c",ans[make_pair(gx,gy)]," \n"[i==n]);
+		}else{
+			printf("%d%c",++ans[make_pair(gx,gy)]," \n"[i==n]);
+		}	
+		
+	}
+}
+
+int main(){
+	int t;
+	scanf("%d",&t);
+	while(t--) solve();
+	return 0;
+}
+
+/*
+https://codeforces.com/contest/1536/problem/E
+E. Omkar and Forest
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Omkar's most recent follower, Ajit, has entered the Holy Forest. Ajit realizes that Omkar's forest is an n by m grid (1≤n,m≤2000) of some non-negative integers. Since the forest is blessed by Omkar, it satisfies some special conditions:
+
+For any two adjacent (sharing a side) cells, the absolute value of the difference of numbers in them is at most 1.
+If the number in some cell is strictly larger than 0, it should be strictly greater than the number in at least one of the cells adjacent to it.
+Unfortunately, Ajit is not fully worthy of Omkar's powers yet. He sees each cell as a "0" or a "#". If a cell is labeled as "0", then the number in it must equal 0. Otherwise, the number in it can be any nonnegative integer.
+
+Determine how many different assignments of elements exist such that these special conditions are satisfied. Two assignments are considered different if there exists at least one cell such that the numbers written in it in these assignments are different. Since the answer may be enormous, find the answer modulo 109+7.
+
+Input
+Each test contains multiple test cases. The first line contains the number of test cases t (1≤t≤100). Description of the test cases follows.
+
+The first line of each test case contains two integers n and m (1≤n,m≤2000,nm≥2) – the dimensions of the forest.
+
+n lines follow, each consisting of one string of m characters. Each of these characters is either a "0" or a "#".
+
+It is guaranteed that the sum of n over all test cases does not exceed 2000 and the sum of m over all test cases does not exceed 2000.
+
+Output
+For each test case, print one integer: the number of valid configurations modulo 109+7.
+*/
+
+/*
+ * 根据BFS的思想，如果固定某集合的点取0的话，其他不取1的格子取法只有一种（如果尝试增大或减少数字的话会破坏第一条规则）
+ * 所以答案为2^k，k是'#'出现的次数
+ * 最后的图中不能全不为0，否则最小那个数不符合第二条规则，所以对于输入中没有0的情况输出2^k-1
+ */
+ 
+#include <cstdio>
+
+using namespace std;
+const int P = 1e9 + 7, MAXN = 2005;
+
+int n, m, ans;
+char mp[MAXN][MAXN];
+bool zero;
+
+void solve(){
+	zero = false;
+	ans = 1;
+	scanf("%d%d",&n,&m);
+	getchar();
+	for(int i = 1 ; i <= n ; ++i){
+		for(int j = 1 ; j <= m ; ++j){
+			mp[i][j] = getchar();
+		}
+		getchar();
+	}
+	
+	for(int i = 1 ; i <= n ; ++i)
+		for(int j = 1 ; j <= m ; ++j){
+			if(mp[i][j]^'0') ans = (ans<<1)%P;
+			zero |= (mp[i][j]=='0');
+		}
+	printf("%d\n",ans-!zero);
+}
+
+int main(){
+	int t;
+	scanf("%d",&t);
+	while(t--) solve();
+	return 0;
+}

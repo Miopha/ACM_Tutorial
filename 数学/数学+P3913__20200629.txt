@@ -1,0 +1,43 @@
+/*
+题目描述
+求 1,2,……,N 中素数的个数。
+
+输入格式
+一行一个整数 N。
+
+输出格式
+一行一个整数，表示素数的个数。
+*/
+
+/*
+ * 枚举素数,那么素数的倍数（除他本身）就不会是素数,标记
+ * 不用筛法因为两个n+1数组会MLE
+ */
+ 
+//package P3912;
+
+import java.util.*;
+
+public class Main {
+
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		int n = sc.nextInt(), ans = 0;
+		sc.close();
+		boolean[] isNotPrime = new boolean[n+1];
+
+		for(int i = 2 ;  i <= n ; i++) {
+			if(!isNotPrime[i]) {
+				for(int j = i * i ; (long)i * i <= n && j <= n; j +=i) {
+					isNotPrime[j]=true;
+				}
+			}
+		}
+		for(int i = 2 ; i <= n ; i++)
+			if(!isNotPrime[i])
+				ans++;
+		System.out.println(ans);
+	}
+
+}
+

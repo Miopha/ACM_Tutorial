@@ -1,0 +1,51 @@
+/*
+https://www.luogu.com.cn/problem/P3910
+目描述
+邮局最近推出了一套纪念邮票，这套邮票共有N张，邮票面值各不相同，按编号顺序为1分，2分，……，N分。
+
+小明是个集邮爱好者，他很喜欢这套邮票，可惜现在他身上只有M分，并不够把全套都买下。他希望尽量买，最好刚好花光所有的钱。作为一个集邮爱好者，小明也不想买的邮票编号断断续续，所以小明打算买面值a分至b分的b-a+1张连续的邮票，且总价值刚好为M分。
+
+你的任务是求出所有符合要求的方案，以[a，b]的形式输出
+
+输入格式
+输入文件只有一行。包含两个整数N和M（1≤N，M≤10^9），它们之间用空格隔开。
+
+输出格式
+输出文件每行包含一个合法方案：[a，b]，按a值从小到大输出。
+*/
+
+/*
+ * 根据等差级数求和公式移项得出a1=m/n+(1-n)/2
+ * 枚举n可以得出首项a1
+ * 对a1(n)求导可知a1单调递减,所以a1<=0时停止枚举防止TLE
+ */
+ 
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <math.h>
+#define re register
+
+using namespace std;
+//a1, n;
+typedef long long ll;
+typedef pair<ll,ll> P;
+
+vector<P> ans;
+
+int main(){
+    ll n, m;
+    scanf("%lld %lld",&n,&m);
+    for(re ll i = 1 ; i <= n ; ++i){
+        double tmp = m*1.0/i+(1-i)/2.0;
+        if(tmp<=0)
+            break;
+        if(floor(tmp)==tmp&&floor(tmp)+i-1<=n){
+            ans.push_back({floor(tmp),i});
+        }
+    }
+    for(re int i = ans.size() - 1 ; i >= 0 ; --i){
+        printf("[%lld,%lld]\n",ans[i].first,ans[i].first+ans[i].second-1);
+    }
+    return 0;
+}

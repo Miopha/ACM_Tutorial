@@ -1,0 +1,104 @@
+/*
+https://codeforces.com/contest/1452/problem/D
+D. Radio Towers
+time limit per test2 seconds
+memory limit per test512 megabytes
+inputstandard input
+outputstandard output
+There are n+2 towns located on a coordinate line, numbered from 0 to n+1. The i-th town is located at the point i.
+
+You build a radio tower in each of the towns 1,2,…,n with probability 12 (these events are independent). After that, you want to set the signal power on each tower to some integer from 1 to n (signal powers are not necessarily the same, but also not necessarily different). The signal from a tower located in a town i with signal power p reaches every city c such that |c−i|<p.
+
+After building the towers, you want to choose signal powers in such a way that:
+
+towns 0 and n+1 don't get any signal from the radio towers;
+towns 1,2,…,n get signal from exactly one radio tower each.
+For example, if n=5, and you have built the towers in towns 2, 4 and 5, you may set the signal power of the tower in town 2 to 2, and the signal power of the towers in towns 4 and 5 to 1. That way, towns 0 and n+1 don't get the signal from any tower, towns 1, 2 and 3 get the signal from the tower in town 2, town 4 gets the signal from the tower in town 4, and town 5 gets the signal from the tower in town 5.
+
+Calculate the probability that, after building the towers, you will have a way to set signal powers to meet all constraints.
+
+Input
+The first (and only) line of the input contains one integer n (1≤n≤2⋅105).
+
+Output
+Print one integer — the probability that there will be a way to set signal powers so that all constraints are met, taken modulo 998244353.
+
+Formally, the probability can be expressed as an irreducible fraction xy. You have to print the value of x⋅y−1mod998244353, where y−1 is an integer such that y⋅y−1mod998244353=1.
+*/
+
+/*
+ * n = 1, ans = 1 / 2
+ * n = 2, ans = 1 / 4
+ * n = 3, ans = 2 / 8
+ * n = 4, ans = 3 / 16
+ * n = 5, ans = 5 / 32
+ * n = 6, ans = 8 / 64
+ * ...
+ * 分子是斐波那契, 分母是2的n次方
+ * 最后用费马小定理(a/b%p=a*b^(p-2)%p)除法取余
+ */
+ 
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cmath>
+#define re register
+#define pb push_back
+#define cl clear
+#define MAXN 200005
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+const int MOD = 998244353;
+ll n, dp[MAXN], po, res;
+
+int qpow(ll x, int n, int mod){
+    ll res = 1;
+    while(n){
+        if(n&1) res = res * x % mod;
+        n >>= 1;
+        x = x * x % mod;
+    }
+    return (int)res;
+}
+
+int inv(int x, int p){
+    return qpow(x,p-2,p);
+}
+
+void solve(){
+    n = read();
+    dp[1] = 1;
+    for(re int i = 2 ; i <= n ; ++i){
+        dp[i] = (dp[i-1]+dp[i-2])%MOD;
+    }
+    po = qpow(2,n,MOD);
+    res = dp[n] * inv(po,MOD) % MOD;
+    printf("%lld\n",res);
+}
+
+int main(){
+    int t = 1;
+    // t = read();
+    while(t--) solve();
+    return 0;
+}

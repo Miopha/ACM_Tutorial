@@ -1,0 +1,352 @@
+/* https://codeforces.com/contest/1497 */
+
+/*
+A. Meximization
+time limit per test1 second
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You are given an integer n and an array a1,a2,…,an. You should reorder the elements of the array a in such way that the sum of MEX on prefixes (i-th prefix is a1,a2,…,ai) is maximized.
+
+Formally, you should find an array b1,b2,…,bn, such that the sets of elements of arrays a and b are equal (it is equivalent to array b can be found as an array a with some reordering of its elements) and ∑i=1nMEX(b1,b2,…,bi) is maximized.
+
+MEX of a set of nonnegative integers is the minimal nonnegative integer such that it is not in the set.
+
+For example, MEX({1,2,3})=0, MEX({0,1,2,4,5})=3.
+
+Input
+The first line contains a single integer t (1≤t≤100)  — the number of test cases.
+
+The first line of each test case contains a single integer n (1≤n≤100).
+
+The second line of each test case contains n integers a1,a2,…,an (0≤ai≤100).
+
+Output
+For each test case print an array b1,b2,…,bn  — the optimal reordering of a1,a2,…,an, so the sum of MEX on its prefixes is maximized.
+
+If there exist multiple optimal answers you can find any.
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, cnt[105];
+
+void solve(){
+	for(int i = 0 ; i <= 100 ; ++i) cnt[i] = 0;
+	n = read();
+	for(int i = 1 ; i <= n ; ++i) ++cnt[read()];
+	for(int i = 0 ; i <= 100 ; ++i){
+		if(cnt[i]){
+			printf("%d ",i);
+			--cnt[i];
+		}
+	}
+	for(int i = 0 ; i <= 100 ; ++i){
+		while(cnt[i]){
+			printf("%d ",i);
+			--cnt[i];
+		}
+	}
+	puts("");
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+B. M-arrays
+time limit per test1 second
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You are given an array a1,a2,…,an consisting of n positive integers and a positive integer m.
+
+You should divide elements of this array into some arrays. You can order the elements in the new arrays as you want.
+
+Let's call an array m-divisible if for each two adjacent numbers in the array (two numbers on the positions i and i+1 are called adjacent for each i) their sum is divisible by m. An array of one element is m-divisible.
+
+Find the smallest number of m-divisible arrays that a1,a2,…,an is possible to divide into.
+
+Input
+The first line contains a single integer t (1≤t≤1000)  — the number of test cases.
+
+The first line of each test case contains two integers n, m (1≤n≤105,1≤m≤105).
+
+The second line of each test case contains n integers a1,a2,…,an (1≤ai≤109).
+
+It is guaranteed that the sum of n and the sum of m over all test cases do not exceed 105.
+
+Output
+For each test case print the answer to the problem.
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, m, a[MAXN], vis[MAXN], ans;
+
+void solve(){
+	n = read();
+	m = read();
+	ans = 0;
+	for(int i = 0 ; i <= m ; ++i) vis[i] = 0;
+	for(int i = 1 ; i <= n ; ++i) ++vis[read()%m];
+	if(vis[0]) ++ans;
+	for(int i = 1 ; i < m ; ++i){
+		if(vis[i]>0) ++ans;
+		else continue;
+		while(vis[i]>0&&vis[m-i]>0){
+			--vis[i];
+			--vis[m-i];
+		}
+		if(vis[i]>0) --vis[i];
+		else if(vis[m-i]>0) --vis[m-i];
+		if(vis[i]>0) ans += vis[i], vis[i] = 0;
+	}
+	printf("%d\n",ans);
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+C1. k-LCM (easy version)
+time limit per test1 second
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+It is the easy version of the problem. The only difference is that in this version k=3.
+
+You are given a positive integer n. Find k positive integers a1,a2,…,ak, such that:
+
+a1+a2+…+ak=n
+LCM(a1,a2,…,ak)≤n2
+Here LCM is the least common multiple of numbers a1,a2,…,ak.
+
+We can show that for given constraints the answer always exists.
+
+Input
+The first line contains a single integer t (1≤t≤104)  — the number of test cases.
+
+The only line of each test case contains two integers n, k (3≤n≤109, k=3).
+
+Output
+For each test case print k positive integers a1,a2,…,ak, for which all conditions are satisfied.
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, k;
+
+void solve(){
+	n = read();
+	k = read();
+	if(n&1){ // odd
+		printf("%d %d 1\n",n>>1,n>>1);
+	}else{ // even
+		if((n>>1)&1){
+			printf("%d %d 2\n",(n>>1)-1,(n>>1)-1);
+		}else{
+			printf("%d %d %d\n",n>>1,n>>2,n>>2);
+		}
+	}
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+
+/*
+C2. k-LCM (hard version)
+time limit per test1 second
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+It is the hard version of the problem. The only difference is that in this version 3≤k≤n.
+
+You are given a positive integer n. Find k positive integers a1,a2,…,ak, such that:
+
+a1+a2+…+ak=n
+LCM(a1,a2,…,ak)≤n2
+Here LCM is the least common multiple of numbers a1,a2,…,ak.
+
+We can show that for given constraints the answer always exists.
+
+Input
+The first line contains a single integer t (1≤t≤104)  — the number of test cases.
+
+The only line of each test case contains two integers n, k (3≤n≤109, 3≤k≤n).
+
+It is guaranteed that the sum of k over all test cases does not exceed 105.
+
+Output
+For each test case print k positive integers a1,a2,…,ak, for which all conditions are satisfied.
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, k;
+
+void solve(){
+	n = read();
+	k = read();
+	while(k^3){
+		printf("1 ");
+		--k;
+		--n;
+	}
+	if(k==3){
+		if(n&1){ // odd
+			printf("%d %d 1\n",n>>1,n>>1);
+		}else{ // even
+			if((n>>1)&1){
+				printf("%d %d 2\n",(n>>1)-1,(n>>1)-1);
+			}else{
+				printf("%d %d %d\n",n>>1,n>>2,n>>2);
+			}
+		}
+		return ;
+	}
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}

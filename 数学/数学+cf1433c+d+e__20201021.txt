@@ -1,0 +1,226 @@
+/*
+https://codeforces.com/problemset/problem/1433/C
+有n条食人鱼,体积为a1,a2,...,an
+大的可以吃自己相邻且体积较小的食人鱼且自身体积+1
+问是否有一条鱼能吃掉所有其他鱼，输出他的i
+*/
+
+/*
+ * 考虑最大的鱼，除非全是体积相同的鱼，不然必存在霸主鱼
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cmath>
+#define re register
+#define pb push_back
+#define cl clear
+#define MAXN 300005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, arr[MAXN], mx, idx;
+
+void solve(){
+    n = read();
+    mx = idx = 0;
+    for(re int i = 1 ; i <= n ; ++i){
+        arr[i] = read();
+        if(arr[i]>=mx){
+            mx = arr[i];
+            idx = i;
+        }
+    }
+    if(arr[1]==mx&&arr[2]!=mx){
+        printf("%d\n",1);
+        return ;
+    }
+    if(arr[n]==mx&&arr[n-1]!=mx){
+        printf("%d\n",n);
+        return ;
+    }
+    for(re int i = 2 ; i < n ; ++i){
+        if(arr[i]==mx&&(arr[i-1]!=mx||arr[i+1]!=mx)){
+            printf("%d\n",i);
+            return ;
+        }
+    }
+    printf("-1\n");
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://codeforces.com/problemset/problem/1433/D
+有n个点，现想要建n-1条路把所有点连接起来
+第i个点上有第ai号黑帮，要求每条路不能直接连接两个黑帮
+输出满足条件的n-1条路
+*/
+
+/*
+ * ai!=a1时连接1点
+ * ai==a1时连接连接上面不是a1黑帮的点
+ */
+ 
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cmath>
+#define I_int int
+#define re register
+#define pb push_back
+#define cl clear
+#define MAXN 5005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+char F[200];
+
+inline void write(I_int x ) {
+    I_int tmp = x > 0 ? x : -x ;
+    if( x < 0 ) putchar( '-' ) ;
+    int cnt = 0 ;
+       while( tmp > 0 ) {
+           F[ cnt ++ ] = tmp % 10 + '0' ;
+           tmp /= 10 ;
+       }
+       while( cnt > 0 ) putchar( F[ -- cnt ] ) ;
+}
+
+int n, arr[MAXN], ans[MAXN], idx;
+
+void solve(){
+    n = read();
+    idx = 0;
+    arr[1] = read();
+    for(re int i = 2 ; i <= n ; ++i){
+        arr[i] = read();
+        if(arr[i]!=arr[1]&&!idx)
+            idx = i;
+    }
+    for(re int i = 2 ; i <= n ; ++i){
+        if(arr[i]!=arr[i-1])
+            break;
+        if(i==n){
+            puts("NO");
+            return ;
+        }
+    }
+    puts("YES");
+    for(re int i = 2 ; i <= n ; ++i){
+        if(arr[i]!=arr[1]){
+            write(1);
+            putchar(' ');
+            write(i);
+            putchar('\n');
+        }else if(arr[i]==arr[1]){
+            write(idx);
+            putchar(' ');
+            write(i);
+            putchar('\n');
+        }
+    }
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://codeforces.com/problemset/problem/1433/E
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cmath>
+#define re register
+#define pb push_back
+#define cl clear
+#define MAXN 100005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+ull ans[25];
+
+void pre(){
+    for(int n = 2 ; n <= 20 ; n+=2){
+        ull bottom = 1, factorial = 1;
+        for(re int i = 2 ; i <= n ; ++i)
+            factorial *= i;
+        bottom = ((n>>1)*(n>>1))<<1;
+        ans[n] = factorial / bottom;
+    }
+}
+
+int main(){
+    pre();
+    printf("%lld\n",ans[read()]);
+    return 0;
+}

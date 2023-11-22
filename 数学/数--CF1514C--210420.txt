@@ -1,0 +1,58 @@
+/*
+https://codeforces.com/contest/1514/problem/C
+C. Product 1 Modulo N
+time limit per test1 second
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Now you get Baby Ehab's first words: "Given an integer n, find the longest subsequence of [1,2,…,n−1] whose product is 1 modulo n." Please solve the problem.
+
+A sequence b is a subsequence of an array a if b can be obtained from a by deleting some (possibly all) elements. The product of an empty subsequence is equal to 1.
+
+Input
+The only line contains the integer n (2≤n≤105).
+
+Output
+The first line should contain a single integer, the length of the longest subsequence.
+
+The second line should contain the elements of the subsequence, in increasing order.
+
+If there are multiple solutions, you can print any.
+*/
+
+/*
+ * 因为相乘的结果是x*n+1，与n互质
+ * 所以选出来相乘的数只能跟n互质，因为过程中取余，最后得到的数p是小于n且与n互质的数，如果不是1，那么再将相乘结果p删除
+ */
+
+#include <cstdio>
+#include <algorithm>
+#include <iostream>
+
+using namespace std;
+typedef long long ll;
+const int MAXN = 100005;
+
+int n, ans;
+bool vis[MAXN];
+ll p;
+
+int main(){
+	p = 1;
+	scanf("%d",&n);
+	for(int i = 1 ; i < n ; ++i){
+		if(__gcd(i,n)==1){
+			p = p * i % n;
+			vis[i] = true;
+		}
+	}
+	if(p^1) vis[p] = false;
+	for(int i = 1 ; i < n ; ++i){
+		if(vis[i]) ++ans;
+	}
+	cout<<ans<<endl;
+	for(int i = 1 ; i < n ; ++i){
+		if(vis[i]) printf("%d%c",i," \n"[i==n]);	
+	}
+	return 0;
+}

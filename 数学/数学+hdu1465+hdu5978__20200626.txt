@@ -1,0 +1,90 @@
+/*
+Problem Description
+大家常常感慨，要做好一件事情真的不容易，确实，失败比成功容易多了！
+做好“一件”事情尚且不易，若想永远成功而总从不失败，那更是难上加难了，就像花钱总是比挣钱容易的道理一样。
+话虽这样说，我还是要告诉大家，要想失败到一定程度也是不容易的。比如，我高中的时候，就有一个神奇的女生，在英语考试的时候，竟然把40个单项选择题全部做错了！大家都学过概率论，应该知道出现这种情况的概率，所以至今我都觉得这是一件神奇的事情。如果套用一句经典的评语，我们可以这样总结：一个人做错一道选择题并不难，难的是全部做错，一个不对。
+
+不幸的是，这种小概率事件又发生了，而且就在我们身边：
+事情是这样的——HDU有个网名叫做8006的男性同学，结交网友无数，最近该同学玩起了浪漫，同时给n个网友每人写了一封信，这都没什么，要命的是，他竟然把所有的信都装错了信封！注意了，是全部装错哟！
+
+现在的问题是：请大家帮可怜的8006同学计算一下，一共有多少种可能的错误方式呢？
+
+Input
+输入数据包含多个多个测试实例，每个测试实例占用一行，每行包含一个正整数n（1<n<=20），n表示8006的网友的人数。
+ 
+Output
+对于每行输入请输出可能的错误方式的数量，每个实例的输出占用一行。
+*/
+
+/*
+ * 错排组合数f(n)=(n-1)*f(n-1)+f(n-2)
+ * 用递归算出
+ */ 
+ 
+//package HDU1465;
+
+import java.util.Scanner;
+
+public class Main {
+
+	public static void main(String[] args) {
+		Scanner sc =  new Scanner(System.in);
+		while(sc.hasNext())
+			System.out.println(f(sc.nextInt()));
+		sc.close();
+	}
+	
+	public static long f(int n) {
+		if(n==1) return 0;
+		if(n==2) return 1;
+		return (n-1) * (f(n-1) + f(n-2));
+	}
+
+}
+
+/*
+Problem Description
+A box contains black balls and a single red ball. Alice and Bob draw balls from this box without replacement, alternating after each draws until the red ball is drawn. The game is won by the player who happens to draw the single red ball. Bob is a gentleman and offers Alice the choice of whether she wants to start or not. Alice has a hunch that she might be better off if she starts; after all, she might succeed in the first draw. On the other hand, if her first draw yields a black ball, then Bob’s chances to draw the red ball in his first draw are increased, because then one black ball is already removed from the box. How should Alice decide in order to maximize her probability of winning? Help Alice with decision.
+
+Input
+Multiple test cases (number of test cases≤50), process till end of input.
+For each case, a positive integer k (1≤k≤10^5) is given on a single line.
+ 
+Output
+For each case, output:
+1, if the player who starts drawing has an advantage
+2, if the player who starts drawing has a disadvantage
+0, if Alice's and Bob's chances are equal, no matter who starts drawing
+on a single line.
+
+题目大意
+箱子里有n个黑球和1个红球，Alice和Bob轮流摸奖,先摸到红球的获胜,如果先摸得获胜概率大点输出1,后摸概率大点输出2,如概率一样,输出0
+*/
+
+/*
+ * n=2时 先摸的人获胜概率=1/3+2/3*1/2*1,后摸的概率=2/3*1/2
+ * n=3时 先摸的人获胜概率=1/4+3/4*2/3*1/2,后摸的概率=3/4*1/3+3/4*2/3*1/2*1
+ * ……
+ * 可以看出概率中的每一项的前一分子都被后一分母抵消,所以每一项都相等,决定概率大小的是加号的数量,故先摸得获胜概率大的时候k为偶数,概率一样时为奇数
+ */
+ 
+package HDU5978;
+
+import java.util.Scanner;
+
+public class Main {
+
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		while(sc.hasNext()) {
+			if(sc.nextInt()%2==1) {
+				System.out.println(0);
+			}else {
+				System.out.println(1);
+			}
+		}
+		sc.close();
+
+	}
+
+}

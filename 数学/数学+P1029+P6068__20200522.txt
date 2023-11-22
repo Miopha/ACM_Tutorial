@@ -1,0 +1,128 @@
+/*
+题目描述:
+输入两个正整数X0,Y0,求出满足下列条件的P, Q的个数:
+1.P,Q是正整数。
+2.要求P,Q以X0为最大公约数,以Y0为最小公倍数。
+试求:满足条件的所有可能的P, Q的个数。
+输入格式:
+一行两个正整数X0,Y0。
+输出格式.
+一行一个数,表示求出满足条件的P,Q的个数。
+*/
+
+/*
+ * 知识点：最大公约数和最小公倍数的乘机为原两个数的乘积。
+ * 所以只要枚举1到sqrt(x*y)就可以得出答案
+ * 得出的是一对数字时ans+=2，i*i=x*y时得到的是一个数字，ans++
+ */
+ 
+//package P1029;
+
+import java.util.Scanner;
+
+public class Main {
+
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		long x = sc.nextInt() , y = sc.nextInt();
+		sc.close();
+		int ans = 0;
+		for(long i = 1 ; i <= Math.sqrt(x*y) ; i++) {
+			if(x*y%i==0&&gcd(i,x*y/i)==x) {
+				if(i*i==x*y) ans+=1;
+				else ans+= 2;
+			}
+		}
+		System.out.println(ans);
+
+	}
+	
+	public static long gcd(long x,long y) {
+		if(y==0) return x;
+		return gcd(y,x%y);
+	}
+
+}
+
+/*
+题目描述:
+灵喜欢gcd,也就是最大公约数。如果你不知道什么叫做最大公约数.
+灵给了你一个正整数n,要你把它分成三个互不相等的正整数a,b,c之和，使得gcd(a,b,c)最大。
+输入格式:
+本题有多组数据。
+第一行一个正整数T,表示数据组数。
+接下来T行，每行一个正整数n。
+输出格式:
+对于每组数据，一行一个整数, 表示答案。
+特别地，如果n无法分成三个互不相等的正整数之和，请输出-1 。
+*/
+
+/*
+ * 设g=gcd(a,b,c)则n=k1*g+k2*g+k3*g,n=(k1+k2+k3)*g
+ * 直接枚举答案，n/i>=6则i为答案之一，i>=6则n/i为答案之一
+ */
+
+//package P6068;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+
+	static FastScanner cin = new FastScanner(System.in);
+	static PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+	
+	public static void main(String[] args) {
+		int T = cin.nextInt();
+		
+		while(T-->0) {
+			int n = cin.nextInt();
+			
+			//特判
+			if(n<=5) out.println(-1);
+			else {
+				//对答案进行枚举
+				int ans = 0;
+				for(int i = 1 ; i * i <= n ; i++) {
+					if(n%i!=0)continue;
+					if(n/i>=6) ans = Math.max(ans,i);
+					if(i>=6) ans = Math.max(ans,n/i);
+				}
+					out.println(ans);
+			}
+			
+			out.flush();
+		}
+	}
+
+	static class FastScanner{
+		BufferedReader br;
+		StringTokenizer st;
+		public FastScanner(InputStream in) {
+			br = new BufferedReader(new InputStreamReader(in),16384);
+			st = new StringTokenizer("");
+		}
+		public String nextLine() {
+			try {
+				return br.readLine();
+			}catch(IOException e) {
+				return null;
+			}
+		}
+		public boolean hasNext() {
+			while(!st.hasMoreTokens()) {
+				String s = nextLine();
+				if(s==null) return false;
+				st = new StringTokenizer(s);
+			}
+			return true;
+		}
+		public String next() {
+			hasNext();
+			return st.nextToken();
+		}
+		public int nextInt() {
+			return Integer.parseInt(next());
+		}
+	}
+}

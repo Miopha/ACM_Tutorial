@@ -1,0 +1,86 @@
+/*
+https://www.luogu.com.cn/problem/P1908
+输入格式
+第一行，一个数 n，表示序列中有 n 个数。
+第二行 n 个数，表示给定的序列。序列中每个数字不超过 10^9
+输出格式
+输出序列中逆序对的数目。
+说明/提示
+对于25%的数据,n<=2500
+对于50%的数据,n<=4e4
+对于所有数据,n<=5e5
+*/
+
+/*
+ * 把这n个数依次加1到下标为这个数的树状数组中,每次add的时候可以发现逆序对,可以看出数量为总前缀和减去下标为这个数之前的前缀和
+ * 但N最大可达一亿,数组不可能开这么大,所以我们需要离散化:把这n个数修改成第n大的数,那么数组开500005即可
+ */
+ 
+#include <bits/stdc++.h>
+#define MAXN 500005
+#define re register
+
+using namespace std;
+
+int tree[MAXN], idx[MAXN], n;
+long long ans;
+
+struct Data{
+    int val, idx;
+}data[MAXN];
+
+inline int read(){
+    int x = 0, f = 1;
+    char ch = getchar();
+    while(ch>'9'||ch<'0'){
+        if(ch=='-')
+            f = -1;
+        ch = getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x = (x<<3) + (x<<1) + (ch^48);
+        ch = getchar();
+    }
+    return x*f;
+}
+
+inline bool cmp(Data a, Data b){
+    if(a.val==b.val){
+        return a.idx < b.idx;
+    }
+    return a.val < b.val;
+}
+
+inline int lowbit(int x){
+    return x&-x;
+}
+
+inline void add(int x, int v){
+    for(;x<=n;x+=lowbit(x))
+        tree[x] += v;
+}
+
+inline int query(int x){
+    int res = 0;
+    for(;x>=1;x-=lowbit(x))
+        res += tree[x];
+    return res;
+}
+
+int main(){
+    n = read();
+    for(re int i = 1 ; i <= n ; i++){
+        data[i].val = read(); 
+        data[i].idx = i;
+    }
+    sort(data+1,data+1+n,cmp);
+    for(re int i = 1 ; i <= n ; i++){
+        idx[data[i].idx] = i;
+    }
+    for(re int i = 1 ; i <= n ; i++){
+        add(idx[i],1);
+        ans += i - query(idx[i]);
+    }
+    printf("%lld\n",ans);
+    return 0;
+}

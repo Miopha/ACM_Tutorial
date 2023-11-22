@@ -1,0 +1,132 @@
+/*
+https://www.luogu.com.cn/problem/P2068
+题目描述
+给定一个长度为n（n<=100000），初始值都为0的序列，x(x<=10000)次的修改某些位置上的数字，每次加上一个数，然后提出y (y<=10000)个问题，求每段区间的和。时间限制1秒。
+
+输入格式
+第一行1个数，表示序列的长度n
+
+第二行1个数，表示操作的次数w
+
+后面依次是w行，分别表示加入和询问操作
+
+其中，加入用x表示，询问用y表示
+
+x的格式为"x a b" 表示在序列a的位置加上b
+
+y的格式为"y a b" 表示询问a到b区间的加和
+
+输出格式
+每行一个数，分别是每次询问的结果
+*/
+
+//package P2068;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+
+	static int n, q, tree[];
+	
+	public static void main(String[] args) throws IOException{
+		BufferedReader cin = new BufferedReader(new InputStreamReader(System.in));
+		n = Integer.parseInt(cin.readLine());
+		q = Integer.parseInt(cin.readLine());
+		tree = new int[n+1];
+		String tmp[];
+		int x, y;
+		StringBuilder ans = new StringBuilder();
+		while(q-->0) {
+			tmp = cin.readLine().split(" ");
+			x = Integer.parseInt(tmp[1]); y = Integer.parseInt(tmp[2]);
+			if(tmp[0].equals("x")) {
+				add(x,y);
+			}else {
+				ans.append(query(y)-query(x-1)).append("\n");
+			}
+		}
+		System.out.println(ans.toString());
+	}
+	
+	
+	public static void add(int x, int v) {
+		for(;x<=n;x+=lowbit(x)) tree[x] += v;
+	}
+	
+	public static int query(int x) {
+		int ans = 0;
+		for(;x>=1;x-=lowbit(x)) ans += tree[x];
+		return ans;
+	}
+	
+	public static int lowbit(int x) {
+		return x&-x;
+	}
+
+}
+
+/*
+https://www.luogu.com.cn/record/36145928
+题目描述
+小FF发现门上同样有着n个数字。于是他认为打开这扇门的秘诀就是找到让这个序列变成不下降序列所需要的最小次数。但小FF不会……只好又找到了你，并答应事成之后与你三七分……
+输入格式
+第一行为一个整数n，表示序列长度
+第二行为n个整数，表示序列中每个元素。
+输出格式
+一个整数ans，即最少操作次数。
+*/
+
+/*
+ * 其实就是求逆序对数,可用归并排序求
+ */
+ 
+//package P1774;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+	
+	static int tmp[] = new int[500005];
+	static long ans;
+	
+	public static void main(String[] args) throws IOException{
+		StreamTokenizer st = new StreamTokenizer(new BufferedReader(new InputStreamReader(System.in)));
+		st.nextToken(); int n = (int)st.nval, data[] = new int[n+1];
+		for(int i = 1 ; i <= n ; ++i) {
+			st.nextToken(); data[i] = (int)st.nval;
+		}
+		mergeSort(data,1,n);
+//		System.out.println(Arrays.toString(data));
+		System.out.println(ans);
+	}
+	
+	public static void mergeSort(int[] arr, int l, int r) {
+		if(l==r) return ;
+		int mid = (l+r)>>1;
+		mergeSort(arr,l,mid);
+		mergeSort(arr,mid+1,r);
+		merge(arr,l,mid,r);
+	}
+	
+	public static void merge(int arr[], int l,int mid, int r) {
+		int i = l, j = mid+1, k = l;
+		while(i<=mid&&j<=r) {
+			if(arr[i]>arr[j]) {
+				tmp[k++] = arr[j++];
+				ans += mid - i + 1;
+			}else {
+				tmp[k++] = arr[i++];
+			}
+		}
+		while(i<=mid)
+			tmp[k++] = arr[i++];
+		while(j<=r)
+			tmp[k++] = arr[j++];
+		for(int p = l; p <= r ; ++p)
+			arr[p] = tmp[p];
+	}
+
+}
+

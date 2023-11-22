@@ -1,0 +1,58 @@
+/*
+https://www.spoj.com/problems/PRIME1/
+Peter wants to generate some prime numbers for his cryptosystem. Help him! Your task is to generate all prime numbers between two given numbers!
+
+Input
+The input begins with the number t of test cases in a single line (t<=10). In each of the next t lines there are two numbers m and n (1 <= m <= n <= 1000000000, n-m<=100000) separated by a space.
+
+Output
+For every test case print all prime numbers p such that m <= p <= n, one number per line, test cases separated by an empty line.
+*/
+
+/*
+ * 用线性筛直接求出1~1e9的质数,会MLE/TLE
+ * 只需要筛出1~sqrt(1e9)的质数,然后对区间范围内的数字求余,为0则不是质数
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <math.h>
+#define re register
+#define MAXN 1000000005
+
+using namespace std;
+
+typedef long long ll;
+
+bool isNotPrime[MAXN];
+int primes[55000000], cnt;
+
+bool check(int x){
+    int sq = sqrt(x);
+    if(x==1) return false;
+    for(re int i = 1 ; primes[i] <= sq ; ++i)
+        if(x%primes[i]==0)
+            return false;
+    return true;
+}
+
+int main(){
+    isNotPrime[1] = true;
+    for(re ll i = 2 ; i <= 1e5 ; ++i){
+        if(!isNotPrime[i])
+            primes[++cnt] = i;
+        for(re int j = 1 ; j <= cnt && i * primes[j] <= 1e5 ; ++j){
+            isNotPrime[i*primes[j]] = true;
+            if(i%primes[j]==0)break;
+        }
+    }
+    int t, m, n;
+    scanf("%d",&t);
+    while(t--&&scanf("%d %d",&m,&n)!=EOF){
+        for(re int i = m ; i <= n ; ++i)
+            if(check(i))
+                printf("%d\n",i);
+        printf("\n");
+    }
+    return 0;
+}

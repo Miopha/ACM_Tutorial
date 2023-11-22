@@ -1,0 +1,122 @@
+/*
+https://codeforces.com/contest/1497/problem/E1
+E1. Square-free division (easy version)
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+This is the easy version of the problem. The only difference is that in this version k=0.
+
+There is an array a1,a2,…,an of n positive integers. You should divide it into a minimal number of continuous segments, such that in each segment there are no two numbers (on different positions), whose product is a perfect square.
+
+Moreover, it is allowed to do at most k such operations before the division: choose a number in the array and change its value to any positive integer. But in this version k=0, so it is not important.
+
+What is the minimum number of continuous segments you should use if you will make changes optimally?
+
+Input
+The first line contains a single integer t (1≤t≤1000)  — the number of test cases.
+
+The first line of each test case contains two integers n, k (1≤n≤2⋅105, k=0).
+
+The second line of each test case contains n integers a1,a2,…,an (1≤ai≤107).
+
+It's guaranteed that the sum of n over all test cases does not exceed 2⋅105.
+
+Output
+For each test case print a single integer  — the answer to the problem.
+
+Example
+*/
+
+/*
+ * 完全平方数质因数分解后每项的幂都是偶数，所以两个数的质因数的幂相加得到都是偶数的话那么这两个数的乘积是完全平方数
+ * 所以将a中数字质因数分解，保留余2次幂的质因数再放入a中，那么当a中连续段有两个相同的数，那么他们的乘积就是完全平方数
+ * 所以问题变成“a至少能被分成几个【由不同数字组成的】连续段？”
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <map>
+#include <cmath>
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, k, a[MAXN], primes[1000000], cnt, ans;
+bool isPrime[10000000];
+map<int,bool> vis;
+
+void sieve(){ // liner sieve
+	for(int i = 2 ; i <= 1e7 ; ++i) isPrime[i] = true;
+	for(int i = 2 ; i <= 1e7 ; ++i){
+		if(isPrime[i]) primes[++cnt] = i;
+		for(int j = 1 ; j <= cnt && 1ll * i * primes[j] <= 1e7 ; ++j){
+			isPrime[i*primes[j]] = false;
+			if(!(i%primes[j])) break;
+		}
+	}
+}
+
+void reso(int num){
+	int tmp = 1;
+	vector<int> res;
+	for(int j = 1 ; j <= cnt ; ++j){
+		if(1ll*primes[j]*primes[j]>num) break;
+		int tot = 0;
+		while(!(num%primes[j])) num /= primes[j], ++tot;
+		if(tot&1) tmp *= primes[j];
+		if(num==1) break;
+	}
+	tmp *= num;
+	if(vis[tmp]){
+		++ans;
+		vis.clear();
+	}
+	vis[tmp] = true;
+}
+
+void solve(){
+	vis.clear();
+	n = read();
+	k = read();
+	ans = 0;
+	for(int i = 1 ; i <= n ; ++i){
+		a[i] = read();
+		reso(a[i]);
+	}
+	printf("%d\n",ans+1);
+}
+
+int main(){
+	sieve();
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}

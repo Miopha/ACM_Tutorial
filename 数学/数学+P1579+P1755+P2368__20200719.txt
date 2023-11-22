@@ -1,0 +1,178 @@
+/*
+https://www.luogu.com.cn/problem/P1579
+题目描述
+现在请你编一个程序验证哥德巴赫猜想。
+
+先给出一个奇数n，要求输出3个质数，这3个质数之和等于输入的奇数。
+
+输入格式
+仅有一行，包含一个正奇数n，其中9<n<20000
+
+输出格式
+仅有一行，输出3个质数，这3个质数之和等于输入的奇数。相邻两个质数之间用一个空格隔开，最后一个质数后面没有空格。如果表示方法不唯一，请输出第一个质数最小的方案，如果第一个质数最小的方案不唯一，请输出第一个质数最小的同时，第二个质数最小的方案。
+
+输入输出样例
+输入 #1
+2009
+输出 #1
+3 3 2003
+*/
+
+/*
+ * 质数筛出小于n的质数,两层循环枚举可出答案
+ */
+ 
+//package P1579;
+
+import java.util.Scanner;
+
+public class Main {
+
+	public static void main(String[] args) {
+		int n = new Scanner(System.in).nextInt();
+		boolean isNotPrime[] = new boolean[n+1];
+		isNotPrime[1] = true;
+		int primes[] = new int[n+1], cnt = 0;
+		for(int i = 2 ; i <= n ; i++) {
+			if(!isNotPrime[i])
+				primes[++cnt] = i;
+			for(int j = 1 ; primes[j] * i <= n && j <= cnt ; j++) {
+				isNotPrime[primes[j]*i]=true;
+				if(i%primes[j]==0)break;
+			}
+		}
+		for(int i = 1 ; i < n ; i++) {
+			for(int j = i ; j < n - i ; j++) {
+				if(!isNotPrime[i]&&!isNotPrime[j]&&!isNotPrime[n-i-j]) {
+					System.out.println(i+" "+j+" "+(n-i-j));
+					return;
+				}
+			}
+		}
+
+	}
+
+}
+
+/*
+https://www.luogu.com.cn/problem/P1755
+题目描述
+已知任意一个正整数都可以拆分为若干个斐波纳契数，现在，让你求出n的拆分方法
+
+输入格式
+一个数t，表示有t组数据
+
+接下来t行，每行一个数n（如题）
+
+输出格式
+t行，每行一个字符串，表示拆分方法（格式:n=a1+a2+a3+..+an），要求从小到大输出
+
+输入输出样例
+输入 #1
+1
+1
+输出 #1
+1=1
+输入 #2
+1
+10
+输出 #2
+10=2+8
+说明/提示
+若有多组数据，以个数最小的为准，若仍有多组，输出右边尽量大的一组
+
+对于100%的数据 t<=1000 1<=n<=10^9
+*/
+
+/*
+ * 预处理出fibonacci数列,从大到小开始减
+ */
+ 
+//package P1755;
+
+import java.util.Scanner;
+
+public class Main {
+
+	public static void main(String[] args) {
+		int fib[] = new int[50];
+		fib[1] = fib[2] = 1;
+		for(int i = 3 ; i <= 44 ; i++) {
+			fib[i] = fib[i-1] + fib[i-2];
+		}
+		Scanner sc = new Scanner(System.in);
+		int t = sc.nextInt();
+		while(t-->0) {
+			int n = sc.nextInt(), cnt = 0, ans[] = new int[50];
+			System.out.print(n+"=");
+			for(int i = 44 ; i >= 1 ; i--) {
+				if(fib[i]<=n) {
+					n -= fib[i];
+					ans[++cnt] = fib[i];
+				}
+			}
+			System.out.print(ans[cnt--]);
+			for(;cnt>=1;cnt--)
+				System.out.print("+"+ans[cnt]);
+			System.out.println();
+		}
+		sc.close();
+
+	}
+
+}
+
+/*
+https://www.luogu.com.cn/problem/P2368
+题目描述
+求有多少个平方后末尾为987654321的n位数
+
+输入格式
+整数n
+
+输出格式
+答案，即[b]“平方后末尾为987654321的n位数”[/b]的个数
+
+输入输出样例
+输入 #1
+8
+输出 #1
+0
+说明/提示
+1≤n≤1 000 000
+*/
+
+/*
+ * 可以通过枚举知道9位数有8个解,那么10位数的解就是在这8个解前加上前导1,2,3,4,5,6,7,8,9,有72个解
+ * 11位数的时候第10位可以取0,1,2,3,4,5,6,7,8,9
+ * 11位可以取1,2,3,4,5,6,7,8,9,有720个解
+ * 以此类推
+ */
+ 
+//package P2368;
+
+import java.util.Scanner;
+
+public class Main {
+
+	public static void main(String[] args) {
+//		for(long i = 1 ; i < 0x7fffffff ; i++) {
+//			long tmp = i*i;
+//			if(tmp%1000000000==987654321)
+//				System.out.println(i);
+//		}
+		StringBuilder ans = new StringBuilder();
+		int n = new Scanner(System.in).nextInt();
+		if(n<=8)
+			System.out.println(0);
+		else if(n==9)
+			System.out.println(8);
+		else {
+			ans.append(72);
+			for(;n>10;n--)
+				ans.append(0);
+			System.out.println(ans.toString());
+		}
+	}
+
+}

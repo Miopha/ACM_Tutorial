@@ -1,0 +1,166 @@
+/*
+https://atcoder.jp/contests/arc107/tasks/arc107_b
+Problem Statement
+Given are integers N and K. How many quadruples of integers (a,b,c,d) satisfy both of the following conditions?
+* 1<=a,b,c,d<=N
+* a+b-c-d = K
+Constraints
+* 1<=N<=1e5
+* -2(N-1)<=K<=2(N-1)
+* All numbers in input are integers.
+*/
+
+/*
+ * 令A=a+b, B=c+d,(2<=A,B<=2*N), 那么K=A-B, 枚举A得到B
+ * 再求A,B能有多少种组合即可(n-abs(x-n-1))
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <queue>
+#include <cmath>
+#include <algorithm>
+#define re register
+#define pb push_back
+#define cl clear
+#define MAXN 100005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, k;
+ll ans;
+
+ll f(int x){
+    return n-abs(x-n-1);
+}
+
+void solve(){
+    n = read();
+    k = read();
+    for(re int A = 2 ; A <= (n<<1) ; ++A){
+        int B = A - k;
+        if(B>=2&&B<=(n<<1)){
+            ans = ans + f(A)*f(B);
+        }
+    }
+    printf("%lld\n",ans);
+}
+
+int main(){
+    int t = 1;
+    //t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://codeforces.com/contest/1445/problem/C
+C. Division
+time limit per test1 second
+memory limit per test512 megabytes
+inputstandard input
+outputstandard output
+Oleg's favorite subjects are History and Math, and his favorite branch of mathematics is division.
+
+To improve his division skills, Oleg came up with t pairs of integers pi and qi and for each pair decided to find the greatest integer xi, such that:
+
+* pi is divisible by xi;
+* xi is not divisible by qi.
+Oleg is really good at division and managed to find all the answers quickly, how about you?
+Input
+The first line contains an integer t (1≤t≤50) — the number of pairs.
+
+Each of the following t lines contains two integers pi and qi (1≤pi≤1018; 2≤qi≤109) — the i-th pair of integers.
+
+Output
+Print t integers: the i-th integer is the largest xi such that pi is divisible by xi, but xi is not divisible by qi.
+
+One can show that there is always at least one value of xi satisfying the divisibility conditions for the given constraints.
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cmath>
+#include <algorithm>
+#define re register
+#define pb push_back
+#define cl clear
+#define MAXN 100005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline ll read(){
+	ll x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+ll a, b, ans;
+
+ll test(ll x){
+    if(!(x^1)) return 1;
+    ll t = a;
+    while(!(t%b))
+        t /= x;
+    return t;
+}
+
+void solve(){
+    a = read();
+    b = read();
+    ans = 0;
+    if(a%b){
+        printf("%lld\n",a);
+    }else{
+        for(re ll i = 1 ; i * i <= b ; ++i){
+            if(!(b%i)){
+                ans = max(ans,test(i));
+                ans = max(ans,test(b/i));
+            }
+        }
+        printf("%lld\n",ans);
+    }
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
