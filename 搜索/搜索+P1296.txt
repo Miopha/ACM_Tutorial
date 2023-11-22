@@ -1,0 +1,80 @@
+/*
+https://www.luogu.com.cn/problem/P1692
+题目描述
+原始部落 byteland 中的居民们为了争夺有限的资源，经常发生冲突。几乎每个居民都有他的仇敌。部落酋长为了组织一支保卫部落的队伍，希望从部落的居民中选出最多的居民入伍，并保证队伍中任何 22 个人都不是仇敌。
+
+给定 byteland 部落中居民间的仇敌关系，编程计算组成部落卫队的最佳方案。若有多种方案可行，输出字典序最大的方案。
+
+输入格式
+第 11 行有 22 个正整数 nn 和 mm，表示 byteland 部落中有 nn 个居民，居民间有 mm 个仇敌关系。居民编号为 1,2, \cdots ,n1,2,⋯,n。接下来的 mm 行中，每行有 22 个正整数 uu 和 vv，表示居民 uu 与居民 vv 是仇敌。
+
+输出格式
+第 11 行是部落卫队的人数；文件的第 22 行是卫队组成 x_ix 
+i
+​	
+ ，1 \le i \le n1≤i≤n，x_i=0x 
+i
+​	
+ =0 表示居民 ii 不在卫队中，x_i=1x 
+i
+​	
+ =1 表示居民 ii 在卫队中。
+*/
+
+#include <cstdio>
+#include <iostream>
+#include <set>
+
+using namespace std;
+const int MAXN = 105;
+
+int n, m, vis[MAXN], cnt, len, ans[MAXN], chosen[MAXN];
+bool output[MAXN];
+set<int> hate[MAXN];
+
+bool cmp(){
+	for(int i = len ; i ; --i){
+		if(ans[i]^chosen[i]){
+			return ans[i] > chosen[i];
+		} 	
+	}
+}
+
+inline void DFS(int nw){
+	if(!nw){
+		if(cnt>len){
+			for(int i = 1 ; i <= cnt ; ++i) ans[i] = chosen[i];
+			len = cnt;
+		}else if(cnt==len&&cmp()){
+			for(int i = 1 ; i <= cnt ; ++i) ans[i] = chosen[i];
+		}
+		// for(int i = 1 ; i <= cnt ; ++i) printf("%d%c",chosen[i]," \n"[i==cnt]);
+		return ;
+	}
+	// 选
+	if(!vis[nw]){
+		chosen[++cnt] = nw;
+		for(auto it : hate[nw]) ++vis[it];
+		DFS(nw-1);
+		--cnt;
+		for(auto it : hate[nw]) --vis[it];
+	}
+	// 不选
+	DFS(nw-1);
+}
+
+int main(){
+	scanf("%d %d",&n,&m);
+	for(int i = 1, a, b ; i <= m ; ++i){
+		scanf("%d %d",&a,&b);
+		hate[a].insert(b);
+		hate[b].insert(a);
+	}
+	DFS(n);
+	for(int i = 1 ; i <= len ; ++i) output[ans[i]] = 1;
+	cout<<len<<endl;
+	for(int i = 1 ; i <= n ; ++i){
+		printf("%d%c",output[i]," \n"[i==n]);
+	}
+	return 0;
+}

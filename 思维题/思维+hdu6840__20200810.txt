@@ -1,0 +1,119 @@
+/*
+http://acm.hdu.edu.cn/showproblem.php?pid=6840
+Range k-th Maximum Query
+Time Limit: 2000/1000 MS (Java/Others)    Memory Limit: 65536/65536 K (Java/Others)
+Total Submission(s): 141    Accepted Submission(s): 54
+
+Problem Description
+你在学数据结构的时候碰到了如下问题：
+
+给一个序列 a1,a2,…,an，求所有长度为l的子区间第k大的数的和。对于某个i(1≤i≤n−l+1)，将ai,ai+1,…,ai+l−1所有的元素从大到小排序之后，得到b1,b2,…,bl，其中的bk就是所求的子区间[i,i+l−1]中第k大的数。对于其中所有的i(1≤i≤n−l+1)求和，就是想要的值。
+
+比如一个序列为3,1,5,2,4,1，l=4,k=2，那么每个长度为l的区间中第k大的依次为3,4,4。
+
+现在给你一个序列c1,c2,…,cn，你想将其元素重新排列，使得这个和尽量大或者尽量小。问最大或者最小的和是多少。
+ 
+Input
+第一行一个正整数T(1≤T≤104)表示数据组数。
+
+对于每组数据，第一行三个整数n,l,k(1≤k≤l≤n≤105)。接下来一行n个正整数c1,c2,…,cn(1≤ci≤1e9)。
+
+保证∑n≤1e6。
+ 
+Output
+对于每组数据，输出两个数，分别表示最大最小的和。
+
+Sample Input
+1
+6 4 2
+1 2 3 4 5 6
+
+Sample Output
+15 10
+
+Hint
+
+一个可行的方案为 3, 4, 6, 5, 2, 1 和 5, 3, 2, 1, 6, 4。
+
+Source
+2020 年百度之星·程序设计大赛 - 复赛
+*/
+
+/*
+ * 对于样例为了得到最大值我们把数列排成0011001100...(l-k个0和k个1交替),1表示最大值0表示最小值
+ * 用Ai表示数列中第i大的数,每使用过一次i会加一,初始时i=k
+ * 发现答案=(l-k+1)*Ai+连续(k-1)个Ai,直到有(n-l+1)个数字为止
+ * (l-k+1)是区间移动到连续1区间的个数
+ * (k-1)是区间移动到非连续1区间的个数
+ * (n-l+1)是这个数列最多有这么多个长度为l的区间
+ * 最小就是每个区间找第l+1−k小,修改k和重新sort即可
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <algorithm>
+#define re register
+#define MAXN 100005
+
+using namespace std;
+typedef long long ll;
+
+inline bool cmp(int x, int y){
+    return x>y;
+}
+
+inline int read(){
+    int x = 0, f = 1;
+    char ch = getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-')
+            f = -1;
+        ch = getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x = (x<<3)+(x<<1)+(ch^48);
+        ch = getchar();
+    }
+    return x*f;
+}
+
+int t, n, l, k, idx, cnt, data[MAXN], a, b;
+ll ans1, ans2;
+
+ll solve(){
+    cnt = n - l + 1;
+    idx = k;
+    a = l - k + 1;
+    b = k - 1;
+    ll ans = 0;
+    while(cnt>0){
+        for(re int i = 1 ; i <= a ; ++i){
+            ans += data[idx];
+            if(--cnt<1) break;
+        }
+        if(cnt<1) break;
+        ++idx;
+        for(re int i = 1 ; i <= b ; ++i, ++idx){
+            ans += data[idx];
+            if(--cnt<1) break;
+        }
+        if(cnt<1) break;
+    }
+    return ans;
+}
+
+int main(){
+    t = read();
+    while(t--){
+        n = read(); l = read(); k = read();
+        for(re int i = 1 ; i <= n ; ++i)
+            data[i] = read();
+        sort(data+1,data+n+1,cmp);
+        ans1 = solve();
+        k = l-k+1;
+        sort(data+1,data+n+1);
+        ans2 = solve();
+        printf("%lld %lld\n",ans1,ans2);
+    }
+    return 0;
+}

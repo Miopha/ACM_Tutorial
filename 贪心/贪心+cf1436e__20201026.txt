@@ -1,0 +1,129 @@
+/*
+https://codeforces.com/problemset/problem/1436/D
+D. Bandit in a City
+time limit per test1 second
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Bandits appeared in the city! One of them is trying to catch as many citizens as he can.
+
+The city consists of n squares connected by n−1 roads in such a way that it is possible to reach any square from any other square. The square number 1 is the main square.
+
+After Sunday walk all the roads were changed to one-way roads in such a way that it is possible to reach any square from the main square.
+
+At the moment when the bandit appeared on the main square there were ai citizens on the i-th square. Now the following process will begin. First, each citizen that is currently on a square with some outgoing one-way roads chooses one of such roads and moves along it to another square. Then the bandit chooses one of the one-way roads outgoing from the square he is located and moves along it. The process is repeated until the bandit is located on a square with no outgoing roads. The bandit catches all the citizens on that square.
+
+The bandit wants to catch as many citizens as possible; the citizens want to minimize the number of caught people. The bandit and the citizens know positions of all citizens at any time, the citizens can cooperate. If both sides act optimally, how many citizens will be caught?
+
+Input
+The first line contains a single integer n — the number of squares in the city (2≤n≤2⋅105).
+
+The second line contains n−1 integers p2,p3…pn meaning that there is a one-way road from the square pi to the square i (1≤pi<i).
+
+The third line contains n integers a1,a2,…,an — the number of citizens on each square initially (0≤ai≤109).
+
+Output
+Print a single integer — the number of citizens the bandit will catch if both sides act optimally.
+*/
+
+/*
+ * 村民向树叶移动，最后树叶上最多的村民就是强盗能抓到的村民
+ * 所以尽量减少树叶的村民最大值
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cmath>
+#define re register
+#define pb push_back
+#define cl clear
+#define MAXN 200005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+int head[MAXN], tot;
+
+struct Edge{
+    int u, v, next;
+}G[MAXN];
+
+inline void addEdge(int u, int v){
+    G[++tot].u = u;
+    G[tot].v = v;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+ll n, data[MAXN], in[MAXN], out[MAXN], cap[MAXN], mx[MAXN], son[MAXN];
+ll ans;
+bool isLeaf[MAXN];
+
+inline void DFS(int cur){
+    for(re int i = head[cur] ; i ; i = G[i].next){
+        DFS(G[i].v);
+        if(mx[G[i].v]>mx[cur]){ 
+            cap[cur] = cap[cur] + (mx[G[i].v]-mx[cur]) * son[cur];
+            mx[cur] = mx[G[i].v];
+        }else if(mx[G[i].v]<mx[cur]){ 
+            cap[cur] = cap[cur] + (mx[cur]-mx[G[i].v]) * son[G[i].v];
+        }
+        cap[cur] += cap[G[i].v];
+        son[cur] += son[G[i].v];
+    }
+    if(!isLeaf[cur]&&data[cur]<=cap[cur]){
+        cap[cur] = cap[cur] - data[cur];
+    }else if(!isLeaf[cur]){
+        ll tmp = mx[cur] + (data[cur] - cap[cur] + son[cur] - 1) / son[cur];
+        cap[cur] = (tmp - mx[cur]) * son[cur] - (data[cur] - cap[cur]);
+        mx[cur] = tmp;
+    }
+}
+
+void solve(){
+    n = read();
+    for(re int i = 2, u ; i <= n ; ++i){
+        u = read();
+        addEdge(u,i);
+        ++out[u];
+        ++in[i];
+    }
+    for(re int i = 1 ; i <= n ; ++i)
+        data[i] = read();
+    for(re int i = 1 ; i <= n ; ++i){
+        if(!out[i]){
+            ++son[i];
+            mx[i] = data[i];
+            isLeaf[i] = true;
+        }
+    }
+    DFS(1);
+    printf("%lld\n",mx[1]);
+}
+
+int main(){
+    int t = 1;
+    //t = read();
+    while(t--) solve();
+    return 0;
+}

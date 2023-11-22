@@ -1,0 +1,76 @@
+/*
+https://ac.nowcoder.com/acm/contest/7591/C
+题目描述 
+The party began, the greasy uncle was playing cards, the fat otaku was eating, and the little beauty was drawing.
+
+After playing cards for a while, ZJH felt very hungry. He decided to let the automatic kitchen grill steak for him. It can make the kitchen quite busy, because ZJH tastes food very strictly, especially steak!
+
+To grilling a steak, ZJH believes that it required N grilling processes in order, each function within a temperature range [l_i,r_i] for one minute, only in this case the grilled steak is the best.
+
+Fortunately, the device in the kitchen has already been equipped with artificial intelligence, which can quickly complete the whole process in the shortest time. The temperature of this device can be increased or decreased by one degree per minute. When the temperature is within the required temperature range, the steak will be grilled for one minute. However, the trouble now is that ZJH forgot to write a program to calculate the completion time of the steak when remodelling the automatic kitchen system, so you are asked to add this program to the system.
+
+Given an integer N, indicating the number of processes, and N pairs of numbers [l_i,r_i], representing the temperature range required by each function. The initial temperature of the device is 0. Your program should tell ZJH how long it takes for each steak to be grilled.
+输入描述:
+There are multiple test cases. The first line of input contains an integer T (1 ≤ T ≤ 10), indicating the number of test cases(number of steaks ZJH wants to eat!). For each test case:
+
+The first line contains an integer N (1 ≤ N ≤ 10^5), indicating the number of processes.
+
+Then followed N lines, each line contains two integers li, ri (0 ≤ li ≤ ri ≤ 10^9), indicating the temperature range of the i-th process.
+输出描述:
+For each test case, each line contains an integer, indicating the shortest time the kitchen take to grill steak each case.
+*/
+
+/*
+ * 贪心
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <math.h>
+#include <cmath>
+#define re register
+#define MAXN 100005
+
+using namespace std;
+typedef long long ll;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+ll n, nwTemp, ans;
+
+int main(){
+    int t = read();
+    while(t--){
+        n = read();
+        nwTemp = ans = 0;
+        for(re int i = 1 ; i <= n ; ++i){
+            ll first = read(), second = read();
+            if(first<=nwTemp&&second>=nwTemp){
+                ++ans;
+                continue;
+            }
+            if(abs(first-nwTemp)<=abs(second-nwTemp)){
+                ans += abs(first-nwTemp) + 1;
+                nwTemp = first;
+            }else{
+                ans += abs(second-nwTemp) + 1;
+                nwTemp = second;
+            }
+        }
+        printf("%lld\n",ans);
+    }
+    return 0;
+}

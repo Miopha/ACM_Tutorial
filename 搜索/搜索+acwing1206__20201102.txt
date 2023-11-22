@@ -1,0 +1,97 @@
+/*
+https://www.acwing.com/problem/content/1208/
+*/
+
+/*
+ * 暴搜, 搜到结果为sum/2时记得检测是否分为两个连通块
+ */
+
+//package acwing1208;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StreamTokenizer;
+import java.util.Arrays;
+
+public class Main {
+
+	static int n, m, holes[][] = new int[15][15], ans = 105, sum, dirX[] = new int[] {1,-1,0,0}, dirY[] = new int[] {0,0,1,-1};
+	static boolean vis[][] = new boolean[15][15], visTest[][] = new boolean[15][15];
+	
+	public static void main(String[] args) throws IOException {
+		m = nextInt();
+		n = nextInt();
+		for(int i = 1 ; i <= n ; ++i)
+			for(int j = 1 ; j <= m ; ++j) {
+				holes[i][j] = nextInt();
+				sum += holes[i][j];
+			}
+		if((sum&1)==1) {
+			out.println(0);
+			out.flush();
+			return ;
+		}
+		vis[1][1] = true;
+		int dx = (2==m?2:1), dy = (2==m?1:2);
+		vis[1][1] = true;
+		DFS(dx,dy,holes[1][1],1);
+		vis[1][1] = false;
+		out.println(ans==105?0:ans);
+		out.flush();
+	}
+	
+	public static void DFS(int x, int y, int sum1, int tot) {
+		//System.out.println(sum1);
+		if(sum1==sum>>1) {
+			int cnt = 0;
+			for(int i = 1 ; i <= n ; ++i) {
+				for(int j = 1 ; j <= m ; ++j) {
+					visTest[i][j] = false;
+				}
+			}
+			for(int i = 1 ; i <= n ; ++i) {
+				for(int j = 1 ; j <= m ; ++j) {
+					if(!visTest[i][j]) {
+						++cnt;
+						DFSTest(i,j,vis[i][j]);
+					}
+				}
+			}
+			if(cnt==2) ans = Math.min(ans,tot);
+			return ;
+		}
+		if(sum1>(sum>>1)||x==n+1)
+			return ;
+		int dx = (y==m?x+1:x), dy = (y==m?1:y+1);
+		//选
+		vis[x][y] = true;
+		DFS(dx,dy,sum1+holes[x][y],tot+1);
+		vis[x][y] = false;
+		//不选
+		DFS(dx,dy,sum1,tot);
+	}
+	
+	// 检测连通块
+	public static void DFSTest(int x, int y, boolean status) {
+		visTest[x][y] = true;
+		for(int i = 0, dx, dy ; i < 4 ; ++i) {
+			dx = x + dirX[i];
+			dy = y + dirY[i];
+			if(dx>n||dx<1||dy>m||dy<1||vis[dx][dy]^status||visTest[dx][dy]) continue;
+			DFSTest(dx,dy,status);
+		}
+	}
+
+	static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	static StreamTokenizer st = new StreamTokenizer(br);
+	static PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+	public static int nextInt() throws IOException {
+		st.nextToken();
+		return (int)st.nval;
+	}
+	
+}

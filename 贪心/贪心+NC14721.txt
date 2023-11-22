@@ -1,0 +1,59 @@
+/*
+链接：https://ac.nowcoder.com/acm/problem/14721
+来源：牛客网
+题目描述 
+自从ZZZZone吃完糖果后，他开始改吃巧克力了，他每天想吃n个巧克力增在甜蜜值，他决定早上吃K个巧克力，晚上吃n - K个巧克力，每个巧克力在早上吃和在晚上吃的甜蜜值是不一样的，他想让自己得到的甜蜜值最大，并想知道最大是多少。
+请你编程帮助他。
+输入描述:
+第一行包含两个数n，K表示每天要吃的巧克力数量和要在早上吃的数量。（n <= 100000, K <= n)
+第二行包含n个整数Ai（1 <= i <= n) 表示个第i个巧克力在早上吃可得到的甜蜜值 (Ai <= 100000)
+第三行包含n个整数Bi（1 <= i <= n) 表示个第i个巧克力在晚上吃可得到的甜蜜值 (Bi <= 100000)
+输出描述:
+输出仅一行包含一个整数表示ZZZZone能获得的最大甜蜜值。
+*/
+
+/*
+ * 定义C[i]=A[i]-B[i],早上先吃C大的,晚上吃C小的
+ */
+
+//package NC14721;
+
+import java.io.*;
+import java.util.*;
+
+public class Main {
+
+	public static void main(String[] args) throws IOException{
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		String str[] = br.readLine().split(" ");
+		int n = Integer.parseInt(str[0]), k = Integer.parseInt(str[1]), A[] = new int[n], B[] = new int[n];
+		long ans = 0;
+		str = br.readLine().split(" ");
+		for(int i = 0 ; i < n ; i++)
+			A[i] = Integer.parseInt(str[i]);
+		str = br.readLine().split(" ");
+		for(int i = 0 ; i < n ; i++)
+			B[i] = Integer.parseInt(str[i]);
+		C C[] = new C[n];
+		for(int i = 0 ; i < n ; i++)
+			C[i] = new C(A[i]-B[i],i);
+		int i;
+		Arrays.sort(C);
+		for(i = 0 ; i < k ; i++)
+			ans+=A[C[i].num];
+		for(; i < n ; i++)
+			ans+=B[C[i].num];
+		System.out.println(ans);
+	}
+
+}
+
+class C implements Comparable<C>{
+	int dif, num;
+	public C(int a, int b) {
+		dif = a; num = b;
+	}
+	public int compareTo(C obj) {
+		return obj.dif - this.dif;
+	}
+}

@@ -1,0 +1,91 @@
+/*
+https://www.luogu.com.cn/problem/P1473
+题目描述
+请考虑一个由 1 到 N 的数字组成的递增数列：1, 2, 3,…,N。
+
+现在请在数列中插入 + 表示加，或者 - 表示减，（空格） 表示空白（例如 1-2 3 就等于 1-23），来将每一对数字组合在一起（请不要在第一个数字前插入符号）。
+
+计算该表达式的结果并判断其值是否为 0。 请你写一个程序找出所有产生和为零的长度为N的数列。
+
+输入格式
+单独的一行表示整数 N（3≤N≤9）。
+
+输出格式
+按照 ASCI I码的顺序，输出所有在每对数字间插入 +，-，（空格） 后能得到结果为零的数列
+*/
+ 
+//package P1473;
+
+import java.io.*;
+import java.util.*;
+
+public class Main {
+
+	//space, add, minus
+	static int N, ct;
+	static int data[];
+	
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		N = sc.nextInt();
+		data = new int[N];
+		DFS(1);
+	}
+	
+	public static void DFS(int step) {
+		if(step==N) {
+			int nums[] = new int[N+1], cnt = 0;
+			int temp = 0;
+			//System.out.println(Arrays.toString(data));
+			for(int i = 1 ; i < N ; ++i) {
+				if(data[i]==1&&temp==0) {
+					temp = i*10+i+1;
+				}else if(data[i]==1) {
+					temp = temp*10+i+1;
+				}else if(temp!=0) {
+					nums[++cnt] = temp;
+					temp = 0;
+				}else {
+					nums[++cnt] = i;
+				}
+			}
+			if(temp!=0)
+				nums[++cnt] = temp;
+			else if(data[N-1]!=0)
+				nums[++cnt] = N;
+			//System.out.println(Arrays.toString(data));
+			//System.out.println(Arrays.toString(nums));
+			cnt = 0;
+			int num = nums[++cnt];
+			for(int i = 1 ; i < N ; ++i) {
+				if(data[i]==2) {
+					num += nums[++cnt];
+				}else if(data[i]==3) {
+					num -= nums[++cnt];
+				}
+			}
+			if(num==0) {
+				//System.out.println(Arrays.toString(data));
+				cnt = 0;
+				System.out.print(1);
+				for(int i = 1 ; i < N ; ++i) {
+					if(data[i]==1)
+						System.out.print(" ");
+					if(data[i]==2)
+						System.out.print("+");
+					if(data[i]==3)
+						System.out.print("-");
+					System.out.print(i+1);
+				}
+				System.out.println();
+			}
+			return ;
+		}
+		for(int i = 1 ; i <= 3 ; ++i) {
+			data[++ct] = i;
+			DFS(step+1);
+			--ct;
+		}
+	}
+
+}

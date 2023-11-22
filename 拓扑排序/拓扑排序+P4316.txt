@@ -1,0 +1,94 @@
+/*
+https://www.luogu.com.cn/problem/P4316
+题目背景
+随着新版百度空间的上线，Blog 宠物绿豆蛙完成了它的使命，去寻找它新的归宿。
+
+题目描述
+给出张 n 个点 m 条边的有向无环图，起点为 1，终点为 n，每条边都有一个长度，并且从起点出发能够到达所有的点，所有的点也都能够到达终点。
+
+绿豆蛙从起点出发，走向终点。 到达每一个顶点时，如果该节点有 k 条出边，绿豆蛙可以选择任意一条边离开该点，并且走向每条边的概率为 k/1 。现在绿豆蛙想知道，从起点走到终点的所经过的路径总长度期望是多少？
+
+输入格式
+输入的第一行是两个整数，分别代表图的点数 n 和边数 m。
+
+第 2 到第 (m + 1) 行，每行有三个整数 u, v, w，代表存在一条从 u 指向 v 长度为 w 的有向边。
+
+输出格式
+输出一行一个实数代表答案，四舍五入保留两位小数。
+*/
+
+#include <cstdio>
+#include <iostream>
+#include <queue>
+
+using namespace std;
+const int MAXN = 100005, MAXM = MAXN<<1;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int head[MAXN], tot, in[MAXN], out[MAXN], dg[MAXN];
+
+struct Edge{
+    int u, to, val, next;
+}G[MAXM];
+
+inline void addEdge(int u, int v, int w){
+    G[++tot].u = u;
+    G[tot].to = v;
+    G[tot].val = w;
+    G[tot].next = head[u];
+    head[u] = tot;
+    ++out[u];
+    ++in[v];
+    ++dg[v];
+}
+
+int n, m;
+double val[MAXN];
+
+int main(){
+	n = read();
+	m = read();
+	for(int i = 1, u, v, w ; i <= m ; ++i){
+		u = read();
+		v = read();
+		w = read();
+		// 反向边
+		addEdge(v,u,w);
+	}
+	queue<int> q;
+	q.push(n);
+	while(!q.empty()){
+		int cur = q.front(); q.pop();
+		// printf("%d\n",cur);
+		for(int i = head[cur], to ; i ; i = G[i].next){
+			to = G[i].to;
+			// printf("to=%d\n",to);
+			val[to] += (val[cur]+G[i].val)/dg[to];
+			--in[to];
+			if(!in[to]){
+				q.push(to);
+			}
+		}
+	}
+	/*
+	for(int i = 1 ; i <= n ; ++i){
+		printf("val[%d]=%lf weight=%lf\n",i,val[i],weight[i]);
+	}
+	*/
+	printf("%.2lf\n",val[1]);
+	return 0;
+}

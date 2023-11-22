@@ -1,0 +1,146 @@
+/*
+https://www.luogu.com.cn/problem/P7835?contestId=52012
+ 展开
+题目背景
+作为幻想乡食物链顶端的幽幽子，一直都是老板娘米斯蒂娅的噩梦！
+
+尽管幽幽子一般而言是不会选择吃她的，但奈何日有所思夜有所梦，米斯蒂娅做了一个梦，一个交杂着幻想与现实的梦，或者说，那就是幻想中的现实……
+
+尽管米斯蒂娅不知道这天什么时候会到来，但她不敢放松警惕，于是老板娘向你求助了……
+
+题目描述
+作为一道签到题，为了能让选手更好的发挥手速，米斯蒂娅决定提供这题的题意简述：隙间传送。
+
+在梦中，幽幽子来到了夜雀餐厅。似乎是由于异变的影响，本来就贪吃的幽幽子此刻变得更加可怕。
+
+米斯蒂娅一共会做 nn 道菜，用来满足所有顾客的需求，并试图增加自己存活的概率。这些菜的编号为 0,1,20,1,2 直到 n-1n−1。同时，幽幽子会进行 kk 次点餐。
+
+本题中，我们记点菜事件为 \operatorname{order}(t,x)order(t,x) ，表示顾客向米斯蒂娅发起一份请求，希望她在 tt 时刻制作并端上菜品 xx 。
+我们用一个三元组 (t_i,x_i,y_i)(t 
+i
+​
+ ,x 
+i
+​
+ ,y 
+i
+​
+ ) 描述幽幽子发起第 ii 次点餐。在每次点餐中，幽幽子会发起 \operatorname{order}(t_i,x_i)order(t 
+i
+​
+ ,x 
+i
+​
+ ) 。然而幽幽子的欲望是不能被满足的。因此，当幽幽子在 t_it 
+i
+​
+  时刻收到菜品时，会再次发起 \operatorname{order}(2\cdot t_i,(x_i+y_i)\bmod n)order(2⋅t 
+i
+​
+ ,(x 
+i
+​
+ +y 
+i
+​
+ )modn) ！更加不幸地，此过程会不断累加，接着她会发起 \operatorname{order}(3\cdot t_i,(x_i+2\cdot y_i)\bmod n)order(3⋅t 
+i
+​
+ ,(x 
+i
+​
+ +2⋅y 
+i
+​
+ )modn) 乃至更多……
+总而言之，幽幽子的第 ii 次点餐 (t_i,x_i,y_i)(t 
+i
+​
+ ,x 
+i
+​
+ ,y 
+i
+​
+ ) 会执行这样的操作：
+\operatorname{order}(j\cdot t_i,(x_i+(j-1)\cdot y_i)\bmod n)(j=1,2,3,\cdots)
+order(j⋅t 
+i
+​
+ ,(x 
+i
+​
+ +(j−1)⋅y 
+i
+​
+ )modn)(j=1,2,3,⋯)
+
+由于幽幽子会发起无数次点餐请求，所以米斯蒂娅是不可能使她满足的。但为了不辜负大家的期望，米斯蒂娅决定竭尽全力拖延时间。作为老板娘，她有着超凡的厨艺：
+
+每一个时刻，米斯蒂娅都能做出无限份菜，但菜只能是同一种类。
+如果一个时刻幽幽子点的菜没能被立即做好（幽幽子并不愿意吃上一个时刻做好的菜哦），那么她就会大发雷霆，在这一时刻立即摧毁夜雀餐厅。米斯蒂娅想知道她能坚持多久（坚持多久指的是最多能坚持多少个时刻使得这些时刻内幽幽子不会摧毁餐厅，时刻从 11 开始计数）。如果她能坚持 9961^{9961}9961 
+9961
+  时刻或以上的话（在此题中，你可以认为 9961^{9961}9961 
+9961
+  是无穷大），请输出 Mystia will cook forever...。
+
+输入格式
+第一行有两个整数 n,kn,k ，含义如题面所示。
+
+接下来 kk 行，每行给定三个整数 (t_i,x_i,y_i)(t 
+i
+​
+ ,x 
+i
+​
+ ,y 
+i
+​
+ ) ，描述一组询问。
+
+输出格式
+共一行。输出米斯蒂娅最多能支撑多久，或者输出 Mystia will cook forever...。
+*/
+
+/*
+ * k^2枚举答案，如果lcm(t[i],t[j])时所用的颜色不同则可取做答案，否则看2*lcm(t[i],t[j])用的颜色是否相同，如果相同则说明接下来的n*lcm(t[i],t[j])用的颜色也相同则都不能取作答案
+ */
+ 
+#include <cstdio>
+#include <algorithm>
+
+using namespace std;
+typedef long long ll;
+const int MAXK = 1005;
+
+int n, k, t[MAXK], x[MAXK], y[MAXK];
+ll ans = 0x3f3f3f3f3f3f3f3f;
+
+ll lcm(int a, int b){
+	return 1ll * a * b / __gcd(a,b);
+}
+
+int getColor(int i, ll time){
+	return (x[i]+1ll*(time/t[i]-1)*y[i])%n;
+}
+
+int main(){
+	scanf("%d %d",&n,&k);
+	for(int i = 1 ; i <= k ; ++i) scanf("%d %d %d",&t[i],&x[i],&y[i]);
+	for(int i = 1 ; i <= k ; ++i){
+		for(int j = i + 1 ; j <= k ; ++j){
+			ll l = lcm(t[i],t[j]);
+			int c1 = getColor(i,l), c2 = getColor(j,l);
+			if(c1^c2) ans = min(ans,l);
+			else{
+				l <<= 1;
+				c1 = getColor(i,l);
+				c2 = getColor(j,l);
+				if(c1^c2) ans = min(ans,l);
+			}
+		}
+	}
+	if(ans==0x3f3f3f3f3f3f3f3f) puts("Mystia will cook forever...");
+	else printf("%lld\n",ans-1);
+	return 0;
+}

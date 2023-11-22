@@ -1,0 +1,90 @@
+/*
+https://www.luogu.com.cn/problem/P1378
+题目描述
+在一个长方形框子里，最多有N（0≤N≤6）个相异的点，在其中任何一个点上放一个很小的油滴，那么这个油滴会一直扩展，直到接触到其他油滴或者框子的边界。必须等一个油滴扩展完毕才能放置下一个油滴。那么应该按照怎样的顺序在这N个点上放置油滴，才能使放置完毕后所有油滴占据的总体积最大呢？（不同的油滴不会相互融合）
+
+注：圆的面积公式V=pi*r*r，其中r为圆的半径。
+
+输入格式
+第1行一个整数N。
+
+第2行为长方形边框一个顶点及其对角顶点的坐标，x,y,x’,y’。
+
+接下去N行，每行两个整数xi,yi，表示盒子的N个点的坐标。
+
+以上所有的数据都在[-1000，1000]内。
+
+输出格式
+一行，一个整数，长方形盒子剩余的最小空间（结果四舍五入输出）
+*/
+
+/*
+ * 点少可暴搜
+ */
+
+//package P1378;
+
+import java.io.*;
+
+public class Main {
+
+	//warp: x, y
+	static int N, x1, y1, x2, y2, warp[][], squareSize, cnt;
+	static double waterSize, r[];
+	static boolean vis[];
+	
+	public static void main(String[] args) throws IOException {
+		StreamTokenizer st = new StreamTokenizer(new BufferedReader(new InputStreamReader(System.in)));
+		st.nextToken(); N = (int)st.nval;
+		st.nextToken(); x1 = (int)st.nval;
+		st.nextToken(); y1 = (int)st.nval;
+		st.nextToken(); x2 = (int)st.nval;
+		st.nextToken(); y2 = (int)st.nval;
+		init();
+		for(int i = 1 ; i <= N ; ++i) {
+			st.nextToken(); warp[i][0] = (int)st.nval;
+			st.nextToken(); warp[i][1] = (int)st.nval;
+		}
+		DFS(0);
+		System.out.println((int)(squareSize-waterSize+0.5));
+	}
+	
+	public static void DFS(double sum) {
+		if(cnt==N) {
+			waterSize = Math.max(waterSize,sum);
+			return ;
+		}
+		for(int i = 1 ; i <= N ; ++i) {
+			if(!vis[i]) {
+				r[i] = cal(i);
+				vis[i] = true; ++cnt;
+				DFS(sum+Math.PI*r[i]*r[i]);
+				vis[i] = false; --cnt;
+			}
+		}
+	}
+	
+	//计算x点半径
+	public static double cal(int x) {
+		//扩散到边框的边界
+		double res = Math.min(Math.min(Math.abs(warp[x][0]-x1),Math.abs(warp[x][0]-x2)),Math.min(Math.abs(warp[x][1]-y1),Math.abs(warp[x][1]-y2)));
+		for(int i = 1 ; i <= N ; ++i) {
+			if(vis[i]&&x!=i) {
+				//两点间距离
+				double d = Math.sqrt((warp[x][0]-warp[i][0])*(warp[x][0]-warp[i][0])+(warp[x][1]-warp[i][1])*(warp[x][1]-warp[i][1]));
+				if(d-r[i]<=0) return 0; //这个点已经被包含
+				//x点的最大合法半径
+				res = Math.min(res,d-r[i]); 
+			}
+		}
+		return res;
+	}
+	
+	public static void init() {
+		warp = new int[N+1][2];
+		vis = new boolean[N+1];
+		r = new double [N+1];
+		squareSize = Math.abs(x2-x1)*Math.abs(y2-y1); 
+	}
+
+}

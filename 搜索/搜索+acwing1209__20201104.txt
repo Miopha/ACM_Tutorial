@@ -1,0 +1,63 @@
+/*
+https://www.acwing.com/problem/content/1211/
+*/
+
+package acwing1209new;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StreamTokenizer;
+
+public class Main {
+
+	static boolean vis[] = new boolean[15];
+	static StringBuilder number = new StringBuilder().append("12345678910");
+	static int n, ans;
+	
+	public static void main(String[] args) throws IOException {
+		n = nextInt();
+		DFS(1);
+		System.out.println(ans);
+	}
+
+	public static void DFS(int cnt) {
+		if(cnt==10) {
+			//System.out.println(number.toString());
+			for(int i = 1 ; i <= 9 ; ++i) {
+				int a = Integer.parseInt(number.substring(1,i+1));
+				if(a>=n) break;
+				for(int j = i + 1 ; j < 9 ; ++j) {
+					int b = Integer.parseInt(number.substring(i+1,j+1)), c = Integer.parseInt(number.substring(j+1,10));
+					if(b%c==0&&(a+b/c)==n) {
+						++ans;
+//						out.println("a="+a);
+//						out.println("b="+b);
+//						out.println("c="+c);
+//						out.flush();
+					}
+				}
+			}
+		}
+		for(int i = 1 ; i <= 9 ; ++i) {
+			if(!vis[i]) {
+				vis[i] = true;
+				number.setCharAt(cnt,(char)('0'+i));
+				DFS(cnt+1);
+				vis[i] = false;
+			}
+		}
+	}
+	
+	static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	static StreamTokenizer st = new StreamTokenizer(br);
+	static PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+	public static int nextInt() throws IOException {
+		st.nextToken();
+		return (int)st.nval;
+	}
+
+}

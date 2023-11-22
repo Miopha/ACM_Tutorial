@@ -1,0 +1,65 @@
+/*
+https://vjudge.net/contest/419404#problem/C
+You are given a matrix consisting of digits zero and one, its size is n × m. You are allowed to rearrange its rows. What is the maximum area of the submatrix that only consists of ones and can be obtained in the given problem by the described operations?
+
+Let's assume that the rows of matrix a are numbered from 1 to n from top to bottom and the columns are numbered from 1 to m from left to right. A matrix cell on the intersection of the i-th row and the j-th column can be represented as (i, j). Formally, a submatrix of matrix a is a group of four integers d, u, l, r (1 ≤ d ≤ u ≤ n; 1 ≤ l ≤ r ≤ m). We will assume that the submatrix contains cells (i, j) (d ≤ i ≤ u; l ≤ j ≤ r). The area of the submatrix is the number of cells it contains.
+
+Input
+The first line contains two integers n and m (1 ≤ n, m ≤ 5000). Next n lines contain m characters each — matrix a. Matrix a only contains characters: "0" and "1". Note that the elements of the matrix follow without any spaces in the lines.
+
+Output
+Print a single integer — the area of the maximum obtained submatrix. If we cannot obtain a matrix of numbers one, print 0.
+*/
+
+/*
+ * 用f[i][j]表示i行j列(包括)后面有几个1
+ * 再枚举列，把列上的f[i][j]排序，面积就是当前最小的f[i][j]乘列数了
+ * 时间复杂度O(n*m)
+ * 这题卡常不能用cin读入
+ */
+ 
+#include <cstdio>
+#include <iostream>
+#include <algorithm>
+
+using namespace std;
+const int MAXN = 5005;
+
+int n, m, ans;
+short f[MAXN][MAXN], a[MAXN];
+char matrix[MAXN][MAXN];
+
+bool cmp(){
+	
+}
+
+int main(){
+	scanf("%d %d",&n,&m);
+	getchar();
+	for(int i = 1 ; i <= n ; ++i){
+		for(int j = 1 ; j <= m ; ++j) matrix[i][j] = getchar();
+		getchar();
+		for(int j = m ; j ; --j){
+			if(matrix[i][j]=='1') f[i][j] = f[i][j+1] + 1;
+		}
+	}
+	/*
+	for(int i = 1 ; i <= n ; ++i){
+		for(int j = 1 ; j <= m ; ++j){
+			printf("%d ",f[i][j]);
+		}
+		printf("\n");
+	}
+	*/
+	for(int i = 1 ; i <= m ; ++i){
+		for(int j = 1 ; j <= n ; ++j){
+			a[j] = f[j][i];
+		}
+		sort(a+1,a+n+1);
+		for(int j = n ; j ; --j){
+			ans = max(ans,(n-j+1)*a[j]);
+		}
+	}
+	printf("%d\n",ans);
+	return 0;
+}

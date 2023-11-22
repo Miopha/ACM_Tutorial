@@ -1,0 +1,118 @@
+/*
+https://codeforces.com/contest/1427/problem/B
+题意：
+有一串字符，W代表赢，L代表输，每次赢能获得一分，如果连续两个W，那么第二个W将得两分
+现有k次改写字符的机会，问你在此情况下最多能获得几份
+*/
+
+/*
+ * 记录L子字符串左右区间和长度
+ * 贪心策略：优先修改长度最小的区间，最左和最右区间放到最后修改
+ */
+ 
+#include <iostream>
+#include <cstdio>
+#include <math.h>
+#include <string.h>
+#include <vector>
+#include <algorithm>
+#define re register
+#define pb push_back
+#define MAXN 100005
+
+using namespace std;
+
+inline int read(){
+    int x = 0, f = 1;
+    char ch = getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-')
+            f = -1;
+        ch = getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x = (x<<3) + (x<<1) + (ch^48);
+        ch = getchar();
+    }
+    return x*f;
+}
+
+struct L{
+    int cont, l, r;
+}l[MAXN];
+
+using namespace std;
+
+int n, k, score, cnt, a, b;
+bool pre, hasW;
+char s1[MAXN];
+
+bool cmp(L a, L b){
+    return a.cont < b.cont;
+}
+
+void solve(){
+    score = 0;
+    a = -1;
+    b = n + 1;
+    cnt = 1;
+    hasW = false;
+    n = read();
+    k = read();
+    for(re int i = 1 ; i <= n + 1 ; ++i){
+        l[i].cont = l[i].l = l[i].r = 0;
+    }
+    cin>>s1+1;
+    for(re int i = 1 ; i <= n ; ++i){
+        if(s1[i]=='L'){
+            ++l[cnt].cont;
+            if(!l[cnt].l)
+                l[cnt].l = l[cnt].r = i;
+            else
+                l[cnt].r = i;
+        }else{
+            hasW = true;
+            if(l[cnt].cont)
+                ++cnt;
+        }
+    }
+    if(l[cnt].cont) ++cnt;
+    sort(l+1,l+cnt,cmp);
+    if(!hasW&&k){
+        score = (min(k,n)*2)-1;
+    }else{
+        for(re int i = 1 ; i < cnt && k ; ++i){
+            if(l[i].l==1){
+                a = l[i].r;
+                continue;
+            }
+            if(l[i].r==n){
+                b = l[i].l;
+                continue;
+            }
+            for(re int j = l[i].l ; j <= l[i].r && k ; ++j, --k){
+                s1[j] = 'W';
+            }
+        }
+        for(re int i = a ; i >= 1 && k ; --i, --k)
+            s1[i] = 'W';
+        for(re int i = b ; i <= n && k ; ++i, --k)
+            s1[i] = 'W';
+        pre = false;
+        for(re int i = 1 ; i <= n ; ++i){
+            if(s1[i]=='W'){
+                score += (1 + pre);
+                pre = true;
+            }else
+                pre = false;
+        }
+    }
+    printf("%d\n",score);
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}

@@ -1,0 +1,97 @@
+/*
+https://www.luogu.com.cn/problem/P1106
+题目描述
+键盘输入一个高精度的正整数N（不超过250位） ，去掉其中任意k个数字后剩下的数字按原左右次序将组成一个新的正整数。编程对给定的N和k，寻找一种方案使得剩下的数字组成的新数最小。
+
+输入格式
+n (高精度的正整数)
+
+k(需要删除的数字个数)
+输出格式
+最后剩下的最小数。
+*/
+
+/*
+ * 最先影响数大小的是高位,靠前的数位越小,整个数就越小,所以要尽可能让高位的数字变小
+ * 有可能删到整个数字高位向低位递增,还没删够k个数字,这时候要从后面删起
+ */
+ 
+//package P1106;
+
+import java.io.*;
+import java.math.*;
+
+public class Main {
+
+	public static void main(String[] args) throws IOException {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		String n = br.readLine();
+		int k = Integer.parseInt(br.readLine()), idx = 0, mem;
+		while(k>0&&idx+1<n.length()) {
+			if(n.charAt(idx)>n.charAt(idx+1)) {
+				n = n.substring(0,idx)+n.substring(idx+1,n.length());
+				--k; idx = 0;
+			}else {
+				++idx;
+			}
+		}
+		while(k>0) {
+			n = n.substring(0,n.length()-1);
+			k--;
+		}
+		//高精度去除前导0
+		System.out.println(new BigInteger(n).toString());
+	}
+
+}
+
+/*
+https://www.luogu.com.cn/problem/P6549
+题目描述
+Mirko 有一个由 n 本书组成的家庭图书馆，n 本书在一个狭窄的橱柜中一个接一个地排列。由于在上一任务中对字母进行了很好的训练，他现在希望按字母顺序排列书籍，以使书名字典序排第一的书排在最后，而字典序排最后的书在书橱的底部。
+
+Mirko 可以轻松地将书从书橱中拉出，但是很难将其推回书橱中，因此只能将书放回到书橱的顶部。因此，将书排序籍的唯一可用方法是反复将书籍从书橱中拉出并将其放在书橱的顶部。
+
+这些书按字母顺序用从 1 到 n 的整数标记。因此，Mirko 希望从顶部开始将它们排序为 (1,2,⋯,n)。例如，如果 n = 3 且开始顺序为 (3,2,1)，则两步就足够了。首先，他拉出编号为 2 的书并将其放在最上面，这样书的顺序便变成 (2,3,1)。之后，他对编号为 1 的书执行相同操作，因此书的顺序变成 (1,2,3)。
+
+计算给定起始顺序，排序完毕所需的最少移动次数。
+输入格式
+第一行一个整数 n，具体含义请见题目描述。
+
+接下来 n 行，每行一个正整数，表示书籍的初始摆放顺序。
+
+输出格式
+一行一个整数，表示使书籍按照自然数顺序排列所需的最小移动步数。
+*/
+
+/*
+ * 最优策略下,出了从n往上每次减1的序列不用移动外,其他数字最少要移动一次
+ */
+ 
+//package P6549;
+
+import java.io.*;
+
+public class Main {
+
+	public static void main(String[] args) throws IOException {
+		StreamTokenizer st = new StreamTokenizer(new BufferedReader(new InputStreamReader(System.in)));
+		st.nextToken(); 
+		int n = (int)st.nval, data[] = new int[n+1], ans = 0, idx = 0;
+		for(int i = 1 ; i <= n ; ++i) {
+			st.nextToken(); data[i] = (int)st.nval;
+			if(data[i]==n) idx = i;
+		}
+		ans += n-idx;
+		for(int i = idx , cnt = n ; i >= 1 ; --i) {
+			if(data[i]!=cnt) {
+				++ans;
+			}else {
+				--cnt;
+			}
+		}
+		System.out.println(ans);
+
+	}
+
+}

@@ -1,0 +1,250 @@
+/*
+https://codeforces.com/contest/1462/problem/C
+C. Unique Number
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You are given a positive number x. Find the smallest positive integer number that has the sum of digits equal to x and all digits are distinct (unique).
+
+Input
+The first line contains a single positive integer t (1≤t≤50) — the number of test cases in the test. Then t test cases follow.
+
+Each test case consists of a single integer number x (1≤x≤50).
+
+Output
+Output t answers to the test cases:
+
+if a positive integer number with the sum of digits equal to x and all digits are different exists, print the smallest such number;
+otherwise print -1.
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, chosen[15], ans;
+bool vis[15];
+
+void DFS(int x, int sum){
+	if(sum>n){
+		return ;
+	}
+	if(sum==n){
+		int a = 0;
+		for(int i = 1 ; i < x ; ++i){
+			a = a * 10 + chosen[i];	
+		}
+		ans = min(ans,a);
+		return ;
+	}
+	for(int i = 1 ; i <= 9 ; ++i){
+		if(!vis[i]){
+			vis[i] = true;
+			chosen[x] = i;
+			DFS(x+1,sum+i);
+			vis[i] = false;
+		}
+	}
+}
+
+void solve(){
+	n = read();
+	if(n>45){
+		printf("-1\n");
+		return ;
+	}
+	ans = INF;
+	DFS(1,0);
+	printf("%d\n",ans);
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://codeforces.com/contest/1462/problem/D
+D. Add to Neighbour and Remove
+time limit per test3 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Polycarp was given an array of a[1…n] of n integers. He can perform the following operation with the array a no more than n times:
+
+Polycarp selects the index i and adds the value ai to one of his choice of its neighbors. More formally, Polycarp adds the value of ai to ai−1 or to ai+1 (if such a neighbor does not exist, then it is impossible to add to it).
+After adding it, Polycarp removes the i-th element from the a array. During this step the length of a is decreased by 1.
+The two items above together denote one single operation.
+
+For example, if Polycarp has an array a=[3,1,6,6,2], then it can perform the following sequence of operations with it:
+
+Polycarp selects i=2 and adds the value ai to (i−1)-th element: a=[4,6,6,2].
+Polycarp selects i=1 and adds the value ai to (i+1)-th element: a=[10,6,2].
+Polycarp selects i=3 and adds the value ai to (i−1)-th element: a=[10,8].
+Polycarp selects i=2 and adds the value ai to (i−1)-th element: a=[18].
+Note that Polycarp could stop performing operations at any time.
+
+Polycarp wondered how many minimum operations he would need to perform to make all the elements of a equal (i.e., he wants all ai are equal to each other).
+
+Input
+The first line contains a single integer t (1≤t≤3000) — the number of test cases in the test. Then t test cases follow.
+
+The first line of each test case contains a single integer n (1≤n≤3000) — the length of the array. The next line contains n integers a1,a2,…,an (1≤ai≤105) — array a.
+
+It is guaranteed that the sum of n over all test cases does not exceed 3000.
+
+Output
+For each test case, output a single number — the minimum number of operations that Polycarp needs to perform so that all elements of the a array are the same (equal).
+*/
+
+/* 
+ * 注意剪枝
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, arr[MAXN], mx, sum, cnt;
+int factor[MAXN], res;
+bool ans;
+
+void check(int x){
+	if(x<=n&&sum/x>=mx) factor[++cnt] = x;
+}
+
+void factorize(){
+	int m = sqrt(sum);
+	for(int i = 1 ; i <= m ; ++i){
+		if(!(sum%i)){
+			if(i*i!=sum){
+				check(i);
+				check(sum/i);
+			}else{
+				check(i);
+			} 
+		}
+	}
+}
+
+bool cmp(int a, int b){
+	return a>b;
+}
+
+void DFS(int x, int ed, int op, int eq){
+	if(arr[x-1]&&arr[x-1]^eq) return ;
+	if(x==n+1){
+		ans = true;
+		res = min(ed,res);
+		return ;
+	}
+	//go right
+	if(x<n&&arr[x+1]&&ed<op&&arr[x]+arr[x+1]<=eq){
+		int tmp = arr[x];
+		arr[x+1] += tmp;
+		arr[x] = 0;
+		DFS(x+1,ed+1,op,eq);
+		arr[x] = tmp;
+		arr[x+1] -= tmp;
+	}
+	//go left
+	if(x>1&&arr[x-1]&&ed<op&&arr[x]+arr[x-1]<=eq){
+		int tmp = arr[x];
+		arr[x-1] += tmp;
+		arr[x] = 0;
+		DFS(x+1,ed+1,op,eq);
+		arr[x] = tmp;
+		arr[x-1] -= tmp;
+	}
+	// do nothing
+	if(arr[x]==eq) DFS(x+1,ed,op,eq);
+}
+
+void solve(){
+	n = read();
+	res = INF;
+	mx = sum = cnt = ans = 0;
+	for(int i = 1 ; i <= n ; ++i){
+		arr[i] = read();
+		mx = max(mx,arr[i]);
+		sum += arr[i];
+	}
+	factorize();
+	sort(factor+1,factor+1+cnt,cmp);
+	for(int i = 1 ; i < cnt && !ans ; ++i){
+		DFS(1,0,n-factor[i],sum/factor[i]);
+	}
+	printf("%d\n",min(res,n-1));
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}

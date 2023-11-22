@@ -1,0 +1,102 @@
+/*
+https://codeforces.com/contest/1427/problem/A
+A. Avoiding Zero
+time limit per test1 second
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You are given an array of n integers a1,a2,…,an.
+
+You have to create an array of n integers b1,b2,…,bn such that:
+
+The array b is a rearrangement of the array a, that is, it contains the same values and each value appears the same number of times in the two arrays. In other words, the multisets {a1,a2,…,an} and {b1,b2,…,bn} are equal.
+For example, if a=[1,−1,0,1], then b=[−1,1,1,0] and b=[0,1,−1,1] are rearrangements of a, but b=[1,−1,−1,0] and b=[1,0,2,−3] are not rearrangements of a.
+
+For all k=1,2,…,n the sum of the first k elements of b is nonzero. Formally, for all k=1,2,…,n, it must hold
+b1+b2+⋯+bk≠0.
+If an array b1,b2,…,bn with the required properties does not exist, you have to print NO.
+
+Input
+Each test contains multiple test cases. The first line contains an integer t (1≤t≤1000) — the number of test cases. The description of the test cases follows.
+
+The first line of each testcase contains one integer n (1≤n≤50)  — the length of the array a.
+
+The second line of each testcase contains n integers a1,a2,…,an (−50≤ai≤50)  — the elements of a.
+
+Output
+For each testcase, if there is not an array b1,b2,…,bn with the required properties, print a single line with the word NO.
+
+Otherwise print a line with the word YES, followed by a line with the n integers b1,b2,…,bn.
+
+If there is more than one array b1,b2,…,bn satisfying the required properties, you can print any of them.
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <math.h>
+#include <algorithm>
+#define re register
+#define MAXN 55
+
+using namespace std;
+
+inline int read(){
+    int x = 0, f = 1;
+    char ch = getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-')
+            f = -1;
+        ch = getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x = (x<<3) + (x<<1) + (ch^48);
+        ch = getchar();
+    }
+    return x*f;
+}
+
+using namespace std;
+
+int n, arr[MAXN], sumP, sumN, sum;
+
+void init(){
+    sum = sumP = sumN = 0;
+}
+
+bool cmp(int a, int b){
+    return a>b;
+}
+
+void solve(){
+    init();
+    n = read();
+    for(re int i = 1 ; i <= n ; ++i){
+        arr[i] = read();
+        if(arr[i]>0)
+            sumP += arr[i];
+        else
+            sumN += arr[i];
+        sum += arr[i];
+    }
+    if(!sum){
+        printf("NO\n");
+        return ;
+    }
+    printf("YES\n");
+    if(sumP>abs(sumN)){
+        sort(arr+1,arr+1+n,cmp);
+    }else{
+        sort(arr+1,arr+1+n);
+    }
+    for(re int i = 1 ; i <= n ; ++i)
+        printf("%d%c",arr[i],(i==n)?'\n':' ');
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+

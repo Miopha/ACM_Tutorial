@@ -1,0 +1,92 @@
+/*
+https://codeforces.com/contest/1455/problem/D
+*/
+
+/* 
+ * 数据范围很小可以考虑暴搜
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <string.h>
+#include <algorithm>
+#include <cmath>
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#define pb push_back
+#define cl clear
+#define MAXN 505
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+void swap(int *a, int *b){
+    int tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+int n, x, a[MAXN], ans;
+bool hasAns;
+
+inline void DFS(int idx, int val, int cnt){
+	if(idx>=3&&a[idx-1]<a[idx-2]) return ;
+	if(idx==n+1){
+		/*
+		for(int i = 1 ; i <= n ; ++i) printf("%d ",a[i]);
+		printf("cnt=%d val=%d\n",cnt,val);
+		*/
+		hasAns = true;
+		ans = min(ans,cnt);
+		return ;
+	}
+	
+	// modify
+	if(a[idx]>val){
+		int tmp = a[idx];
+		a[idx] = val;
+		DFS(idx+1,tmp,cnt+1);
+		a[idx] = tmp;
+	}
+	// leave
+	DFS(idx+1,val,cnt);
+}
+
+void solve(){
+	n = read();
+	x = read();
+	ans = INF;
+	hasAns = false;
+	memset(a,0,sizeof(a));
+	for(int i = 1 ; i <= n ; ++i) a[i] = read();
+	DFS(1,x,0);
+	if(hasAns) printf("%d\n",ans);
+	else printf("-1\n");
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}

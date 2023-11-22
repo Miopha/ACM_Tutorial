@@ -1,0 +1,52 @@
+/*
+链接：https://ac.nowcoder.com/acm/contest/18457/1013
+来源：牛客网
+
+题目描述 
+We have a knapsack of integral capacity and some objects of assorted integral sizes. We attempt to fill the knapsack up, but unfortunately, we are really bad at it, so we end up wasting a lot of space that can’t be further filled by any of the remaining objects. In fact, we are optimally bad at this! How bad can we possibly be?
+
+Figure out the least capacity we can use where we cannot place any of the remaining objects in the knapsack. For example, suppose we have 3 objects with weights 3, 5 and 3, and our knapsack has capacity 6. If we foolishly pack the object with weight 5 first, we cannot place either of the other two objects in the knapsack. That’s the worst we can do, so 5 is the answer.
+输入描述:
+The first line of input contains an integer n (1 ≤ n ≤ 104 ), representing the number of integers onthe whiteboard.The integers on the whiteboard are given over the next n lines, one per line. Their absolute valuesare guaranteed to be at most 105 . 
+Each of the next n lines contains a single integer w (1 ≤ w ≤ c). These are the weights of theobjects.
+输出描述:
+Output a single integer, which is the least capacity we can use where we cannot place any of the remaining objects in the knapsack. 
+*/
+
+/*
+ * 剩余容量装不下剩余物品=>最小未使用物品大于剩余背包容量
+ * 把a sort一下，枚举最小未使用物品a[i]，重量小于最小未使用物品的一定被使用，此时剩余背包容量=k-pre[i-1]
+ * 然后算出i后的物品能组合成的重量vis，那么剩余容量k-pre[i-1]-vis<a[i]时满足条件，此时答案为pre[i-1]+vis
+ */
+
+#include <cstdio>
+#include <algorithm>
+#include <iostream>
+
+using namespace std;
+
+int a[1005], n, k, pre[1005], ans = 0x3f3f3f3f;
+bool vis[1005][100005];
+
+int main(){
+	scanf("%d %d",&n,&k);
+	for(int i = 1 ; i <= n ; ++i) scanf("%d",&a[i]);
+	sort(a+1,a+1+n);
+	for(int i = 1 ; i <= n ; ++i) pre[i] = pre[i-1] + a[i];
+	vis[n+1][0] = true;
+	for(int i = n ; i ; --i){
+		for(int j = 0 ; j <= k ; ++j) vis[i][j] = vis[i+1][j];
+		for(int j = 0 ; a[i] + j <= k ; ++j){
+			if(vis[i+1][j]) vis[i][a[i]+j] = true;
+		}
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		for(int set = max(k - pre[i-1] - a[i] + 1,0) ; k - pre[i-1] - set >= 0 ; ++set){
+			if(vis[i+1][set]) ans = min(ans,set+pre[i-1]);
+			// printf("n=%d set=%d ans=%d\n",i,set,ans);
+		}
+	}
+	if(pre[n]<=k) ans = pre[n];
+	cout<<ans<<endl;
+	return 0;
+}

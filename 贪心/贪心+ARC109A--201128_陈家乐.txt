@@ -1,0 +1,60 @@
+/*
+https://atcoder.jp/contests/arc109/tasks/arc109_a
+Problem Statement
+There are two 100 - story buildings, called A and B. (In this problem, the ground floor is called the first floor.)
+For each i=1,…,100, the i -th floor of A and that of B are connected by a corridor. Also, for each i=1,…,99, there is a corridor that connects the (i+1)-th floor of A and the i -th floor of B. You can traverse each of those corridors in both directions, and it takes you x minutes to get to the other end.
+Additionally, both of the buildings have staircases. For each 
+i=1,…,99, a staircase connects the i-th and (i+1)-th floors of a building, and you need y minutes to get to an adjacent floor by taking the stairs.
+
+Find the minimum time needed to reach the b-th floor of B from the a-th floor of A.
+*/
+
+/*
+ * 贪心
+ */
+ 
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <string.h>
+#include <algorithm>
+#include <cmath>
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#define pb push_back
+#define cl clear
+#define MAXN 100005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int a, b, x, y, ans = INF;
+
+int main(){
+	a = read(); b = read();
+	x = read(); y = read();
+	ans = min(x+(abs(a-b)*x*2),abs(a-b)*y+x);
+	ans = min(x+(abs(a-b-1)*x*2),ans);
+	ans = min(ans,abs(a-b-1)*y+x);
+	printf("%d\n",ans);
+    return 0;
+}

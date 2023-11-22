@@ -1,0 +1,80 @@
+/*
+https://atcoder.jp/contests/arc126/tasks/arc126_a
+A - Make 10  / 
+Time Limit: 2 sec / Memory Limit: 1024 MB
+
+Score : 300 points
+
+Problem Statement
+We have N 2 sticks of length 2 each, N 3  sticks of length 3 each, and N 4 sticks of length 4 each. You can do the following operation any number of times.
+
+Choose two sticks.
+Let x and y be the lengths of these sticks. Bond them to form a stick of length x+y.
+Find the maximum number of sticks that can be made whose lengths are exactly 10.
+
+Given T test cases, solve each of them.
+
+Constraints
+1≤T≤1000≤N 2,N 3​,N 4​≤10 15
+*/
+
+/*
+ * 贪心，注意顺序
+ */
+ 
+#include <cstdio>
+#include <algorithm>
+
+using namespace std;
+typedef long long ll;
+
+ll n1, n2, n3;
+ll ans;
+
+void solve(){
+	ans = 0;
+	scanf("%lld %lld %lld",&n1,&n2,&n3);
+	// 3 3 4
+	if(n2>=2&&n3>=1){
+		ll w = min(n2>>1,n3);
+		n2 -= w<<1;
+		n3 -= w;
+		ans += w;
+	}
+	// 2 4 4
+	if(n1>=1&&n3>=2){
+		ll w = min(n1,n3>>1);
+		n1 -= w;
+		n3 -= w<<1;
+		ans += w;
+	}
+	// 2 2 3 3
+	if(n1>=2&&n2>=2){
+		ll w = min(n1>>1,n2>>1);
+		n1 -= w<<1;
+		n2 -= w<<1;
+		ans += w;
+	}
+	// 2 2 2 4
+	if(n1>=3&&n3>=1){
+		ll w = min(n1/3,n3);
+		n1 -= w*3;
+		n3 -= w;
+		ans += w;
+	}
+	// 2 2 2 2 2
+	if(n1>=5){
+		ll w = n1 / 5;
+		n1 -= w*5;
+		ans += w;
+	}
+	
+	printf("%lld\n",ans);
+}
+
+int main(){
+	int t;
+	scanf("%d",&t);
+	while(t--) solve();	
+	return 0;
+} 

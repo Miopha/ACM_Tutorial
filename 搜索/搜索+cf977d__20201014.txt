@@ -1,0 +1,111 @@
+/*
+https://www.luogu.com.cn/problem/CF977D
+题目描述
+Polycarp likes to play with numbers. He takes some integer number xx , writes it down on the board, and then performs with it n - 1n−1 operations of the two kinds:
+
+·divide the number x by 3 ( x must be divisible by 3 );
+·multiply the number x by 2 .
+After each operation, Polycarp writes down the result on the board and replaces x by the result. So there will be n numbers on the board after all.
+
+You are given a sequence of length n — the numbers that Polycarp wrote down. This sequence is given in arbitrary order, i.e. the order of the sequence can mismatch the order of the numbers written on the board.
+
+Your problem is to rearrange (reorder) elements of this sequence in such a way that it can match possible Polycarp's game in the order of the numbers written on the board. I.e. each next number will be exactly two times of the previous number or exactly one third of previous number.
+
+It is guaranteed that the answer exists.
+
+输入格式
+The first line of the input contatins an integer number nn (2≤n≤100 ) — the number of the elements in the sequence. The second line of the input contains nn integer numbers a_1, a_2 ,…,a n	
+  (1≤a≤3e18) — rearranged (reordered) sequence that Polycarp can wrote down on the board.
+
+输出格式
+Print nn integer numbers — rearranged (reordered) input sequence that can be the sequence that Polycarp could write down on the board.
+
+It is guaranteed that the answer exists.
+
+题意翻译
+题目描述
+有一个长度为 n 的数列 ai，要求你将这个数列重排成一个排列 pi
+ ，使得对于任意的 pi(1<=i< n)
+·divide the number x by 3 ( x must be divisible by 3 );
+·multiply the number x by 2 .
+保证答案存在。
+
+输入输出格式
+输入格式：
+
+输入包含两行。
+
+第一行一个整数 n(2≤n≤100)，表示数列中的元素个数。
+第二行包含 n 个整数 a_1, a_2,..., a_n (1≤ai≤1e18)，描述这个数列。
+
+输出格式：
+
+输出应包含 n 个整数 p1, p2, ..., pn ，表示你的答案。
+
+说明
+在第一个样例中，一种可能的合法排列为 [9,3,6,12,4,8]。
+*/
+
+//package CF977D;
+
+import java.io.*;
+import java.util.*;
+
+public class Main {
+
+	public static void main(String[] args) throws Exception {
+		int t = 1;
+		// t = nextInt();
+		while(t-->0) {
+			solve();
+		}
+	}
+	
+	static int n;
+	static long arr[], ans[];
+	static boolean vis[];
+	
+	public static void solve() throws Exception {
+		n = sc.nextInt();
+		init();
+		for(int i = 1 ; i <= n ; ++i)
+			arr[i] = sc.nextLong();
+		DFS(1);
+	}
+	
+	public static void DFS(int x) {
+		if(x==n+1) {
+			for(int i = 1 ; i <= n ; ++i) {
+				print.append(ans[i]);
+				if(i!=n) print.append(' ');
+			}
+			out.println(print.toString());
+			out.flush();
+			return ;
+		}
+		for(int i = 1 ; i <= n ; ++i) {
+			if(!vis[i]&&(x==1||ans[x-1]*2==arr[i]||ans[x-1]==arr[i]*3)) {
+				ans[x] = arr[i];
+				vis[i] = true;
+				DFS(x+1);
+				vis[i] = false;
+			}
+		}
+	}
+	
+	public static void init() {
+		arr = new long[n+1];
+		ans = new long[n+1];
+		vis = new boolean[n+1];
+	}
+
+	static Scanner sc = new Scanner(System.in);
+	static StringBuilder print = new StringBuilder();
+	static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	static StreamTokenizer st = new StreamTokenizer(br);
+	static PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+	public static long nextLong() throws Exception {
+		st.nextToken();
+		return (long)st.nval;
+	}
+}

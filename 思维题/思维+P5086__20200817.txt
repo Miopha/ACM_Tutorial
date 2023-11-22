@@ -1,0 +1,77 @@
+/*
+https://www.luogu.com.cn/problem/P5086
+题目背景
+题解：https://blog.csdn.net/kkkksc03/article/details/84928342
+
+小奔知道我的Minecraft的坐标参数有三个，分别是X，Y，Z，但是在小奔的眼中，有第四个参数Q，表示对这个坐标的喜爱，比如有些位置是小奔的家，Q的值会大，而有些地方是危险的矿洞，所以Q的值小。
+
+题目描述
+有N个坐标。对于第i个坐标的参数{XiXi,YiYi,ZiZi,QiQi}和{XjXj,YjYj,ZjZj,QjQj}存在XiXi-XjXj=YiYi-YjYj=ZiZi-ZjZj=QiQi-QjQj则称该坐标为优美坐标，现给出N个坐标，小奔想知道所有优美坐标的j-i的最小值和i+j的最大值，你能帮帮他吗？
+
+输入格式
+输入有n+1行，第一行为一个数n，接下来输入n行，每行X,Y,Z,Q四个整 数。
+
+输出格式
+输出只有一行，包括j-i的 最小值和i+j的最大值，中间有空格隔开， 数据 保证有解。
+*/
+
+/*
+ * 把式子拆成三个等式移项得 Xi-Yi=Xj-Yj, Yi-Zi=Yj-Zj, Zi-Qi=Zj-Qj
+ * 所以令A=Xi-Yi, B=Yi-Zi, C=Zi-Qi, A,B,C相等就是优美坐标
+ */
+ 
+#include <iostream>
+#include <cstdio>
+#include <algorithm>
+#define re register
+#define MAXN 500005
+
+using namespace std;
+
+struct Data{
+    int A, B, C, idx;
+}data[MAXN];
+
+inline int read(){
+	int x = 0 , f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+    }
+    return x*f;
+}
+
+bool cmp(Data a, Data b){
+    if(a.A<b.A) return true; if(a.A>b.A) return false;
+    if(a.B<b.B) return true; if(a.B>b.B) return false;
+    if(a.C<b.C) return true; if(a.C>b.C) return false;
+    if(a.idx<b.idx) return true; if(a.idx>b.idx) return false;
+}
+
+int N, ans1, ans2;
+
+int main(){
+    N = read();
+    int x, y, z, q;
+    for(re int i = 1 ; i <= N ; ++i){
+        x = read(); y = read(); z = read(); q = read();
+        data[i].A = x - y; data[i].B = y - z; data[i].C = z - q; data[i].idx = i;
+    }
+    sort(data+1,data+N+1,cmp);
+    ans1 = 0x7fffffff; ans2 = 0x80000000;
+    for(re int i = 1 ; i < N ; ++i){
+        if(data[i].A==data[i+1].A&&data[i].B==data[i+1].B&&data[i].C==data[i+1].C){
+            //printf("%d %d\n",data[i].idx,data[i+1].idx);
+            ans1 = min(ans1,data[i+1].idx-data[i].idx);
+            ans2 = max(ans2,data[i].idx+data[i+1].idx);
+        }
+    }
+    printf("%d %d\n",ans1,ans2);
+    return 0;
+}

@@ -1,0 +1,146 @@
+/*
+https://www.luogu.com.cn/problem/P2690
+题目背景
+USACO
+
+题目描述
+很少有人知道奶牛爱吃苹果。农夫约翰的农场上有两棵苹果树（编号为1和2）， 每一棵树上都长满了苹果。奶牛贝茜无法摘下树上的苹果，所以她只能等待苹果 从树上落下。但是，由于苹果掉到地上会摔烂，贝茜必须在半空中接住苹果（没有人爱吃摔烂的苹果）。贝茜吃东西很快，她接到苹果后仅用几秒钟就能吃完。每一分钟，两棵苹果树其中的一棵会掉落一个苹果。贝茜已经过了足够的训练， 只要站在树下就一定能接住这棵树上掉落的苹果。同时，贝茜能够在两棵树之间 快速移动（移动时间远少于1分钟），因此当苹果掉落时，她必定站在两棵树其中的一棵下面。此外，奶牛不愿意不停地往返于两棵树之间，因此会错过一些苹果。苹果每分钟掉落一个，共T（1<=T<=1000）分钟，贝茜最多愿意移动W（1<=W<=30） 次。现给出每分钟掉落苹果的树的编号，要求判定贝茜能够接住的最多苹果数。 开始时贝茜在1号树下。
+
+输入格式
+第一行2个数，T和W。接下来的t行，每行一个数，代表在时刻t苹果是从1号苹果树还是从2号苹果树上掉下来的。
+
+输出格式
+对于每个测试点，输出一行，一个数，为奶牛最多接到的苹果的数量。
+*/
+
+/*
+ * 记忆化搜索
+ * 这个时刻能拿到苹果时肯定不移动
+ * 拿不到时选择移动还是不移动(移动次数有限)
+ */
+
+#include <iostream>
+#include <cstdio>
+#define re register
+#define MAXN 1005
+
+using namespace std;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+//f[i][j], i时移动j次之后最多能拿到多少苹果
+int T, W, data[MAXN], f[MAXN][35];
+
+inline int DFS(int times, int warp, int past){
+    //时间已过
+    if(past>T) return 0;
+    //之前搜过
+    if(f[past][times])
+        return f[past][times];
+    //这个时候能拿到苹果,肯定不移动
+    if(data[past]==warp)
+        f[past][times] = DFS(times,warp,past+1) + 1;
+    else{//这个时候拿不到苹果
+        //不动
+        f[past][times] = max(f[past][times],DFS(times,warp,past+1));
+        //移动
+        if(times<W) f[past][times] = max(f[past][times],DFS(times+1,warp==1?2:1,past+1)+1);
+    }
+    return f[past][times];
+}
+
+int main(){
+    T = read();
+    W = read();
+    for(re int i = 1 ; i <= T ; ++i){
+        data[i] = read();
+    }
+    //移动次数, 当前位置, 已过时间
+    int ans = DFS(0,1,1);
+    printf("%d\n",ans);
+    return 0;
+}
+
+/*
+题目描述
+Michael 喜欢滑雪。这并不奇怪，因为滑雪的确很刺激。可是为了获得速度，滑的区域必须向下倾斜，而且当你滑到坡底，你不得不再次走上坡或者等待升降机来载你。Michael 想知道在一个区域中最长的滑坡。区域由一个二维数组给出。数组的每个数字代表点的高度。下面是一个例子：
+
+1   2   3   4   5
+16  17  18  19  6
+15  24  25  20  7
+14  23  22  21  8
+13  12  11  10  9
+
+一个人可以从某个点滑向上下左右相邻四个点之一，当且仅当高度会减小。在上面的例子中，一条可行的滑坡为 24－17－16－1（从 24 开始，在 1 结束）。当然 25－24－23－…－3－2－1 更长。事实上，这是最长的一条。
+
+输入格式
+输入的第一行为表示区域的二维数组的行数 R 和列数 C。下面是 R 行，每行有 C 个数，代表高度(两个数字之间用 1 个空格间隔)。
+
+输出格式
+输出区域中最长滑坡的长度。
+*/
+
+#include <iostream>
+#include <cstdio>
+#define re register
+#define MAXN 105
+
+using namespace std;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int R, C, data[MAXN][MAXN], f[MAXN][MAXN], ans;
+int dx[] = {1,-1,0,0}, dy[] = {0,0,1,-1};
+
+inline int DFS(int x, int y){
+    if(f[x][y]) return f[x][y];
+    f[x][y] = 1;
+    for(re int i = 0 ; i < 4 ; ++i){
+        int x1 = x + dx[i], y1 = y + dy[i];
+        if(x1<=R&&x1>=1&&y1<=C&&y1>=1&&data[x1][y1]<data[x][y]){
+            f[x][y] = max(f[x][y],DFS(x1,y1)+1);
+        }
+    }
+    return f[x][y];
+}
+
+int main(){
+    R = read();
+    C = read();
+    for(re int i = 1 ; i <= R ; ++i)
+        for(re int j = 1 ; j <= C ; ++j)
+            data[i][j] = read();
+    for(re int i = 1 ; i <= R ; ++i)
+        for(re int j = 1 ; j <= C ; ++j)
+            ans = max(ans,DFS(i,j));
+    printf("%d\n",ans);
+    return 0;
+}
+
+

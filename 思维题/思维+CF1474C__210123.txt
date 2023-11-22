@@ -1,0 +1,120 @@
+/*
+https://codeforces.com/problemset/problem/1474/C
+C. Array Destruction
+time limit per test1 second
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You found a useless array a of 2n positive integers. You have realized that you actually don't need this array, so you decided to throw out all elements of a.
+
+It could have been an easy task, but it turned out that you should follow some rules:
+
+In the beginning, you select any positive integer x.
+Then you do the following operation n times:
+select two elements of array with sum equals x;
+remove them from a and replace x with maximum of that two numbers.
+For example, if initially a=[3,5,1,2], you can select x=6. Then you can select the second and the third elements of a with sum 5+1=6 and throw them out. After this operation, x equals 5 and there are two elements in array: 3 and 2. You can throw them out on the next operation.
+
+Note, that you choose x before the start and can't change it as you want between the operations.
+
+Determine how should you behave to throw out all elements of a.
+
+Input
+The first line contains a single integer t (1≤t≤1000) — the number of test cases.
+
+The first line of each test case contains the single integer n (1≤n≤1000).
+
+The second line of each test case contains 2n integers a1,a2,…,a2n (1≤ai≤106) — the initial array a.
+
+It is guaranteed that the total sum of n over all test cases doesn't exceed 1000.
+
+Output
+For each test case in the first line print YES if it is possible to throw out all elements of the array and NO otherwise.
+
+If it is possible to throw out all elements, print the initial value of x you've chosen. Print description of n operations next. For each operation, print the pair of integers you remove.
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 1005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+bool cmp(int a, int b){
+	return a > b;
+}
+
+int n, arr[MAXN<<1];
+bool thrown[MAXN<<1];
+vector<P> ans;
+
+void solve(){
+	n = read();
+	for(int i = 1 ; i <= (n<<1) ; ++i){
+		thrown[i] = false;
+		arr[i] = read();
+	}
+	sort(arr+1,arr+1+(n<<1));
+	for(int i = 1 ; i < (n<<1) ; ++i){
+		ans.clear();
+		int x = arr[n<<1], idx = (n<<1) - 1, find;
+		thrown[n<<1] = thrown[i] = true;
+		ans.pb(mp(i,n<<1));
+		while(idx>=1){
+			while(thrown[idx]) --idx;
+			if(!idx){
+				printf("YES\n%d\n",arr[i]+arr[n<<1]);
+				for(int j = 0 ; j < ans.size() ; ++j){
+					printf("%d %d\n",arr[ans[j].first],arr[ans[j].second]);
+				}
+				return ;
+			}
+			find = x - arr[idx];
+			int del = lower_bound(arr+1,arr+1+(n<<1),find) - arr;
+			while(thrown[del]) ++del;
+			if(arr[del]==find&&(idx^del)){
+				ans.pb(mp(idx,del));
+				thrown[idx] = thrown[del] = true;
+			}else break;
+			x = max(arr[idx],arr[del]);
+		}
+		for(int i = 1 ; i <= (n<<1) ; ++i) thrown[i] = false;
+	}
+	printf("NO\n");
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}

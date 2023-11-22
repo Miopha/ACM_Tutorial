@@ -1,0 +1,111 @@
+/*
+https://codeforces.com/problemset/problem/1463/D
+D. Pairs
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You have 2n integers 1,2,…,2n. You have to redistribute these 2n elements into n pairs. After that, you choose x pairs and take minimum elements from them, and from the other n−x pairs, you take maximum elements.
+
+Your goal is to obtain the set of numbers {b1,b2,…,bn} as the result of taking elements from the pairs.
+
+What is the number of different x-s (0≤x≤n) such that it's possible to obtain the set b if for each x you can choose how to distribute numbers into pairs and from which x pairs choose minimum elements?
+
+Input
+The first line contains a single integer t (1≤t≤1000) — the number of test cases.
+
+The first line of each test case contains the integer n (1≤n≤2⋅105).
+
+The second line of each test case contains n integers b1,b2,…,bn (1≤b1<b2<⋯<bn≤2n) — the set you'd like to get.
+
+It's guaranteed that the sum of n over test cases doesn't exceed 2⋅105.
+
+Output
+For each test case, print one number — the number of different x-s such that it's possible to obtain the set b.
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, b[MAXN], ans, sum, need, res1, res2;
+bool vis[MAXN<<1];
+
+void solve(){
+	sum = n = read();
+	ans = res1 = res2 = need = 0;
+	for(int i = 1 ; i <= (n<<1) ; ++i) vis[i] = false;
+	for(int i = 1 ; i <= n ; ++i){
+		b[i] = read();
+		vis[b[i]] = true;
+	}
+	for(int i = 1 ; i <= (n<<1) ; ++i){
+		if(vis[i]){
+			if(sum){
+				--sum;
+				++need;
+				++res1;
+			}else break;
+		}else{
+			if(need) --need;
+			else --sum;
+		}
+	}
+	reverse(vis+1,vis+1+(n<<1));
+	sum = n;
+	need = 0;
+	for(int i = 1 ;  i <= (n<<1) ; ++i){
+		if(vis[i]){
+			if(sum){
+				--sum;
+				++need;
+				++res2;
+			}else break;
+		}else{
+			if(need) --need;
+			else --sum;
+		}
+	}
+	for(int x = 0 ; x <= res2 ; ++x){
+		if(n-x<=res1) ++ans;
+	}
+	printf("%d\n",ans);
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}

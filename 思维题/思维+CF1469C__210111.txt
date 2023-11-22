@@ -1,0 +1,75 @@
+/*
+https://codeforces.com/problemset/problem/1469/C
+C. Building a Fence
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You want to build a fence that will consist of n equal sections. All sections have a width equal to 1 and height equal to k. You will place all sections in one line side by side.
+
+Unfortunately, the ground beneath the fence is not flat. For simplicity, you can think that the ground level under the i-th section is equal to hi.
+
+You should follow several rules to build the fence:
+
+the consecutive sections should have a common side of length at least 1;
+the first and the last sections should stand on the corresponding ground levels;
+the sections between may be either on the ground level or higher, but not higher than k−1 from the ground level hi (the height should be an integer);
+One of possible fences (blue color) for the first test case
+Is it possible to build a fence that meets all rules?
+
+Input
+The first line contains a single integer t (1≤t≤104) — the number of test cases.
+
+The first line of each test case contains two integers n and k (2≤n≤2⋅105; 2≤k≤108) — the number of sections in the fence and the height of each section.
+
+The second line of each test case contains n integers h1,h2,…,hn (0≤hi≤108), where hi is the ground level beneath the i-th section.
+
+It's guaranteed that the sum of n over test cases doesn't exceed 2⋅105.
+
+Output
+For each test case print YES if it's possible to build the fence that meets all rules. Otherwise, print NO.
+
+You may print each letter in any case (for example, YES, Yes, yes, yEs will all be recognized as positive answer).
+*/
+
+#include <cstdio>
+#include <iostream>
+
+using namespace std;
+
+typedef pair<int,int> P;
+const int MAXN = 200005;
+
+
+int n, k, a[MAXN];
+P seg[MAXN];
+
+void solve(){
+	scanf("%d %d",&n,&k);
+	for(int i = 1 ; i <= n ; ++i) scanf("%d",&a[i]);
+	seg[1].first = seg[1].second = a[1];
+	for(int i = 2 ; i <= n ; ++i){
+		seg[i].first = max(seg[i-1].first-k+1,a[i]);
+		seg[i].second = min(seg[i-1].second+k-1,a[i]+k-1);
+		if(seg[i].second<seg[i].first){
+			printf("NO\n");
+			return ;
+		}
+	}
+	/*
+	for(int i = 2 ; i <= n ; ++i){
+		if(seg[i].first<=a[i]&&a[i]<=seg[i].second) continue;
+		printf("NO\n");
+		return ;
+	}
+	*/
+	if(seg[n].first<=a[n]&&a[n]<=seg[n].second) printf("YES\n");
+	else printf("NO\n");
+}
+
+int main(){
+	int t;
+	scanf("%d",&t);
+	while(t--) solve();
+	return 0;
+}

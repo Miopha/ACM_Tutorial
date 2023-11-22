@@ -1,0 +1,168 @@
+/*
+https://codeforces.com/contest/1443/problem/B
+*/
+
+/*
+ * 对于每个连续0子串贪心地选择埋地雷或不埋
+ */
+ 
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <string.h>
+#include <queue>
+#include <cmath>
+#include <algorithm>
+#define re register
+#define pb push_back
+#define cl clear
+#define MAXN 100005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+struct D{
+    bool status;
+    int val;
+}zero[MAXN];
+
+int a, b, n, cnt, ans;
+char mp[MAXN];
+
+void solve(){
+    a = read();
+    b = read();
+    cin>>mp+1;
+    n = strlen(mp+1);
+    cnt = ans = 0;
+    bool nw = (mp[1]=='1')?true:false, cur;
+    zero[++cnt].status = nw;
+    zero[cnt].val = nw?a:b;
+    for(re int i = 2; i <= n ; ++i){
+        cur = (mp[i]=='1')?true:false;
+        if(!(cur^nw)&&!cur){
+            zero[cnt].val += b;
+        }
+        if(cur^nw){
+            nw = !nw;
+            zero[++cnt].status = nw;
+            zero[cnt].val = nw?a:b;
+        }
+    }
+    int lastIdx;
+    for(re int i = 1 ; i <= cnt ; ++i){
+        if(zero[i].status) lastIdx = i;
+    }
+    bool flag = false;
+    for(re int i = 1 ; i <= cnt ; ++i){
+        if(zero[i].status){
+            ans += a;
+            flag = true;
+        }
+        if(!zero[i].status&&zero[i].val<a&&flag&&i<=lastIdx){
+            ans -= a;
+            ans += zero[i].val;
+        }
+    }
+    printf("%d\n",ans);
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://codeforces.com/contest/1443/problem/C
+*/
+
+/*
+ * 因为影响最终时间的是a中最大值, 所以Petya从a中最大值开始拿直到时间要超过a中最大值为止
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cmath>
+#include <algorithm>
+#define re register
+#define pb push_back
+#define cl clear
+#define MAXN 200005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+struct Data{
+    int a, b;
+}d[MAXN];
+
+bool cmp(Data t, Data c){
+    return t.a > c.a;
+}
+
+int n;
+ll time;
+
+void solve(){
+    n = read();
+    for(re int i = 1 ; i <= n ; ++i)
+        d[i].a = read();
+    for(re int i = 1 ; i <= n ; ++i)
+        d[i].b = read();
+    sort(d+1,d+1+n,cmp);
+    d[n+1].a = d[n+1].b = 0;
+    time = 0;
+    re int i;
+    for(i = 1 ; i <= n ; ++i){
+        if(time+d[i].b>=d[i].a) break;
+        time += d[i].b;
+    }
+    printf("%lld\n",max(time,1ll*d[i].a));
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}

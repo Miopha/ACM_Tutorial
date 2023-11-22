@@ -1,0 +1,130 @@
+/*
+https://www.luogu.com.cn/problem/P1016
+题目描述
+一个旅行家想驾驶汽车以最少的费用从一个城市到另一个城市（假设出发时油箱是空的）。给定两个城市之间的距离D1、汽车油箱的容量C（以升为单位）、每升汽油能行驶的距离D2、出发点
+每升汽油价格P和沿途油站数N（N可以为零），油站i离出发点的距离Di、每升汽油价格Pi（i=1,2,…,N）。计算结果四舍五入至小数点后两位。如果无法到达目的地，则输出“No Solution”。
+
+输入格式
+第一行，D1，CC，D2，P，N。
+
+接下来有N行。
+
+第i+1行，两个数字，油站i离出发点的距离Di和每升汽油价格Pi。
+
+输出格式
+所需最小费用，计算结果四舍五入至小数点后两位。如果无法到达目的地，则输出“No Solution”。
+*/
+
+import java.util.*;
+import java.text.DecimalFormat;
+
+public class Main{
+	//总路程,油箱总体积,每升油走的路程,起始点油价,已经走了的路程,油箱的剩油,花了的钱
+	static double L, v, w, p, sum, left, spend;
+	static int n; //总站数 
+	
+	public static void main(String[] args) {
+		scnner sc = new scnner(System.in);
+		L = sc.nextDouble();
+		v = sc.nextDouble();
+		w = sc.nextDouble();
+		double vw = v*w;
+		p = sc.nextDouble();
+		n = sc.nextInt();
+		double [] di = new double [n+1];
+		double [] pi = new double [n+1];
+		pi[0] = p;
+		boolean pd = false;
+		for(int i=1;i<=n;i++) {
+			di[i] = sc.nextDouble();
+			if(di[i]-di[i-1]>vw)
+				pd = true;
+			pi[i] = sc.nextDouble();
+		}
+		if(pd) {
+			System.out.println("No Solution");
+		}else {
+			method(vw,di,pi,0);
+			if(spend%0.01>=0.05) {
+				System.out.println(new DecimalFormat("0.00").format(spend)+0.01);
+			}else{
+				System.out.println(new DecimalFormat("0.00").format(spend));
+			}
+		}
+	}
+	static void method(double vw,double []di,double []pi,int stand) {
+		if(L-sum>vw) {
+			int [] js = new int [7];
+			int k = 1;
+			for(int i=stand+1;i<=n;i++) {
+				if(di[i]>sum&&di[i]<=sum+vw) {
+					js[k] = i;
+					k++;
+				}
+			}k--;
+			int t = 0;
+			double bj = 0;
+			for(int i=1;i<=k;i++) {
+				if(pi[js[i]]<bj||bj==0) {
+					bj = pi[js[i]];
+					t = js[i];
+				}
+			}
+			if(bj>pi[stand]) {
+				spend += (v-left)*pi[stand];
+				double sd = di[t] - sum;
+				sum = di[t];
+				left = v - sd/27.4;
+				method(vw,di,pi,t);
+			}else {
+				double l = di[t] - sum;
+				double lw = l/w;
+				if(left>=lw) {
+					left -= lw;
+					sum = di[t];
+					method(vw,di,pi,t);
+				}else {
+					spend += (lw - left)*pi[stand];
+					left =0;
+					sum = di[t];
+					method(vw,di,pi,t);
+					}
+				}
+		}
+		//第二段
+		else {
+			int [] js = new int [7];
+			int k = 1;
+			for(int i=stand+1;i<=n;i++) {
+				if(di[i]>sum&&di[i]<=sum+vw) {
+					js[k] = i;
+					k++;
+				}
+			}k--;
+			int t = 0;
+			double bj = 0;
+			for(int i=1;i<=k;i++) {
+				if(pi[js[i]]<bj||bj==0) {
+					bj = pi[js[i]];
+					t = js[i];
+				}
+			}
+			if(bj>pi[stand]||bj==0) {
+				spend += ((L-sum)/w - left)*pi[stand];
+				
+				return;
+			}else {
+				double d = (di[t] - sum)/w;
+				sum = di[t];
+				if(left<d) {
+					spend += pi[stand]*(d - left);
+					left = 0;
+					method(vw,di,pi,t);
+				}else {
+					left -= w;
+					method(vw,di,pi,t);
+				}
+			}
+		}
+	}
+}	

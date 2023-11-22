@@ -1,0 +1,67 @@
+/*
+https://codeforces.com/problemset/problem/489/C
+C. Given Length and Sum of Digits...
+time limit per test1 second
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You have a positive integer m and a non-negative integer s. Your task is to find the smallest and the largest of the numbers that have length m and sum of digits s. The required numbers should be non-negative integers written in the decimal base without leading zeroes.
+
+Input
+The single line of the input contains a pair of integers m, s (1 ≤ m ≤ 100, 0 ≤ s ≤ 900)(1 ≤ m ≤ 100, 0 ≤ s ≤ 900) — the length and the sum of the digits of the required numbers.
+
+Output
+In the output print the pair of the required non-negative integer numbers — first the minimum possible number, then — the maximum possible number. If no numbers satisfying conditions required exist, print the pair of numbers "-1 -1" (without the quotes).
+
+找到长度为m且位数为s的最小和最大数字。
+*/
+
+/*
+ * 贪心,最小值让前面的数字最小,最大值让前面的数字最大
+ * 注意最小值不能有前导0
+ */
+
+#include <iostream>
+#include <cstdio>
+#define re register
+#define MAXN 905
+
+using namespace std;
+
+int m, s, ans2[MAXN], ans1[MAXN], cnt, tmp;
+
+int main(){
+    scanf("%d%d",&m,&s);
+    if(s==0)  {
+		if(m==1)  {
+			cout<<0<<" "<<0;
+			return 0;
+		}
+		else cout<<-1<<" "<<-1;
+		return 0;
+	}
+	if(9*m<s){ //如果全放9数位和都达不到s
+		cout<<-1<<" "<<-1;
+		return 0;
+	}
+	ans2[m] = 1;
+    cnt = 1;
+    //最小值
+    for(re int i = 1 ; i <= s - 1 ; ++i){
+        if(ans2[cnt]==9) ++cnt;
+        ++ans2[cnt];
+    }
+    for(re int i = m ; i >= 1 ; --i)
+        printf("%d",ans2[i]);
+    printf(" ");
+    //最大值
+    cnt = 1;
+    for(re int i = 1 ; i <= s ; ++i){
+        if(ans1[cnt]==9) ++cnt;
+        ++ans1[cnt];
+    }
+    for(re int i = 1 ; i <= m ; ++i)
+        printf("%d",ans1[i]);
+    printf("\n");
+    return 0;
+}

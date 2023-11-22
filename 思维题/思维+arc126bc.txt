@@ -1,0 +1,120 @@
+/*
+https://atcoder.jp/contests/arc126/tasks/arc126_b
+B - Cross-free Matching  / 
+Time Limit: 2 sec / Memory Limit: 1024 MB
+
+Score : 400 points
+
+Problem Statement
+In the coordinate plane, we have 2N vertices whose x-coordinates are 1,2,…,N and whose y-coordinates are 0 or 1: (1,0),…,(N,0),(1,1),…,(N,1). There are M segments that connect two of these vertices: the i-th segment connects (a i,0) and (b i,1).
+
+Consider choosing K of these M segments so that no two chosen segments contain the same point. Here, we consider both endpoints of a segment to be contained in that segment. Find the maximum possible value of K.
+
+Constraints
+1≤N,M≤2×10 5
+1≤a i​,b i ≤N
+*/
+
+/*
+ * 将pair以a排序，则找到的LIS长度就是答案
+ * 找LIS时有个限制，相邻的数字的a不能相同
+ * 所以排序a相同时要按b升序排序，避免LIS中相同的a出现
+ */
+
+#include <cstdio>
+#include <algorithm>
+
+using namespace std;
+const int MAXN = 200005;
+typedef pair<int,int> p;
+
+int n, m, LIS[MAXN], len;
+p a[MAXN];
+
+bool cmp(p a, p b){
+	if(a.first^b.first) return a.first < b.first;
+	return a.second > b.second;
+}
+
+int main(){
+	scanf("%d %d",&n,&m);
+	for(int i = 1 ; i <= m; ++i)
+		scanf("%d %d",&a[i].first,&a[i].second);
+	sort(a+1,a+1+m,cmp);
+	LIS[++len] = a[1].second;
+	for(int i = 2 ; i <= m ; ++i){
+		if(a[i].second>LIS[len]) LIS[++len] = a[i].second;
+		else{
+			int idx = lower_bound(LIS+1,LIS+1+len,a[i].second) - LIS;
+			LIS[idx] = a[i].second;
+		}
+	}
+	printf("%d\n",len);
+	return 0;
+}
+
+/*
+https://atcoder.jp/contests/arc126/tasks/arc126_c
+C - Maximize GCD  / 
+Time Limit: 2 sec / Memory Limit: 1024 MB
+
+Score : 600 points
+
+Problem Statement
+Given is a sequence of N positive integers: A=(A 1,A 2​,…,A N​ ). You can do the following operation on this sequence at least zero and at most K times:
+
+choose i∈{1,2,…,N} and add 1 to A i​.
+Find the maximum possible value of gcd(A 1​,A 2​,…,A N​) after your operations.
+
+Constraints
+2≤N≤3×10 51≤K≤10 18
+1≤A i​≤3×10 5
+*/
+
+/*
+ * 关键问题转化为：找最大的ans使ai都能被ans整除
+ * 对于ans<=max_a，利用前缀和可log^2(max_a)算出费用，总时间复杂度O(max_a*log^2(max_a))
+ * 对于ans>max_a，此时的费用是线性增长的所以可以O(1)算出最大ans
+ */
+
+#include <cstdio>
+#include <algorithm>
+#define int ll
+
+using namespace std;
+typedef long long ll;
+const int MAXN = 300005;
+
+int n, a[MAXN], maxa;
+ll k, prefix[MAXN], ans = 1;
+
+ll cost(ll g){
+	ll res = 0;
+	ll top = maxa/g + !!(maxa%g);
+	for(int i = 1, last = 0 ; i <= top ; ++i){
+		ll num = i * g, idx = upper_bound(a+1+last,a+1+n,num) - a;
+		ll c = idx - last - 1;
+		ll sum = prefix[idx-1] - prefix[last];
+		last = idx - 1;
+		res += num * c - sum;
+	}
+	return res;
+}
+
+signed main(){
+	scanf("%d %lld",&n,&k);
+	for(int i = 1 ; i <= n ; ++i) scanf("%d",&a[i]);
+	sort(a+1,a+1+n);
+	maxa = a[n];
+	for(int i = 1 ; i <= n ; ++i) prefix[i] = prefix[i-1] + a[i];
+	
+	for(int i = 2 ; i <= maxa ; ++i) if(cost(i)<=k) ans = i;
+	
+	if(maxa*n-prefix[n]<=k){
+		k -= maxa*n-prefix[n];
+		ans = maxa + k / n;
+	}
+	
+	printf("%lld\n",ans);
+	return 0;
+}
