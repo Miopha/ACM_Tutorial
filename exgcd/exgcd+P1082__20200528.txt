@@ -1,0 +1,91 @@
+/*
+题目描述
+求关于x的同余方程ax≡1(mod b) 的最小正整数解。
+
+输入格式
+一行，包含两个正整数 a,b，用一个空格隔开。
+
+输出格式
+一个正整数 x0 ，即最小正整数解。输入数据保证一定有解。
+
+[数据范围]
+对于40%的数据,2<b≤1,000;
+对于60%的数据，2≤b≤50, 000, 000;
+对于100%的数据, 2≤a,b≤2, 000, 000, 000
+NOIP 2012提高组第二天第一题
+*/
+
+/*
+ * 实际上就是求a对b的乘法逆元x,不能用费马小定理求,因为b不能保证为质数
+ * 可以转换成求解ax+by=1的问题,y为辅助解
+ */
+ 
+//package P1082;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+
+	public static void main(String[] args) {
+		int a = cin.nextInt() , b = cin.nextInt();
+		//求ax+by=gcd(a,b)的一组解
+		exgcd(a,b);
+		//则通项为x=x+kb,y=y-ka
+		//得到x最小正整数解
+		out.println((x % b + b) % b);
+		out.flush();
+		
+	}
+
+	static FastScanner cin = new FastScanner(System.in);
+	static PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+	
+	static class FastScanner{
+		BufferedReader br;
+		StringTokenizer st;
+		public FastScanner(InputStream in) {
+			br = new BufferedReader(new InputStreamReader(in),16384);
+			st = new StringTokenizer("");
+		}
+		public String nextLine() {
+			try {
+				return br.readLine();
+			} catch (IOException e) {
+				return null;
+			}
+		}
+		public boolean hasNext() {
+			while(!st.hasMoreTokens()) {
+				String s = nextLine();
+				if(s==null) return false;
+				st = new StringTokenizer(s);
+			}
+			return true;
+		}
+		public String next() {
+			hasNext();
+			return st.nextToken();
+		}
+		public int nextInt() {
+			return Integer.parseInt(next());
+		}
+	}
+	
+	static int x = 0, y = 0;
+	
+	public static void exgcd(int a , int b) {
+		if(b==0) {
+			x=1;
+			y=0;
+		}
+		else{
+			int p;
+			exgcd(b,a%b);
+			p=x;
+			x=y;
+			y=p-(a/b)*y;
+		}
+	}
+
+}

@@ -1,0 +1,86 @@
+/*
+https://codeforces.com/problemset/problem/580/C
+C. Kefa and Park
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Kefa decided to celebrate his first big salary by going to the restaurant.
+
+He lives by an unusual park. The park is a rooted tree consisting of n vertices with the root at vertex 1. Vertex 1 also contains Kefa's house. Unfortunaely for our hero, the park also contains cats. Kefa has already found out what are the vertices with cats in them.
+
+The leaf vertices of the park contain restaurants. Kefa wants to choose a restaurant where he will go, but unfortunately he is very afraid of cats, so there is no way he will go to the restaurant if the path from the restaurant to his house contains more than m consecutive vertices with cats.
+
+Your task is to help Kefa count the number of restaurants where he can go.
+
+Input
+The first line contains two integers, n and m (2 ≤ n ≤ 105, 1 ≤ m ≤ n) — the number of vertices of the tree and the maximum number of consecutive vertices with cats that is still ok for Kefa.
+
+The second line contains n integers a1, a2, ..., an, where each ai either equals to 0 (then vertex i has no cat), or equals to 1 (then vertex i has a cat).
+
+Next n - 1 lines contains the edges of the tree in the format "xi yi" (without the quotes) (1 ≤ xi, yi ≤ n, xi ≠ yi), where xi and yi are the vertices of the tree, connected by an edge.
+
+It is guaranteed that the given set of edges specifies a tree.
+
+Output
+A single integer — the number of distinct leaves of a tree the path to which from Kefa's home contains at most m consecutive vertices with cats.
+*/
+
+//package CF580C;
+
+import java.io.*;
+import java.util.*;
+
+public class Main {
+
+	static ArrayList<Integer> node[];
+	static int n, m, ans;
+	static boolean hasCat[], vis[];
+	
+	public static void main(String[] args) throws Exception {
+		n = nextInt();
+		m = nextInt();
+		init();
+		for(int i = 1 ; i <= n ; ++i)
+			if(nextInt()==1)
+				hasCat[i] = true;
+		int u, v;
+		for(int i = 1 ; i < n ; ++i) {
+			u = nextInt();
+			v = nextInt();
+			node[u].add(v);
+			node[v].add(u);
+		}
+		DFS(1,0,hasCat[1]?1:0);
+		System.out.println(ans);
+	}
+	
+	public static void DFS(int nw, int fat, int cats) {
+		if(cats>m) return ;
+		boolean go = false;
+		for(int i = 0 ; i < node[nw].size() ; ++i) {
+			int aft = node[nw].get(i);
+			if(aft==fat) continue;
+			go = true;
+			DFS(aft,nw,hasCat[aft]?cats+1:0);
+		}
+		if(!go) ++ans;
+	}
+	
+	public static void init() {
+		node = new ArrayList[n+1];
+		for(int i = 1 ; i <= n ; ++i)
+			node[i] = new ArrayList<Integer>();
+		vis = new boolean[n+1];
+		hasCat = new boolean[n+1];
+	}
+
+	static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	static StreamTokenizer st = new StreamTokenizer(br);
+	static PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+	public static int nextInt() throws Exception {
+		st.nextToken();
+		return (int)st.nval;
+	}
+	
+}

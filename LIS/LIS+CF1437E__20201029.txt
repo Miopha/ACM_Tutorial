@@ -1,0 +1,116 @@
+/*
+https://codeforces.com/problemset/problem/1437/E
+Make It Increasing
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You are given an array of n integers a1, a2, ..., an, and a set b of k distinct integers from 1 to n.
+
+In one operation, you may choose two integers i and x (1≤i≤n, x can be any integer) and assign ai:=x. This operation can be done only if i does not belong to the set b.
+
+Calculate the minimum number of operations you should perform so the array a is increasing (that is, a1<a2<a3<⋯<an), or report that it is impossible.
+
+Input
+The first line contains two integers n and k (1≤n≤5⋅105, 0≤k≤n) — the size of the array a and the set b, respectively.
+
+The second line contains n integers a1, a2, ..., an (1≤ai≤109).
+
+Then, if k≠0, the third line follows, containing k integers b1, b2, ..., bk (1≤b1<b2<⋯<bk≤n). If k=0, this line is skipped.
+
+Output
+If it is impossible to make the array a increasing using the given operations, print −1.
+
+Otherwise, print one integer — the minimum number of operations you have to perform.
+*/
+
+/*
+ * 令c[i]=a[i]-i, c[i]不递减时a[i]递增
+ * 没有限制条件时, 答案=n-c中的LIS
+ * 考虑限制条件, 就是求由c[b[i]]组成的LIS
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cmath>
+#include <algorithm>
+#define re register
+#define pb push_back
+#define cl clear
+#define MAXN 500005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, k, a[MAXN], b[MAXN], c[MAXN], d[MAXN], len, lastB;
+bool blocked[MAXN];
+
+void solve(){
+    n = read();
+    k = read();
+    for(re int i = 1 ; i <= n ; ++i){
+        a[i] = read();
+        c[i] = a[i] - i;
+    }
+    for(re int i = 1 ; i <= k ; ++i){
+        b[i] = read();
+        blocked[b[i]] = true;
+    }
+	// 无解时
+    for(re int i = 1 ; i < k ; ++i){
+        if(a[b[i+1]]-a[b[i]]<b[i+1]-b[i]){
+            printf("-1\n");
+            return ;
+        }
+    }
+    for(re int i = 1 ; i <= n ; ++i){
+        if(!len||c[i]>=d[len]){
+            d[++len] = c[i];
+            if(blocked[i]) lastB = len;
+        }else{
+            int l = 1, r = len;
+            // 找出d[]中第一个大于c[i]的值
+            while(l<=r){
+                int mid = (l+r)>>1;
+                if(d[mid]<=c[i]){
+                    l = mid + 1;
+                }else{
+                    r = mid - 1;
+                }
+            }
+            if(l<=lastB) continue;
+            d[l] = c[i];
+            if(blocked[i]){
+                lastB = len = l;
+            }
+        }
+    }
+    printf("%d\n",n-len);
+}
+
+int main(){
+    int t = 1;
+    //t = read();
+    while(t--) solve();
+    return 0;
+}

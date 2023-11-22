@@ -1,0 +1,308 @@
+/*
+https://codeforces.com/contest/1239/problem/D
+D. Catowice City
+time limit per test2 seconds
+memory limit per test512 megabytes
+inputstandard input
+outputstandard output
+In the Catowice city next weekend the cat contest will be held. However, the jury members and the contestants haven't been selected yet. There are n residents and n cats in the Catowice, and each resident has exactly one cat living in his house. The residents and cats are numbered with integers from 1 to n, where the i-th cat is living in the house of i-th resident.
+
+Each Catowice resident is in friendship with several cats, including the one living in his house. In order to conduct a contest, at least one jury member is needed and at least one cat contestant is needed. Of course, every jury member should know none of the contestants. For the contest to be successful, it's also needed that the number of jury members plus the number of contestants is equal to n.
+
+Please help Catowice residents to select the jury and the contestants for the upcoming competition, or determine that it's impossible to do.
+
+Input
+The first line contains an integer t (1≤t≤100000), the number of test cases. Then description of t test cases follow, where each description is as follows:
+
+The first line contains integers n and m (1≤n≤m≤106), the number of Catowice residents and the number of friendship pairs between residents and cats.
+
+Each of the next m lines contains integers ai and bi (1≤ai,bi≤n), denoting that ai-th resident is acquaintances with bi-th cat. It's guaranteed that each pair of some resident and some cat is listed at most once.
+
+It's guaranteed, that for every i there exists a pair between i-th resident and i-th cat.
+
+Different test cases are separated with an empty line.
+
+It's guaranteed, that the sum of n over all test cases is at most 106 and that the sum of m over all test cases is at most 106.
+
+Output
+For every test case print:
+
+"No", if it's impossible to select the jury and contestants.
+Otherwise print "Yes".
+In the second line print two integers j and p (1≤j, 1≤p, j+p=n) — the number of jury members and the number of contest participants.
+
+In the third line print j distinct integers from 1 to n, the indices of the residents forming a jury.
+
+In the fourth line print p distinct integers from 1 to n, the indices of the cats, which will participate in the contest.
+
+In case there are several correct answers, print any of them.
+*/
+
+/*
+ * tarjan第一个找到的缩点出度必为0，选择这个缩点当裁判
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <stack>
+#include <algorithm>
+#include <cmath>
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 1000005;
+
+int head[MAXN], tot;
+
+struct Edge{
+    int u, to, next;
+}G[MAXN];
+
+inline void addEdge(int u, int v){
+    G[++tot].u = u;
+    G[tot].to = v;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, m, dfn[MAXN], low[MAXN], time, cnt;
+stack<int> stk;
+bool inStack[MAXN], ppl[MAXN];
+
+void tarjan(int np){
+	dfn[np] = low[np] = ++time;
+	stk.push(np);
+	inStack[np] = true;
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(!dfn[to]){
+			tarjan(to);
+			low[np] = min(low[np],low[to]);
+		}
+		else if(inStack[to]){
+			low[np] = min(low[np],low[to]);
+		}
+	}
+	if(dfn[np]==low[np]){
+		int p;
+		if(!cnt){
+			do{
+				p = stk.top(); stk.pop();
+				++cnt;
+				inStack[p] = false;
+				ppl[p] = true;
+			}while(p^np);
+		}else{
+			do{
+				p = stk.top(); stk.pop();
+				inStack[p] = false;
+			}while(p^np);
+		}
+	}
+}
+
+void init(){
+	time = cnt = tot = 0;
+	for(int i = 1 ; i <= n ; ++i) head[i] = dfn[i] = low[i] = inStack[i] = ppl[i] = false;
+}
+
+void solve(){
+	n = read();
+	m = read();
+	init();
+	for(int i = 1, u, v ; i <= m ; ++i){
+		u = read();
+		v = read();
+		if(u ^ v) addEdge(u,v);
+	}
+	tarjan(1);
+	if(cnt^n){
+		puts("Yes");
+		printf("%d %d\n",cnt,n-cnt);
+		for(int i = 1 ; i <= n ; ++i){
+			if(ppl[i]) printf("%d ",i);
+		}
+		puts("");
+		for(int i = 1 ; i <= n ; ++i){
+			if(!ppl[i]) printf("%d ",i);
+		}
+		puts("");
+	}else puts("No");
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://www.luogu.com.cn/problem/P1262
+题目描述
+由于外国间谍的大量渗入，国家安全正处于高度的危机之中。如果A间谍手中掌握着关于B间谍的犯罪证据，则称A可以揭发B。有些间谍收受贿赂，只要给他们一定数量的美元，他们就愿意交出手中掌握的全部情报。所以，如果我们能够收买一些间谍的话，我们就可能控制间谍网中的每一分子。因为一旦我们逮捕了一个间谍，他手中掌握的情报都将归我们所有，这样就有可能逮捕新的间谍，掌握新的情报。
+
+我们的反间谍机关提供了一份资料，包括所有已知的受贿的间谍，以及他们愿意收受的具体数额。同时我们还知道哪些间谍手中具体掌握了哪些间谍的资料。假设总共有n个间谍(n不超过3000)，每个间谍分别用1到3000的整数来标识。
+
+请根据这份资料，判断我们是否有可能控制全部的间谍，如果可以，求出我们所需要支付的最少资金。否则，输出不能被控制的一个间谍。
+
+输入格式
+第一行只有一个整数n。
+
+第二行是整数p。表示愿意被收买的人数，1≤p≤n。
+
+接下来的p行，每行有两个整数，第一个数是一个愿意被收买的间谍的编号，第二个数表示他将会被收买的数额。这个数额不超过20000。
+
+紧跟着一行只有一个整数r，1≤r≤8000。然后r行，每行两个正整数，表示数对(A, B)，A间谍掌握B间谍的证据。
+
+输出格式
+如果可以控制所有间谍，第一行输出YES，并在第二行输出所需要支付的贿金最小值。否则输出NO，并在第二行输出不能控制的间谍中，编号最小的间谍编号。
+*/
+
+/*
+ * 入度为0的缩点必买，NO的情况就是出现入度为0而不能买的缩点
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#include <stack>
+#define pb push_back
+#define cl clear
+#define time ti
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 3005, MAXR = 8005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int head[MAXN], tot;
+
+struct Edge{
+    int u, to, next;
+}G[MAXR];
+
+inline void addEdge(int u, int v){
+    G[++tot].u = u;
+    G[tot].to = v;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+int n, p, r, cost[MAXN<<1], dfn[MAXN], low[MAXN], time, cnt, id[MAXN], mn[MAXN], in[MAXN];
+ll ans;
+stack<int> stk;
+bool inStack[MAXN], wrong[MAXN];
+
+inline void tarjan(int np){
+	inStack[np] = dfn[np] = low[np] = ++time;
+	stk.push(np);
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(!dfn[to]){
+			tarjan(to);
+			low[np] = min(low[np],low[to]);
+		}else if(inStack[to]){
+			low[np] = min(low[np],low[to]);
+		}
+	}
+	if(dfn[np]==low[np]){
+		int k;
+		mn[++cnt] = INF;
+		do{
+			k = stk.top(); stk.pop();
+			if(cost[k]) mn[cnt] = min(mn[cnt],cost[k]);
+			id[k] = cnt;
+			inStack[k] = false;
+		}while(k^np);
+	}
+}
+
+int main(){
+	n = read();
+	p = read();
+	for(int i = 1, num ; i <= p ; ++i){
+		num = read();
+		cost[num] = read();
+	}
+	r = read();
+	for(int i = 1, u, v ; i <= r ; ++i){
+		u = read();
+		v = read();
+		addEdge(u,v);
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		if(!dfn[i]){
+			tarjan(i);
+		}
+	}
+	for(int i = 1, t = tot ; i <= t ; ++i){
+		if(id[G[i].u]^id[G[i].to]){
+			++in[id[G[i].to]];
+		}
+	}
+	for(int i = 1 ; i <= cnt ; ++i){
+		if(!in[i]&&mn[i]==INF){
+			wrong[i] = true;
+		}
+	}
+	int node = n + 1;
+	for(int i = 1 ; i <= n ; ++i){
+		if(wrong[id[i]]) node = min(node,i);
+	}
+	if(node ^ n+1){
+		printf("NO\n%d\n",node);
+		return 0;
+	}
+	for(int i = 1 ; i <= cnt ; ++i){
+		if(!in[i]) ans += mn[i];
+	}
+	printf("YES\n%d\n",ans);
+    return 0;
+}

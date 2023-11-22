@@ -1,0 +1,104 @@
+/*
+https://www.luogu.com.cn/problem/P3906
+题目描述
+图G是一个无向连通图，没有自环，并且两点之间至多只有一条边。我们定义顶点v，u最短路径就是从v到u经过边最少的路径。所有包含在v-u的最短路径上的顶点被称为v-u的Geodetic顶点，这些顶点的集合记作I(v, u)。
+
+我们称集合I(v, u)为一个Geodetic集合。
+
+例如下图中，I(2, 5)={2, 3, 4, 5}，I(1, 5)={1, 3, 5}，I(2, 4)={2, 4}。
+		1
+	/		\
+	2		3
+	\		/
+	 4—————5
+给定一个图G和若干点对v,u，请你分别求出I(v, u)。
+
+输入格式
+输入文件geo.in，第一行为两个整数n,m，分别表示图G的顶点数和边数（顶点编号1-n，n≤40）。下接m行，每行两个整数a,b表示顶点a和b之间有一条无向边。
+
+第m+2行有一个整数k，表示给定的点对数。下接k行，每行两个整数v,u。。
+
+输出格式
+输出文件geo.out，共k行，每行对应输入文件中每一个点对v,u，按顶点编号升序输出I(v, u)。同一行的每个数之间用空格分隔。
+*/
+
+/*
+ * 因为是无权图,可以用BFS计算出s到t的最短路径（最先走到的肯定是最短路径）,算的时候把最短路径存储起来,再利用存储好的路径和BFS从t出发找回到s,途中标记Geodetic集合
+ * 最短路径的存储:用一个二维数组per[a][b]代表从per[a][b]点走到a
+ * 反向BFS的时候注意要满足dis[per[a][b]]+1==dis[a]才能标记为Geodetic集合
+ */
+ 
+//package P3906;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+
+	static ArrayList<Integer> node[];
+	static int n, m;
+	
+	public static void main(String[] args) throws IOException{
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		String str[] = br.readLine().split(" ");
+		n = Integer.parseInt(str[0]); m = Integer.parseInt(str[1]);
+		init();
+		for(int i = 1 ; i <= m ; i++) {
+			str = br.readLine().split(" ");
+			int u = Integer.parseInt(str[0]), v = Integer.parseInt(str[1]);
+			node[u].add(v); node[v].add(u);
+		}
+		
+		int k = Integer.parseInt(br.readLine());
+		for(int i = 1 ; i <= k ; i++) {
+			str = br.readLine().split(" ");
+			BFS(Integer.parseInt(str[0]),Integer.parseInt(str[1]));
+		}
+	}
+	
+	public static void BFS(int s, int t) {
+		Queue<Integer> q = new LinkedList<Integer>();
+		int dis[] = new int[41], count[] = new int[41] , per[][] = new int[41][41];
+		boolean vis[] = new boolean[41], ans[] = new boolean[41];
+		Arrays.fill(dis,0x7fffffff);
+		q.add(s);
+		dis[s] = 0;
+		vis[s] = true;
+		while(!q.isEmpty()) {
+			int cur = q.poll();
+			if(dis[t]<dis[cur])continue;
+			for(int i = 0 ; i < node[cur].size() ; i++) {
+				int aft = node[cur].get(i);
+				if(!vis[aft]) {
+					vis[aft] = true;
+					dis[aft] = dis[cur] + 1;
+					per[aft][++count[aft]] = cur;
+					q.add(aft);
+				}else if(dis[aft] == dis[cur] + 1) {
+					per[aft][++count[aft]] = cur;
+				}
+			}
+		}
+		q.add(t); ans[t]=true;
+		while(!q.isEmpty()) {
+			int cur = q.poll();
+			for(int i = count[cur] ; i >= 1 ; i--) {
+				if(dis[per[cur][i]]+1==dis[cur]&&!ans[per[cur][i]]) {
+					ans[per[cur][i]] = true;
+					q.add(per[cur][i]);
+				}
+			}
+		}
+		StringBuilder sb = new StringBuilder();
+		for(int i = 1 ; i <= 40 ; i++)
+			if(ans[i]) sb.append(i).append(" ");
+		System.out.println(sb.toString());
+	}
+	
+	public static void init() {
+		node = new ArrayList[n+1];
+		for(int i = 1 ; i <= n ; i++)
+			node[i] = new ArrayList<Integer>();
+	}
+
+}

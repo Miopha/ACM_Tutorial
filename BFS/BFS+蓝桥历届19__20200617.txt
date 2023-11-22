@@ -1,0 +1,70 @@
+/*
+问题描述
+如下面第一个图的九宫格中，放着1~8的数字卡片，还有一个格子空着。与空格子相邻的格子中的卡片可以移动到空格中。经过若干次移动，可以形成第二个图所示的局面。
+1 2 3   1 2 3
+4 5 6   0 4 6
+7 8 0   7 5 8
+我们把第一个图的局面记为：12345678.
+把第二个图的局面记为：123.46758
+显然是按从上到下，从左到右的顺序记录数字，空格记为句点。
+本题目的任务是已知九宫的初态和终态，求最少经过多少步的移动可以到达。如果无论多少步都无法到达，则输出-1。
+输入格式
+输入第一行包含九宫的初态，第二行包含九宫的终态。
+输出格式
+输出最少的步数，如果不存在方案，则输出-1。
+*/
+
+/*
+ * 将九宫格压缩成一维,那么每一格分别坐标是012345678
+ * 用BFS求最短路
+ * 移动方向问题:{3,-3,1,-1}分别是向下上左右移动,注意原坐标为2/3/5/6时要特判
+ * 查重问题:用hashMap<String,Integer>存储每一次的情况,可用api自带方法查重
+ */
+ 
+//package PREV_19;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Scanner;
+import java.util.Vector;
+
+public class Main {
+
+	static String begin , target;
+	static LinkedList<String> list = new LinkedList<String>();
+	static HashMap<String, Integer> map = new HashMap<String,Integer>();
+	static int[] dir = {3,-3,1,-1};
+	
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		begin = sc.nextLine().replace('.', '0'); target = sc.nextLine().replace('.', '0');
+		sc.close();
+		int ans = bfs();
+		System.out.println(ans);
+	}
+	
+	public static int bfs() {
+		if(begin.equals(target)) return 0;
+		list.add(begin);
+		map.put(begin,0);
+		while(!list.isEmpty()) {
+			String curS = list.pollFirst();
+			for(int i = 0 ; i < 4 ; i++) {
+				int zeroIndex = curS.indexOf('0') , replace = curS.indexOf('0') + dir[i];
+				if(replace<0||replace>8||(zeroIndex==2&&replace==3)||(zeroIndex==5&&replace==6)||(zeroIndex==3&&replace==2)||(zeroIndex==6&&replace==5)) continue;
+				char tmp = curS.charAt(replace);
+				String aftS = curS.replace('0','.');
+				aftS = aftS.replace(tmp,'0');
+				aftS = aftS.replace('.',tmp);
+				if(null==aftS)continue;
+				if(aftS.equals(target)) return map.get(curS) + 1;
+				if(!map.containsKey(aftS)) {
+					map.put(aftS,map.get(curS)+1);
+					list.add(aftS);
+				}
+			}
+		}
+		return 0;
+	}
+
+}

@@ -1,0 +1,132 @@
+/*
+问题描述
+观察数字：12321，123321 都有一个共同的特征，无论从左到右读还是从右向左读，都是相同的。这样的数字叫做：回文数字。
+本题要求你找到一些5位或6位的十进制数字。满足如下要求：
+该数字的各个数位之和等于输入的整数。
+
+输入格式
+一个正整数 n (10<n<100), 表示要求满足的数位和。
+
+输出格式
+若干行，每行包含一个满足要求的5位或6位整数。
+数字按从小到大的顺序排列。
+如果没有满足条件的，输出：-1
+
+样例输入
+44
+样例输出
+99899
+499994
+589985
+598895
+679976
+688886
+697796
+769967
+778877
+787787
+796697
+859958
+868868
+877778
+886688
+895598
+949949
+958859
+967769
+976679
+985589
+994499
+样例输入
+60
+样例输出
+-1
+*/
+
+/*
+ * 数据规模不大，可以直接穷举暴力。如果有多组数据的话预处理一下。
+ */
+
+//package PREV_21;
+
+import java.util.Scanner;
+
+public class Main {
+
+	static int n ;
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		n = sc.nextInt();
+		sc.close();
+		boolean hasRes = false;
+		for(int i = 10000 ; i <= 999999 ; i++)
+			if(isPalindrome(i) && sumCorrect(i)) {
+				System.out.println(i);
+				hasRes = true;
+			}
+		if(!hasRes)
+			System.out.println(-1);
+	}
+	
+	public static boolean sumCorrect(int a) {
+		int sum = 0;
+		while(a!=0) {
+			sum += a%10;
+			a /= 10;
+		}
+		if(sum==n) return true;
+		return false;
+	}
+
+	public static boolean isPalindrome(int a) {
+		String temp = "" + a;
+		int n = temp.length();
+		for(int i = 0 ; i < n / 2 ; i++ )
+			if(temp.charAt(i) != temp.charAt(n-i-1)) return false;
+		return true;
+	}
+	
+}
+
+/*
+问题描述
+栋栋正在和同学们玩一个数字游戏。
+游戏的规则是这样的：栋栋和同学们一共n个人围坐在一圈。栋栋首先说出数字1。接下来，坐在栋栋左手边的同学要说下一个数字2。再下面的一个同学要从上一个同学说的数字往下数两个数说出来，也就是说4。下一个同学要往下数三个数，说7。依次类推。
+为了使数字不至于太大，栋栋和同学们约定，当在心中数到 k-1 时，下一个数字从0开始数。例如，当k=13时，栋栋和同学们报出的前几个数依次为：
+1, 2, 4, 7, 11, 3, 9, 3, 11, 7。
+游戏进行了一会儿，栋栋想知道，到目前为止，他所有说出的数字的总和是多少。
+输入格式
+输入的第一行包含三个整数 n,k,T，其中 n 和 k 的意义如上面所述，T 表示到目前为止栋栋一共说出的数字个数。
+输出格式
+输出一行，包含一个整数，表示栋栋说出所有数的和。
+样例输入
+3 13 3
+样例输出
+17
+样例说明
+栋栋说出的数依次为1, 7, 9，和为17。
+数据规模和约定
+1 < n,k,T < 1,000,000；
+*/
+
+/*
+ * 可以看出从第一项开始，之后每一项都加上公差为1的等差数列的前n项和，即ai = i / 2 * (i - 1) + 1
+ */
+
+//package PREV_23;
+
+import java.util.Scanner;
+
+public class Main {
+
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		long n = sc.nextLong() , k = sc.nextLong() , t = sc.nextLong() , ans = 0;
+		sc.close();
+		for(long i = 1 ; i < t * n + 1 ; i+=n)
+			if(i%2==0) ans += (i / 2 * ((i - 1) % k) + 1) % k;
+			else ans += ((i - 1) / 2 * (i % k) + 1) % k;
+		System.out.println(ans);
+	}
+
+}

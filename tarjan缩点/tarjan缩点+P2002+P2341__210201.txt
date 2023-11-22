@@ -1,0 +1,221 @@
+/*
+https://www.luogu.com.cn/problem/P2002
+题目背景
+本场比赛第一题，给个简单的吧，这 100 分先拿着。
+
+题目描述
+有 nn 个城市，中间有单向道路连接，消息会沿着道路扩散，现在给出 nn 个城市及其之间的道路，问至少需要在几个城市发布消息才能让这所有 nn 个城市都得到消息。
+
+输入格式
+第一行两个整数 n, mn,m，表示 nn 个城市，mm 条单向道路。
+
+以下 mm 行，每行两个整数 b, eb,e 表示有一条从 bb 到 ee 的道路，道路可以重复或存在自环。
+
+输出格式
+一行一个整数，表示至少要在几个城市中发布消息。
+*/
+
+#include <cstdio>
+#include <algorithm>
+#include <stack>
+
+using namespace std;
+const int MAXN = 100005, MAXM = 500005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int head[MAXN], tot;
+
+struct Edge{
+    int u, to, next;
+}G[MAXM];
+
+inline void addEdge(int u, int v){
+    G[++tot].u = u;
+    G[tot].to = v;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+// dfn[i]，时间戳，记录到达i点的时间
+// low[i]，记录从i点能回溯到的最小时间
+// id[i]，记录节点i属于哪个缩点
+// time，当前时间
+// cnt，缩点个数
+stack<int> stk;
+int n, m, dfn[MAXN], low[MAXN], id[MAXN], time, cnt, ans;
+bool inStack[MAXN], noMsg[MAXN];
+
+inline void tarjan(int np){
+	stk.push(np);
+	inStack[np] = true;
+	dfn[np] = low[np] = ++time;
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(!dfn[to]){ // 没被访问过，则向下遍历
+			tarjan(to);
+			low[np] = min(low[np],low[to]); // np通向to，low取尽可能小值
+		}else if(inStack[to]){ // 此时low已经初始化
+			low[np] = min(low[np],low[to]); 
+		}
+	}
+	if(low[np]==dfn[np]){
+		int k;
+		++cnt;
+		do{
+			k = stk.top(); stk.pop();
+			inStack[k] = false;
+			id[k]=cnt; // 标记在哪一个强通量
+		}while(np^k);
+	}
+}
+
+int main(){
+	n = read();
+	m = read();
+	for(int i = 1, u, v ; i <= m ; ++i){
+		u = read();
+		v = read();
+		addEdge(u,v);
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		if(!dfn[i]){ // 没被访问过，tarjan求强通量和缩点
+			tarjan(i);
+		}
+	}
+	for(int i = 1 ; i <= tot ; ++i){
+		if(id[G[i].u]^id[G[i].to]){ // 有边连接两个缩点，那么边的起点所在的缩点就不用发布消息了
+			noMsg[id[G[i].to]] = true;
+		}
+	}
+	// 统计要发布消息的缩点
+	for(int i = 1 ; i <= cnt ; ++i) if(!noMsg[i]) ++ans;
+	/*
+	for(int i = 1 ; i <= n ; ++i){
+		printf("node[%d] dfn=%d low=%d\n",i,dfn[i],low[i]);
+	}
+	*/
+	printf("%d\n",ans);
+	return 0;
+}
+
+/*
+https://www.luogu.com.cn/problem/P2341
+题目背景
+本题测试数据已修复。
+
+题目描述
+每头奶牛都梦想成为牛棚里的明星。被所有奶牛喜欢的奶牛就是一头明星奶牛。所有奶牛都是自恋狂，每头奶牛总是喜欢自己的。奶牛之间的“喜欢”是可以传递的——如果 AA 喜欢 BB，BB 喜欢 CC，那么 AA 也喜欢 CC。牛栏里共有 NN 头奶牛，给定一些奶牛之间的爱慕关系，请你算出有多少头奶牛可以当明星。
+
+输入格式
+第一行：两个用空格分开的整数：NN 和 MM。
+
+接下来 MM 行：每行两个用空格分开的整数：AA 和 BB，表示 AA 喜欢 BB。
+
+输出格式
+一行单独一个整数，表示明星奶牛的数量。
+*/
+
+#include <cstdio>
+#include <algorithm>
+#include <stack>
+
+using namespace std;
+const int MAXN = 10005, MAXM = 50005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int head[MAXN], tot;
+
+struct Edge{
+    int u, to, next;
+}G[MAXM];
+
+inline void addEdge(int u, int v){
+    G[++tot].u = u;
+    G[tot].to = v;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+stack<int> stk;
+int n, m, dfn[MAXN], low[MAXN], id[MAXN], time, cnt, sum[MAXN], out[MAXN], ans;
+bool inStack[MAXN];
+
+inline void tarjan(int np){
+	stk.push(np);
+	inStack[np] = true;
+	dfn[np] = low[np] = ++time;
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(!dfn[to]){
+			tarjan(to);
+			low[np] = min(low[np],low[to]);
+		}else if(inStack[to]){
+			low[np] = min(low[np],low[to]);
+		}
+	}
+	if(low[np]==dfn[np]){
+		int k;
+		++cnt;
+		do{
+			k = stk.top(); stk.pop();
+			inStack[k] = false;
+			++sum[id[k]=cnt];
+		}while(np^k);
+	}
+}
+
+int main(){	
+	n = read();
+	m = read();
+	for(int i = 1, u, v ; i <= m ; ++i){
+		u = read();
+		v = read();
+		addEdge(u,v);
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		if(!dfn[i]) tarjan(i);
+	}
+	for(int i = 1 ; i <= tot ; ++i){
+		if(id[G[i].u]^id[G[i].to]){
+			++out[id[G[i].u]];
+		}
+	}
+	for(int i = 1 ; i <= cnt ; ++i){
+		if(!out[i]&&!ans){
+			ans = i;
+		}else if(!out[i]&&ans){
+			puts("0");
+			return 0;
+		}
+	}
+	printf("%d\n",sum[ans]);
+	return 0;
+}

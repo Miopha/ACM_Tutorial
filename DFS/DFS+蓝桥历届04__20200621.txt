@@ -1,0 +1,112 @@
+/*
+问题描述
+如下图所示，3 x 3 的格子中填写了一些整数。
++--*--+--+
+|10* 1|52|
++--****--+
+|20|30* 1|
+*******--+
+| 1| 2| 3|
++--+--+--+
+我们沿着图中的星号线剪开，得到两个部分，每个部分的数字和都是60。
+本题的要求就是请你编程判定：对给定的m x n 的格子中的整数，是否可以分割为两个部分，使得这两个区域的数字和相等。
+如果存在多种解答，请输出包含左上角格子的那个区域包含的格子的最小数目。
+如果无法分割，则输出 0。
+输入格式
+程序先读入两个整数 m n 用空格分割 (m,n<10)。
+表示表格的宽度和高度。
+接下来是n行，每行m个正整数，用空格分开。每个整数不大于10000。
+输出格式
+输出一个整数，表示在所有解中，包含左上角的分割区可能包含的最小的格子数目。
+样例输入1
+3 3
+10 1 52
+20 30 1
+1 2 3
+样例输出1
+3
+样例输入2
+4 3
+1 1 1 1
+1 30 80 2
+1 1 1 100
+样例输出2
+10
+*/
+
+/*
+ *
+ */
+ 
+//package PREV_4;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+
+	static FastScanner cin = new FastScanner(System.in);
+	static int m , n , ans = 0x7fffffff , target = 0;
+	static int[][] data = new int[12][12] , dir = {{1,0},{-1,0},{0,1},{0,-1}};
+	static boolean[][] vis = new boolean[12][12];
+	
+	public static void main(String[] args) {
+		m = cin.nextInt() ; n = cin.nextInt();
+		for(int i = 1 ; i <= n ; i++)
+			for(int j = 1 ; j <= m ; j++) {
+				data[i][j] = cin.nextInt();
+				target+=data[i][j];
+			}
+		target/=2;
+		DFS(1,1,data[1][1],1);
+		System.out.println(ans);
+	}
+	
+	public static void DFS(int x , int y , int sum , int dep) {
+		if(sum==target) {
+			ans = Math.min(dep,ans);
+		}else if(sum>target) {
+			return ;
+		}
+		for(int i = 0 ; i < 4 ; i++) {
+			int aftX=x+dir[i][0] , aftY = y+dir[i][1];
+			if(aftX>=1&&aftY>=1&&aftX<=n&&aftY<=m&&!vis[aftX][aftY]) {
+				vis[aftX][aftY]=true;
+				DFS(aftX,aftY,sum+data[aftX][aftY],dep+1);
+				vis[aftX][aftY]=false;
+			}
+		}
+	}
+	
+	static class FastScanner{
+		BufferedReader br;
+		StringTokenizer st;
+		public FastScanner(InputStream in) {
+			br = new BufferedReader(new InputStreamReader(in),16384);
+			st = new StringTokenizer("");
+		}
+		public String nextLine() {
+			try {
+				return br.readLine();
+			}catch(IOException e) {
+				return null;
+			}
+		}
+		public boolean hasNext() {
+			while(!st.hasMoreTokens()) {
+				String s = nextLine();
+				if(s==null)return false;
+				st = new StringTokenizer(s);
+			}
+			return true;
+		}
+		public String next() {
+			hasNext();
+			return st.nextToken();
+		}
+		public int nextInt() {
+			return Integer.parseInt(next());
+		}
+	}
+
+}

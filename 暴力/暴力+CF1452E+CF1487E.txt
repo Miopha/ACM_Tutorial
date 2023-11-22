@@ -1,0 +1,242 @@
+/*
+https://codeforces.com/contest/1452/problem/E
+E. Two Editorials
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Berland regional ICPC contest has just ended. There were m participants numbered from 1 to m, who competed on a problemset of n problems numbered from 1 to n.
+
+Now the editorial is about to take place. There are two problem authors, each of them is going to tell the tutorial to exactly k consecutive tasks of the problemset. The authors choose the segment of k consecutive tasks for themselves independently of each other. The segments can coincide, intersect or not intersect at all.
+
+The i-th participant is interested in listening to the tutorial of all consecutive tasks from li to ri. Each participant always chooses to listen to only the problem author that tells the tutorials to the maximum number of tasks he is interested in. Let this maximum number be ai. No participant can listen to both of the authors, even if their segments don't intersect.
+
+The authors want to choose the segments of k consecutive tasks for themselves in such a way that the sum of ai over all participants is maximized.
+
+Input
+The first line contains three integers n,m and k (1≤n,m≤2000, 1≤k≤n) — the number of problems, the number of participants and the length of the segment of tasks each of the problem authors plans to tell the tutorial to.
+
+The i-th of the next m lines contains two integers li and ri (1≤li≤ri≤n) — the segment of tasks the i-th participant is interested in listening to the tutorial to.
+
+Output
+Print a single integer — the maximum sum of ai over all participants.
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <algorithm>
+#include <cmath>
+#define re register
+#define pb push_back
+#define cl clear
+#define MAXN 2005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+struct Segment{
+    int l, r;
+}seg[MAXN];
+
+bool cmp(const Segment a, const Segment b){
+    return a.l + a.r < b.l + b.r;
+}
+
+// f[i], 第i区间后第一个作者最多取多少题
+int n, m, k, f[MAXN], ans;
+
+void solve(){
+    n = read();
+    m = read();
+    k = read();
+    for(re int i = 1 ; i <= m ; ++i){
+        seg[i].l = read();
+        seg[i].r = read();
+    }
+    sort(seg+1,seg+1+m,cmp);
+    // 枚举第一个作者的区间
+    for(re int i = 1 ; i <= n - k + 1 ; ++i){
+        int cur = 0;
+        for(re int j = m ; j >= 1 ; --j){
+            cur += max(0,min(i+k-1,seg[j].r)-max(i,seg[j].l)+1);
+            f[j] = max(f[j],cur);
+        }
+    }
+    ans = f[1];
+    // 枚举第二个
+    for(re int i = 1 ; i <= n - k + 1 ; ++i){
+        int cur = 0;
+        for(re int j = 1 ; j <= m ; ++j){
+            cur += max(0,min(i+k-1,seg[j].r)-max(i,seg[j].l)+1);
+            ans = max(ans,cur+f[j+1]);
+        }
+    }
+    printf("%d\n",ans);
+}
+
+int main(){
+    int t = 1;
+    // t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://codeforces.com/contest/1487/problem/E
+E. Cheap Dinner
+time limit per test4 seconds
+memory limit per test512 megabytes
+inputstandard input
+outputstandard output
+Ivan wants to have a good dinner. A good dinner should consist of a first course, a second course, a drink, and a dessert.
+
+There are n1 different types of first courses Ivan can buy (the i-th of them costs ai coins), n2 different types of second courses (the i-th of them costs bi coins), n3 different types of drinks (the i-th of them costs ci coins) and n4 different types of desserts (the i-th of them costs di coins).
+
+Some dishes don't go well with each other. There are m1 pairs of first courses and second courses that don't go well with each other, m2 pairs of second courses and drinks, and m3 pairs of drinks and desserts that don't go well with each other.
+
+Ivan wants to buy exactly one first course, one second course, one drink, and one dessert so that they go well with each other, and the total cost of the dinner is the minimum possible. Help him to find the cheapest dinner option!
+
+Input
+The first line contains four integers n1, n2, n3 and n4 (1≤ni≤150000) — the number of types of first courses, second courses, drinks and desserts, respectively.
+
+Then four lines follow. The first line contains n1 integers a1,a2,…,an1 (1≤ai≤108), where ai is the cost of the i-th type of first course. Three next lines denote the costs of second courses, drinks, and desserts in the same way (1≤bi,ci,di≤108).
+
+The next line contains one integer m1 (0≤m1≤200000) — the number of pairs of first and second courses that don't go well with each other. Each of the next m1 lines contains two integers xi and yi (1≤xi≤n1; 1≤yi≤n2) denoting that the first course number xi doesn't go well with the second course number yi. All these pairs are different.
+
+The block of pairs of second dishes and drinks that don't go well with each other is given in the same format. The same for pairs of drinks and desserts that don't go well with each other (0≤m2,m3≤200000).
+
+Output
+If it's impossible to choose a first course, a second course, a drink, and a dessert so that they go well with each other, print −1. Otherwise, print one integer — the minimum total cost of the dinner.
+*/
+
+/*
+ * 考虑暴力两两合并，例如a和b，可以用vector存储被合并的数组值和编号，每一次合并之前sort，用map<pair<int,int>,bool>存储被禁的组合，就容易得出bi最优跟哪一个aj合并
+ * 时间复杂度sort O(nlogn) 合并O(n+m)
+ */
+ 
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <map>
+#include <algorithm>
+#include <cmath>
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n1, n2, n3, n4, a[MAXN], b[MAXN], c[MAXN], d[MAXN], ans = INF;
+int m;
+vector<P> v;
+map<P,bool> ban;
+
+void solve(){
+	n1 = read(); n2 = read(); n3 = read(); n4 = read();
+	for(int i = 1 ; i <= n1 ; ++i) a[i] = read();
+	for(int i = 1 ; i <= n2 ; ++i) b[i] = read();
+	for(int i = 1 ; i <= n3 ; ++i) c[i] = read();
+	for(int i = 1 ; i <= n4 ; ++i) d[i] = read();
+	// merge 1 and 2
+	m = read();
+	for(int i = 1, x, y ; i <= m ; ++i){
+		x = read(); y = read();
+		ban[mp(x,y)] = true;
+	}
+	for(int i = 1 ; i <= n1 ; ++i) v.pb(mp(a[i],i));
+	sort(v.begin(),v.end());
+	for(int i = 1 ; i <= n2 ; ++i){
+		int idx = 0;
+		while(ban[mp(v[idx].second,i)]) ++idx;
+		if(idx==n1){
+			b[i] = 5e8;
+		}
+		else b[i] += v[idx].first;
+	}
+	// merge 2 and 3
+	ban.clear(); v.clear();
+	m = read();
+	for(int i = 1, x, y ; i <= m ; ++i){
+		x = read(); y = read();
+		ban[mp(x,y)] = true;
+	}
+	for(int i = 1 ; i <= n2 ; ++i) v.pb(mp(b[i],i));
+	sort(v.begin(),v.end());
+	for(int i = 1 ; i <= n3 ; ++i){
+		int idx = 0;
+		while(ban[mp(v[idx].second,i)]) ++idx;
+		if(idx==n2){
+			c[i] = 5e8;
+		}
+		else c[i] += v[idx].first;
+	}
+	// merge 3 and 4
+	ban.clear(); v.clear();
+	m = read();
+	for(int i = 1, x, y ; i <= m ; ++i){
+		x = read(); y = read();
+		ban[mp(x,y)] = true;
+	}
+	for(int i = 1 ; i <= n3 ; ++i) v.pb(mp(c[i],i));
+	sort(v.begin(),v.end());
+	for(int i = 1 ; i <= n4 ; ++i){
+		int idx = 0;
+		while(ban[mp(v[idx].second,i)]) ++idx;
+		if(idx==n3){
+			d[i] = 5e8;
+		}
+		else d[i] += v[idx].first;
+	}
+	for(int i = 1 ; i <= n4 ; ++i) ans = min(ans,d[i]);
+	printf("%d\n",ans>=5e8?-1:ans);
+}
+
+int main(){
+	solve();
+    return 0;
+}
+
+ 
+ 

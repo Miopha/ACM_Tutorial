@@ -1,0 +1,87 @@
+/*
+题目背景
+《爱与愁的故事第三弹·shopping》最终章。
+
+题目描述
+爱与愁大神买完东西后，打算坐车离开中山路。现在爱与愁大神在x1,y1处，车站在x2,y2处。现在给出一个n×n（n<=1000）的地图，0表示马路，1表示店铺（不能从店铺穿过），爱与愁大神只能垂直或水平着在马路上行进。爱与愁大神为了节省时间，他要求最短到达目的地距离（a[i][j]距离为1）。你能帮他解决吗？
+
+输入格式
+第1行：一个数 n
+
+第2行~第n+1行：整个地图描述（0表示马路，1表示店铺，注意两个数之间没有空格）
+
+第n+2行：四个数 x1,y1,x2,y2
+
+输出格式
+只有1行：最短到达目的地距离
+
+说明/提示
+20%数据：n<=100
+100%数据：n<=1000
+*/
+
+/*
+ * BFS,不用状态压缩的话可以用一个类存储x,y坐标,搜索到终点时结束BFS
+ */
+ 
+//package P1746;
+
+import java.util.*;
+
+import java.io.*;
+
+public class Main {
+
+	static int maxn = 1005 , n;
+	static int[][] dis = new int[maxn][maxn] , dir = {{1,0},{-1,0},{0,1},{0,-1}};
+	static boolean[][] mp = new boolean[maxn][maxn];
+	
+	static Warp s , e;
+	static LinkedList<Warp> q=new LinkedList<Warp>();
+	
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		n = sc.nextInt();
+		for(int i = 0 ; i < n ; i++) {
+			String s = sc.next();
+			for(int j = 0 ; j < n ; j++)
+				mp[i][j]= s.charAt(j)=='1' ? true : false;
+		}
+		int x1 = sc.nextInt()-1 , y1 = sc.nextInt()-1 , x2 = sc.nextInt()-1 , y2 = sc.nextInt()-1;
+		sc.close();
+		s = new Warp(x1,y1); e = new Warp(x2,y2);
+		System.out.println(bfs(s,e));
+		/*
+		for(int i = 0 ; i < n ; i++) {
+			for(int j = 0 ; j < n ; j++)
+				System.out.print(dis[i][j]+" ");
+			System.out.println();
+		}*/
+	}
+	
+	public static int bfs(Warp s,Warp e) {
+		q.addFirst(s);
+		dis[s.y][s.x] = 1;
+		while(!q.isEmpty()) {
+			Warp w = q.pollFirst();
+			for(int i = 0 ; i < 4 ; i++) {
+				Warp dw = new Warp(w.y+dir[i][1],w.x+dir[i][0]);
+				if(dw.x<0||dw.y<0||dw.y>=n||dw.x>=n||dis[dw.y][dw.x]!=0||mp[dw.y][dw.x]) continue;
+				dis[dw.y][dw.x] = dis[w.y][w.x] + 1;
+				if(dw.x==e.x&&dw.y==e.y)return dis[e.y][e.x]-1;
+				q.add(dw);
+			}
+		}
+		return -1;
+	}
+
+}
+
+class Warp{
+	int x , y;
+	//y,x
+	public Warp(int a , int b) {
+		y=a;x=b;
+	}
+}
+

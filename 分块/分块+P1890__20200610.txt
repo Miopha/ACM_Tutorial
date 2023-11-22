@@ -1,0 +1,105 @@
+/*
+题目描述
+给定一行n个正整数a[1]..a[n]。
+
+m次询问，每次询问给定一个区间[L,R]，输出a[L]..a[R]的最大公因数。
+
+输入格式
+第一行两个整数n，m。
+
+第二行n个整数表示a[1]..a[n]。
+
+以下m行，每行2个整数表示询问区间的左右端点。
+
+保证输入数据合法。
+
+输出格式
+共m行，每行表示一个询问的答案。
+
+说明/提示
+对于30%的数据，n <= 100， m <= 10
+
+对于60%的数据，m <= 1000
+
+对于100%的数据，1 <= n <= 1000，1 <= m <= 1,000,000
+*/
+
+/*
+ * 分块，算出区块的GCD
+ */
+ 
+#include <iostream>
+#include <math.h>
+#include <stdio.h>
+#define maxn 1005
+#define int long long
+
+using namespace std;
+
+int n , m , len , block , data[maxn] , belong[maxn] , l[maxn] , r[maxn] , GCD[maxn];
+
+inline int read(){
+	int x = 0 , f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+}
+while(ch>='0'&&ch<='9'){
+	x=(x<<1)+(x<<3)+(ch^48);
+	ch = getchar();
+}
+return x*f;
+}
+
+int gcd(int a, int b){
+    if(b==0)return a;
+    return gcd(b,a%b);
+}
+
+
+void build(){
+    len = sqrt(n); block = n / len;
+    if(n%len)block++;
+    for(int i = 1 ; i <= block ; i++){
+        l[i] = len*(i-1)+1 ; r[i] = len*i;
+    }
+    for(int i = 1 ; i <= block ; i++)
+        for(int j = l[i] ; j <= r[i] ; j++)
+            belong[j] = i;
+    int g = 0;
+    for(int i = 1 ; i <= block ; i++){
+        for(int j = l[i] ; j <= r[i] ; j++)
+            g = gcd(g,data[j]);
+        GCD[i] = g;
+    }
+}
+
+int query(int a , int b){
+    int ans = 0;
+    if(belong[a]==belong[b]){
+        for(int i = a ; i <= b ; i++)
+            ans = gcd(ans,data[i]);
+        return ans;
+    }
+    for(int i = a ; ans != 1 && i <= r[belong[a]] ; i++)
+        ans = gcd(ans,data[i]);
+    for(int i = belong[a] + 1 ; ans != 1 && i < belong[b] ; i++)
+        ans = gcd(ans,GCD[i]);
+    for(int i = l[belong[b]] ; ans != 1 && i <= b; i++)
+        ans = gcd(ans,data[i]);
+    return ans;
+}
+
+signed main(){
+    n = read() ; m = read();
+    for(int i = 1 ; i <= n ; i++) data[i] = read();
+    build();
+    int a , b;
+    while(m-->0){
+        a = read() ; b = read();
+        printf("%d\n",query(a,b));
+    }
+    return 0;
+}

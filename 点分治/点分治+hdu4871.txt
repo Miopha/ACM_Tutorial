@@ -1,0 +1,208 @@
+/*
+https://vjudge.net/contest/462310#problem/F
+Given a connected, undirected graph G, a shortest-path tree rooted at vertex v is a spanning tree T of G, such that the path distance from root v to any other vertex u in T is the shortest path distance from v to u in G.
+We may construct a shortest-path tree using the following method:
+We consider a shortest-path tree rooted at node 1. For every node i in the graph G, we choose a shortest path from root to i. If there are many shortest paths from root to i, we choose the one that the sequence of passing nodes' number is lexicographically minimum. All edges on the paths that we chose form a shortest-path tree.
+Now we want to know how long are the longest simple paths which contain K nodes in the shortest-path tree and how many these paths? Two simple paths are different if the sets of nodes they go through are different.
+Input
+The first line has a number T (T <= 10), indicating the number of test cases.
+For each test case, the first line contains three integers n, m, k(1<=n<=30000,1<=m<=60000,2<=k<=n), denote the number of nodes, the number of edges and the nodes of required paths.
+Then next m lines, each lines contains three integers a, b, c(1<=a, b<=n, 1<=c<=10000),denote there is an edge between a, b and length is c.
+Output
+For each case, output two numbers, denote the length of required paths and the numbers of required paths.
+*/
+
+#include <cstdio>
+#include <queue>
+#include <algorithm>
+#include <vector>
+#include <iostream>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+
+using namespace std;
+const int MAXN = 30005, INF = 0x3f3f3f3f;
+typedef long long ll;
+typedef pair<int,int> P;
+
+int head[MAXN], tot;
+
+struct Edge{
+	int to, val, next;
+}G[MAXN<<2];
+
+struct Node{
+	int dis, np, to, val;
+	Node(){}
+	Node(int a, int b, int c, int d){
+		dis = a;
+		np = b;
+		to = c;
+		val = d;
+	}
+	bool operator <(const Node &a)const{
+		if(dis!=a.dis) return dis>a.dis;
+		if(np!=a.np) return np>a.np;
+		return to>a.to;
+	}
+};
+
+struct path{
+	int to, from, dis, length;
+}route[MAXN];
+
+inline void addEdge(int u, int v, int w){
+	G[++tot].to = v;
+	G[tot].val = w;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+Edge T[MAXN<<1];
+ll tot1, head1[MAXN], tmp[MAXN];
+int n, m, k, dis[MAXN], mxp[MAXN], sz[MAXN], root, cnt, p, dis1[MAXN];
+ll ans1, ans2;
+bool vis[MAXN];
+priority_queue<Node> pq;
+
+inline void addEdge1(int u, int v, int w){
+	if(!u||!v) return ;
+	T[++tot1].to = v;
+	T[tot1].val = w;
+	T[tot1].next = head1[u];
+	head1[u] = tot1;
+	// printf("%d-%d->%d\n",u,w,v);
+}
+/
+void init(){
+	tot = tot1 = ans1 = ans2 = 0;
+	for(int i = 1 ; i <= n ; ++i) head[i] = head1[i] = vis[i] = mxp[i] = sz[i] = 0;
+}
+
+void dijkstra(int np){
+	for(int i = 1 ; i <= n ; ++i) dis[i] = INF;
+	dis[np] = 0;
+	while(!pq.empty()) pq.pop();
+	pq.push(Node(0,0,1,0));
+	int cnt = 0;
+	while(cnt<n&&!pq.empty()){
+		Node np = pq.top(); pq.pop();
+		int u = np.to;
+		if(vis[u]) continue;
+		++cnt;
+		addEdge1(np.np,np.to,np.val);
+		addEdge1(np.to,np.np,np.val);
+		vis[u] = true;
+		for(int i = head[u], to ; i ; i = G[i].next){
+			to = G[i].to;
+			if(!vis[to]&&dis[to]>=dis[u]+G[i].val){
+				dis[to] = dis[u] + G[i].val;
+				pq.push(Node(dis[to],u,to,G[i].val));
+			}
+		}
+	}
+}
+
+void get_root(int np, int fat, int tot){
+	sz[np] = 1;
+	mxp[np] = 0;
+	for(int i = head1[np], to ; i ; i = T[i].next){
+		to = T[i].to;
+		if(to==fat||vis[to]) continue;
+		get_root(to,np,tot);
+		sz[np] += sz[to];
+		mxp[np] = max(mxp[np],sz[to]);
+	}
+	mxp[np] = max(mxp[np],tot-sz[np]);
+	if(!root||mxp[np]<mxp[root]) root = np;
+}
+
+void get_dis(int np, int fat, int ndis, int nfrom){
+	++p;
+	route[++cnt].from = nfrom;
+	route[cnt].dis = ndis;
+	route[cnt].to = np;
+	route[cnt].length = p;
+	if(p>k){
+		--p;
+		return ;
+	}
+	if(ndis+dis1[k-p]>ans1){
+		ans1 = ndis+dis1[k-p];
+		ans2 = tmp[k-p];
+	}else if(ndis+dis1[k-p]==ans1){
+		ans2 += tmp[k-p];
+	}
+	for(int i = head1[np], to ; i ; i = T[i].next){
+		to = T[i].to;
+		if(vis[to]||to==fat) continue;
+		get_dis(to,np,ndis+T[i].val,nfrom);
+	}
+	--p;
+}
+
+void calc(int np){
+	cnt = 0;
+	route[++cnt].from = np;
+	route[cnt].dis = 0;
+	route[cnt].to = np;
+	int last = 1;
+	for(int i = 0 ; i <= n ; ++i) tmp[i] = dis1[i] = 0;
+	tmp[0] = 1;
+	for(int i = head1[np], to ; i ; i = T[i].next){
+		to = T[i].to;
+		if(vis[to]) continue;
+		p = 0;
+		get_dis(to,np,T[i].val,to);
+		for(int j = last ; j <= cnt ; ++j){
+			if(route[j].dis>dis1[route[j].length]){
+				dis1[route[j].length] = route[j].dis;
+				tmp[route[j].length] = 1;
+			}else if(route[j].dis==dis1[route[j].length]) ++tmp[route[j].length];
+		}
+		last = cnt + 1;
+	}
+} 
+
+void sol(int np){
+	vis[np] = true;
+	calc(np);
+	
+	for(int i = head1[np], to ; i ; i = T[i].next){
+		to = T[i].to;
+		if(vis[to]) continue;
+		root = 0;
+		get_root(to,0,sz[to]);
+		if(sz[root]<=k) continue;
+		sol(root);
+	}
+	
+}
+
+void solve(){
+	scanf("%d %d %d",&n,&m,&k);
+	--k;
+	init();
+	for(int i = 1, u, v, w ; i <= m ; ++i){
+		scanf("%d %d %d",&u,&v,&w);
+		addEdge(u,v,w);
+		addEdge(v,u,w);
+	}
+	dijkstra(1);
+	for(int i = 1 ; i <= n ; ++i) vis[i] = false;
+	get_root(1,0,n);
+	sol(root);
+	/*
+	printf("%d\n",root);
+	for(int i = 1 ; i <= cnt ; ++i){
+		printf("--%d-->%d, %d points\n",route[i].dis,route[i].to,route[i].length);
+	}
+	*/
+	printf("%lld %lld\n",ans1,ans2);
+}
+
+int main(){
+	int t;
+	scanf("%d",&t);
+	while(t--) solve();
+	return 0;
+}

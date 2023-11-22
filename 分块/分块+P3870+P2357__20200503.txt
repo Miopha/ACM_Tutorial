@@ -1,0 +1,233 @@
+/*
+	题目描述:
+	现有 n 盏灯排成一排，从左到右依次编号为：1，2，…… ，n。然后依次执行 m 项操作。
+	操作分为两种:
+	1.指定一个区间[a,b],然后改变编号在这个区间内的灯的状态(把开着的灯关上,关着的灯打开) ;
+	2.指定一个区间 [a, b]，要求你输出这个区间内有多少灯是打开的。
+	灯在初始时都是关着的。
+	输入格式:
+	第一行有两个整数n和m,分别表示灯的数目和操作的数目。
+	接下来有m行，每行有三个整数,依次为: c、a、b。中c表示操作的种类。
+	●当c的值为0时，表示是第一种操作。
+	●当c的值为1时，表示是第二种操作。
+	a和b则分别表示了操作区间的左右边界。
+	输出格式：
+	每当遇到第二种操作时，输出一行，包含一个整数,表示此时在查询的区间中打开的灯的数目。
+	
+	思路：
+	分块，块长度为sqrt(n)，维护每个区块灯开着的数量，reserve数组表示区块中的01是否反转，用于计算散块灯开着的数量和维护每个区块灯开着的数量。
+	
+	（用java重写了就TLE，还要优化_(:з」∠)_）
+*/
+#include <iostream>
+#include <math.h>
+#include <algorithm>
+#include <stdio.h>
+#define T 100010
+using namespace std;
+//block区块数量，len区块长度
+int l[T],r[T],lamp[T],belong[T],on[T],reserve[T],block,len,n,m;
+
+void Build(){
+    len = sqrt(n);block = n / len;
+    if(n%len)block++;
+    for(int i = 1 ; i <= block ; i++){
+        l[i]=(i-1)*len+1;r[i]=i*len;
+    }
+    r[block]=n;
+    for(int i = 1 ; i <= block ; i++)
+        for(int j = l[i] ; j <=r[i] ; j++)
+            belong[j]=i;
+    //printf("%d\n",len);
+    //for(int i = 1 ; i <= block ; i++)printf("%d ",l[i]);
+}
+
+void Change(int a , int b){
+    if(belong[a]==belong[b]){
+        for(int i = a ; i <= b ; i++){
+            lamp[i] = !lamp[i];
+            if((reserve[belong[i]] + lamp[i]) % 2) on[belong[i]]++;
+            else on[belong[i]]--;
+        }
+        /*
+        for(int i = 1 ; i <= n ; i++)printf("%d ",lamp[i]);
+        printf("\n");
+        for(int i = 1 ; i <= block ; i++)printf("%d  ",reserve[i]);
+        printf("\n");
+        for(int i = 1 ; i <= block ; i++)printf("block%d=%d ",i,on[i]);
+        printf("\n");
+        */
+        return ;
+    }
+    for(int i = a ; i <= r[belong[a]] ; i++){
+        lamp[i] = !lamp[i];
+        if((reserve[belong[i]] + lamp[i]) % 2) on[belong[i]]++;
+        else on[belong[i]]--;
+    }
+    for(int i = l[belong[b]] ; i <= b ; i++){
+        lamp[i] = !lamp[i];
+        if((reserve[belong[i]] + lamp[i]) % 2) on[belong[i]]++;
+        else on[belong[i]]--;
+    }
+    for(int i = belong[a] + 1 ; i < belong[b] ; i++){
+        reserve[i] = !reserve[i];
+        on[i] = r[i]-l[i]+1-on[i];
+    }
+    /*
+    for(int i = 1 ; i <= n ; i++)printf("%d ",lamp[i]);
+    printf("\n");
+    for(int i = 1 ; i <= block ; i++)printf("%d  ",reserve[i]);
+    printf("\n");
+    for(int i = 1 ; i <= block ; i++)printf("block%d=%d ",i,on[i]);
+    printf("\n");
+    */
+}
+
+int Query(int a , int b){
+    int res = 0;
+    if(belong[a]==belong[b]){
+        for(int i = a ; i <= b ; i++)
+            res += (reserve[belong[i]] + lamp[i]) % 2;
+        return res;
+    }
+    for(int i = a ; i <= r[belong[a]] ; i++)
+        res += (reserve[belong[i]] + lamp[i]) % 2;
+    for(int i = belong[a] + 1 ; i < belong[b] ; i++)
+        res += on[i];
+    for(int i = l[belong[b]] ; i <= b ; i++)
+        res += (reserve[belong[i]] + lamp[i]) % 2;
+    return res;
+}
+
+int main()
+{
+    cin>>n>>m;
+    Build();
+    while(m--){
+        int cmd , a , b;
+        if(a<b){
+            int temp = a;
+            a = b;
+            b = a;
+        }
+        cin>>cmd>>a>>b;
+        if(cmd) printf("%d\n",Query(a,b));
+        else Change(a,b);
+    }
+    return 0;
+}
+/*
+	题目描述：
+	他把墓地分为主要墓碑和次要墓碑，主要墓碑只能有1个，守墓人把他记为1号，而次要墓碑有n-1个，守墓人将之编号为2,3,...,n,所以构成了一个有n个墓碑的墓地。而每个墓碑有一个初始的风水值，这些风水值决定了墓地的风水的好坏，所以守墓人需要经常来查询这些墓碑。善于运用风水的守墓人，通过一次次逆天改命，使得自己拥有了无限寿命，没人知道他活了多久。这天，你幸运的拜访到了他，他要求你和他共同见证接下来几年他的战果，但不过他每次统计风水值之和都需要你来帮他计算，算错了他会要你命 QAQ
+	风水也不是不可变，除非遭遇特殊情况，已知在接下来的2147483647年里，会有n次灾难，守墓人会有几个操作：
+	1.将[l,r]这个区间所有的墓碑的风水值增加k。
+	2.将主墓碑的风水值增加k
+	3.将主墓碑的风水值减少k
+	4.统计[l, r]这个区间所有的墓碑的风水值之和
+	5.求主墓碑的风水值
+	输入格式:
+	第一行，两个正整数n,f表示共有n块墓碑,并且在接下来的2147483647年里，会有f次世界末日
+	第二行, n个正整数,表示第i块墓碑的风水值
+	接下来f行，每行都会有一个针对世界末日的解决方案，如题所述，标记同题.
+	输出格式：
+	输出会有若干行，对4和5的提问做出回答
+	
+	思路：
+	和上一题差不多，extra为额外加的数，求和的时候要加上。可能会溢出，注意类型。
+*/
+
+#include <iostream>
+#include <stdio.h>
+#include <math.h>
+#define T 200010
+#define ll long long
+using namespace std;
+
+ll l[T] , r[T] , tombs[T] , add[T] , belong[T] , extra[T] , n , m , block , len;
+
+void Build(){
+    len = sqrt(n);block = n / len;
+    if(n%len)block++;
+    for(int i = 1 ; i <= block ; i++){
+        l[i]=(i-1)*len+1;r[i]=len*i;
+    }
+    r[block]=n;
+    for(int i = 1 ; i <= block ; i++)
+        for(int j = l[i] ; j <= r[i] ; j++)
+            belong[j] = i;
+    for(int i = 1 ; i <= n ; i++)
+        add[belong[i]] += tombs[i];
+}
+
+void Modify(ll a , ll b , ll c){
+    if(belong[a]==belong[b]){
+        for(int i = a ; i <= b ; i++)
+            tombs[i] += c;
+        add[belong[a]] += (b-a+1)*c;
+        //for(int i = 1 ; i <= n ; i++)printf("%d ",tombs[i]);
+        //printf("\n");
+        return ;
+    }
+    for(int i = a ; i <= r[belong[a]] ; i++)
+        tombs[i] += c;
+    add[belong[a]] += (r[belong[a]]-a+1)*c;
+    for(int i = belong[a]+1 ; i < belong[b] ; i++){
+        extra[i] += c;
+        add[i] += len*c;
+    }
+    for(int i = l[belong[b]] ; i <= b ; i++)
+        tombs[i] += c;
+    add[belong[b]] += (b-l[belong[b]]+1)*c;
+    //for(int i = 1 ; i <= n ; i++)printf("%d ",tombs[i]);
+    //printf("\n");
+}
+
+void MainTomb(ll a){
+    tombs[1]+=a;
+    add[belong[1]]+=a;
+}
+
+ll Query(ll a , ll b){
+    ll res = 0;
+    if(belong[a]==belong[b]){
+        for(int i = a ; i <= b ; i++)
+            res += tombs[i] + extra[belong[i]];
+        return res;
+    }
+    for(int i = a ; i <= r[belong[a]] ; i++)
+        res += tombs[i] + extra[belong[i]];
+    for(int i = belong[a] + 1 ; i < belong[b] ; i++)
+        res += add[i];
+    for(int i = l[belong[b]] ; i <= b ; i++)
+        res += tombs[i] + extra[belong[i]];
+    return res;
+}
+
+int main()
+{
+    cin>>n>>m;
+    for(int i = 1 ; i <= n ; i++)cin>>tombs[i];
+    Build();
+    while(m--){
+        int cmd;
+        cin>>cmd;
+        ll a , b , c;
+        if(cmd==1){
+            cin>>a>>b>>c;
+            Modify(a,b,c);
+        }else if(cmd==2){
+            cin>>a;
+            MainTomb(a);
+        }else if(cmd==3){
+            cin>>a;
+            MainTomb(-a);
+        }else if(cmd==4){
+            cin>>a>>b;
+            printf("%lld\n",Query(a,b));
+        }else if(cmd==5){
+            printf("%d\n",tombs[1]);
+        }
+    }
+    return 0;
+}
+

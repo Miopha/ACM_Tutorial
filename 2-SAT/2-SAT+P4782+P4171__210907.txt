@@ -1,0 +1,264 @@
+/*
+https://www.luogu.com.cn/problem/P4782
+ 展开
+题目描述
+有 nn 个布尔变量 x_1x 
+1
+​
+ \sim∼x_nx 
+n
+​
+ ，另有 mm 个需要满足的条件，每个条件的形式都是 「x_ix 
+i
+​
+  为 true / false 或 x_jx 
+j
+​
+  为 true / false」。比如 「x_1x 
+1
+​
+  为真或 x_3x 
+3
+​
+  为假」、「x_7x 
+7
+​
+  为假或 x_2x 
+2
+​
+  为假」。
+
+2-SAT 问题的目标是给每个变量赋值使得所有条件得到满足。
+
+输入格式
+第一行两个整数 nn 和 mm，意义如题面所述。
+
+接下来 mm 行每行 44 个整数 ii, aa, jj, bb，表示 「x_ix 
+i
+​
+  为 aa 或 x_jx 
+j
+​
+  为 bb」(a, b\in \{0,1\}a,b∈{0,1})
+
+输出格式
+如无解，输出 IMPOSSIBLE；否则输出 POSSIBLE。
+
+下一行 nn 个整数 x_1\sim x_nx 
+1
+​
+ ∼x 
+n
+​
+ （x_i\in\{0,1\}x 
+i
+​
+ ∈{0,1}），表示构造出的解。
+*/
+
+/*
+ * 有n个变量x_1~x_n，有m个需要满足的条件，条件的形式为x_i  为true/false或x_j 为true/false，问是否有解使m个条件同时满足，如果有解则输出其中一个方案
+ * 建图：定义第i和i+n个点为第i个变量的true和false，对于条件” x_i  为p或x_j  为q”，则建两条边：x_i¬(p)→x_j (q) 与x_j¬(q)→x_i (p)，如果一个点必须等于p则建边¬p→p
+ * 无解的情况：某个点的p能到自身的¬p，即第i和i+n个点在同一强连通分量内
+ * 有解：则输出拓扑序大的点的值
+ */
+ 
+#include <cstdio>
+#include <stack>
+#include <algorithm>
+
+using namespace std;
+const int MAXN = 1e6 + 5, MAXM = 1e6 + 5;
+
+int head[MAXN<<1], tot;
+
+struct Edge{
+	int to, next;
+}G[MAXM<<1];
+
+inline void addEdge(int u, int v){
+	// printf("%d->%d\n",u,v);
+	G[++tot].to = v;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+int n, m, dfn[MAXN<<1], low[MAXN<<1], time, id[MAXN<<1], cnt;
+bool inStack[MAXN<<1];
+stack<int> stk;
+
+inline void tarjan(int np){
+	inStack[np] = dfn[np] = low[np] = ++time;
+	stk.push(np);
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(!dfn[to]){
+			tarjan(to);
+			low[np] = min(low[np],low[to]);
+		}else if(inStack[to]){
+			low[np] = min(low[np],low[to]);
+		}
+	}
+	if(dfn[np]==low[np]){
+		int k;
+		++cnt;
+		do{
+			k = stk.top(); stk.pop();
+			inStack[k] = false;
+			id[k] = cnt;
+		}while(np^k);
+	}
+}
+
+int main(){
+	scanf("%d %d",&n,&m);
+	for(int i = 1, x, a, y, b ; i <= m ; ++i){
+		scanf("%d %d %d %d",&x,&a,&y,&b);
+		addEdge(x+n*a,y+n*!b);
+		addEdge(y+n*b,x+n*!a);
+	}
+	for(int i = 1 ; i <= (n<<1) ; ++i){
+		if(!dfn[i]) tarjan(i);
+	}
+	// 无解情况
+	for(int i = 1 ; i <= n ; ++i){
+		if(id[i]==id[i+n]){
+			puts("IMPOSSIBLE");
+			return 0;
+		}
+	}
+	puts("POSSIBLE");
+	for(int i = 1 ; i <= n ; ++i){
+		printf("%d%c",id[i]<id[i+n]," \n"[i==n]);
+	}
+	return 0; 
+}
+
+/*
+https://www.luogu.com.cn/problem/P4171
+题目描述
+满汉全席是中国最丰盛的宴客菜肴，有许多种不同的材料透过满族或是汉族的料理方式，呈现在数量繁多的菜色之中。由于菜色众多而繁杂，只有极少数博学多闻技艺高超的厨师能够做出满汉全席，而能够烹饪出经过专家认证的满汉全席，也是中国厨师最大的荣誉之一。世界满汉全席协会是由能够料理满汉全席的专家厨师们所组成，而他们之间还细分为许多不同等级的厨师。
+
+为了招收新进的厨师进入世界满汉全席协会，将于近日举办满汉全席大赛，协会派遣许多会员当作评审员，为的就是要在参赛的厨师之中，找到满汉界的明日之星。
+
+大会的规则如下：每位参赛的选手可以得到 nn 种材料，选手可以自由选择用满式或是汉式料理将材料当成菜肴。
+
+大会的评审制度是：共有 mm 位评审员分别把关。每一位评审员对于满汉全席有各自独特的见解，但基本见解是，要有两样菜色作为满汉全席的标志。如某评审认为，如果没有汉式东坡肉跟满式的涮羊肉锅，就不能算是满汉全席。但避免过于有主见的审核，大会规定一个评审员除非是在认为必备的两样菜色都没有做出来的状况下，才能淘汰一位选手，否则不能淘汰一位选手。
+
+换句话说，只要参赛者能在这两种材料的做法中，其中一个符合评审的喜好即可通过该评审的审查。如材料有猪肉，羊肉和牛肉时，有四位评审员的喜好如下表：
+
+评审一 评审二 评审三 评审四 
+满式牛肉 满式猪肉 汉式牛肉 汉式牛肉 
+汉式猪肉 满式羊肉 汉式猪肉 满式羊肉 
+如参赛者甲做出满式猪肉，满式羊肉和满式牛肉料理，他将无法满足评审三的要求，无法通过评审。而參赛者乙做出汉式猪肉，满式羊肉和满式牛肉料理，就可以满足所有评审的要求。
+
+但大会后来发现，在这样的制度下如果材料选择跟派出的评审员没有特别安排好的话，所有的参赛者最多只能通过部分评审员的审查而不是全部，所以可能会发生没有人通过考核的情形。
+
+如有四个评审员喜好如下表时，则不论参赛者采取什么样的做法，都不可能通过所有评审的考核：
+
+评审一 评审二 评审三 评审四 
+满式羊肉 满式猪肉 汉式羊肉 汉式羊肉 
+汉式猪肉 满式羊肉 汉式猪肉 满式猪肉 
+所以大会希望有人能写一个程序来判断，所选出的 mm 位评审，会不会发生没有人能通过考核的窘境，以便协会组织合适的评审团。
+
+输入格式
+第一行包含一个数字 KK（1\le K \le 501≤K≤50），代表测试文件包含了 KK 组数据。
+
+每一组测试数据的第一行包含两个数字 nn 跟 mm（n≤100n≤100，m≤1000m≤1000），代表有 nn 种材料，mm 位评审员。
+
+为方便起见，舍弃做法的中文名称而给予编号，编号分别从 11 到 nn。
+
+接下来的 mm 行，每行都代表对应的评审员所拥有的两个喜好，每个喜好由一个英文字母跟一个数字代表，如 m1m1 代表这个评审喜欢第 11 个材料透过满式料理做出来的菜，而 h2h2 代表这个评审员喜欢第 22 个材料透过汉式料理做出来的菜。
+
+输出格式
+每组测试数据输出一行，如果不会发生没有人能通过考核的窘境，输出 GOOD；否则输出 BAD（均为大写字母）。
+*/
+
+/*
+ * 问是否能同时满足m个条件
+ * 模板修改下即可
+ */
+ 
+#include <cstdio>
+#include <stack>
+#include <algorithm>
+
+using namespace std;
+const int MAXN = 1e6 + 5, MAXM = 1e6 + 5;
+
+int head[MAXN<<1], tot;
+
+struct Edge{
+	int to, next;
+}G[MAXM<<1];
+
+inline void addEdge(int u, int v){
+	G[++tot].to = v;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+int n, m, dfn[MAXN<<1], low[MAXN<<1], time, id[MAXN<<1], cnt;
+bool inStack[MAXN<<1];
+stack<int> stk;
+
+void init(){
+	tot = time = cnt = 0;
+	for(int i = 1 ; i <= (n<<1) ; ++i) head[i] = dfn[i] = low[i] = id[i] = inStack[i] = 0;
+	while(!stk.empty()) stk.pop();
+}
+
+inline void tarjan(int np){
+	inStack[np] = dfn[np] = low[np] = ++time;
+	stk.push(np);
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(!dfn[to]){
+			tarjan(to);
+			low[np] = min(low[np],low[to]);
+		}else if(inStack[to]){
+			low[np] = min(low[np],low[to]);
+		}
+	}
+	if(dfn[np]==low[np]){
+		int k;
+		++cnt;
+		do{
+			k = stk.top(); stk.pop();
+			inStack[k] = false;
+			id[k] = cnt;
+		}while(np^k);
+	}
+}
+
+void solve(){
+	scanf("%d %d\n",&n,&m);
+	init();
+	for(int i = 1 ; i <= m ; ++i){
+		char a, b;
+		int x, y;
+		scanf("%c%d %c%d\n",&a,&x,&b,&y);
+		a = a=='m';
+		b = b=='m';
+		addEdge(x+n*a,y+n*!b);
+		addEdge(y+n*b,x+n*!a);
+	}
+	for(int i = 1 ; i <= (n<<1) ; ++i){
+		if(!dfn[i]) tarjan(i);
+	}
+	// 无解情况
+	for(int i = 1 ; i <= n ; ++i){
+		if(id[i]==id[i+n]){
+			puts("BAD");
+			return ;
+		}
+	}
+	puts("GOOD");
+}
+
+int main(){
+	int t;
+	scanf("%d",&t);
+	while(t--) solve();
+	return 0; 
+}

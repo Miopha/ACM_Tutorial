@@ -1,0 +1,155 @@
+/*
+https://codeforces.com/problemset/problem/550/A
+A. Two Substrings
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You are given string s. Your task is to determine if the given string s contains two non-overlapping substrings "AB" and "BA" (the substrings can go in any order).
+
+Input
+The only line of input contains a string s of length between 1 and 105 consisting of uppercase Latin letters.
+
+Output
+Print "YES" (without the quotes), if string s contains two non-overlapping substrings "AB" and "BA", and "NO" otherwise.
+*/
+
+//package CF550A;
+
+import java.io.*;
+import java.util.*;
+
+public class Main {
+
+	static Vector<Integer> AB = new Vector<Integer>(), BA = new Vector<Integer>();
+	
+	public static void main(String[] args) throws IOException {
+		String str = " " + br.readLine();
+		for(int i = 1 ; i < str.length() - 1 ; ++i) {
+			String tmp = str.substring(i,i+2);
+			if(tmp.equals("AB"))
+				AB.add(i);
+			else if(tmp.equals("BA"))
+				BA.add(i);
+		}
+		for(int i = 0 ; i < AB.size() ; ++i) {
+			for(int j = 0 ; j < BA.size() ; ++j) {
+				if(Math.abs(AB.get(i)-BA.get(j))>1) {
+					out.println("YES");
+					out.flush();
+					return ;
+				}
+			}
+		}
+		out.println("NO");
+		out.flush();
+	}
+
+	static StringBuilder print = new StringBuilder();
+	static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	static StreamTokenizer st = new StreamTokenizer(br);
+	static PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+	public static int nextInt() throws IOException {
+		st.nextToken();
+		return (int)st.nval;
+	}
+}
+
+/*
+https://codeforces.com/problemset/problem/550/C
+C. Divisibility by Eight
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You are given a non-negative integer n, its decimal representation consists of at most 100 digits and doesn't contain leading zeroes.
+
+Your task is to determine if it is possible in this case to remove some of the digits (possibly not remove any digit at all) so that the result contains at least one digit, forms a non-negative integer, doesn't have leading zeroes and is divisible by 8. After the removing, it is forbidden to rearrange the digits.
+
+If a solution exists, you should print it.
+
+Input
+The single line of the input contains a non-negative integer n. The representation of number n doesn't contain any leading zeroes and its length doesn't exceed 100 digits.
+
+Output
+Print "NO" (without quotes), if there is no such way to remove some digits from number n.
+
+Otherwise, print "YES" in the first line and the resulting number after removing digits from number n in the second line. The printed number must be divisible by 8.
+
+If there are multiple possible answers, you may print any of them.
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cmath>
+#define re register
+#define pb push_back
+#define cl clear
+#define MAXN 105
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+char str[MAXN];
+int arr[MAXN], n;
+bool flag;
+
+void solve(){
+    cin>>str+1;
+    for(re int i = 1 ; str[i] != '\0' ; ++i){
+        arr[i] = str[i] - '0';
+        n = i;
+    }
+    for(re int i = 1 ; i <= n ; ++i){
+        if(arr[i]%8==0){
+            printf("YES\n%d\n",arr[i]);
+            return ;
+        }
+    }
+    for(re int i = 1 ; i < n ; ++i){
+        for(re int j = i + 1 ; j <= n ; ++j){
+            if(((arr[i]*10+arr[j])%8)==0){
+                printf("YES\n%d\n",arr[i]*10+arr[j]);
+                return ;
+            }
+        }
+    }
+    for(re int i = 1 ; i < n - 1 ; ++i){
+        for(re int j = i + 1 ; j < n ; ++j){
+            for(re int k = j + 1 ; k <= n ; ++k){
+                if(((arr[i]*100+arr[j]*10+arr[k])%8)==0){
+                    printf("YES\n%d\n",arr[i]*100+arr[j]*10+arr[k]);
+                    return ;
+                }
+            }
+        }
+    }
+    printf("NO\n");
+}
+
+int main(){
+	ios::sync_with_stdio(false);
+    int t = 1;
+    //t = read();
+    while(t--) solve();
+    return 0;
+}

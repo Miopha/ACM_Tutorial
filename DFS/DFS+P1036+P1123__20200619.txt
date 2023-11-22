@@ -1,0 +1,158 @@
+/*
+已知n个整数x1, x.....xn.以及1个整数k(k < n)。从n个整数中任选k个整数相加，可分别得到系列的和。例如当n = 4,k = 3,4个整数分别为3, 7, 12, 19时,可得全部的组合与它们的和为:
+3+7+12=22
+3+7+19=29
+7+12+19=38
+3+12+19=34
+现在，要求你计算出和为素数共有多少种。
+例如上例，只有一种的和为素数: 3+7+19=29。
+输入格式
+键盘输入，格式为:
+n,k(1<n<20,k<n)
+x1, x....,xn(1<=xi<=5000000)
+输出格式
+屏幕输出，格式为1个整数(满足条件的种数)
+*/
+
+/*
+ * DFS,对于每个数字选择选与不选
+ * 选了足够的数字时判断和是否为质数
+ * 没选够足够的数字且越界就直接return;
+ */
+ 
+//package P1036;
+
+import java.util.Scanner;
+
+public class Main {
+
+	static int n , k , data[] = new int[25] , ans = 0;
+	
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		n = sc.nextInt() ; k = sc.nextInt();
+		sc.nextLine();
+		String[] s = sc.nextLine().split(" ");
+		for(int i = 1 ; i <= n ; i++)
+			data[i] = Integer.parseInt(s[i-1]);
+		sc.close();
+		
+		//要选的数组下标，选了的个数，sum
+		DFS(1,0,0);
+		System.out.println(ans);
+	}
+	
+	public static void DFS(int index , int amount , int sum) {
+		if(amount==k) {
+			if(isPrime(sum))
+				ans++;
+			return ;
+		}
+		if(index==n+1) return ;
+		DFS(index+1,amount+1,sum+data[index]);
+		DFS(index+1,amount,sum);
+	}
+	
+	public static boolean isPrime(int a) {
+		int n = (int)Math.sqrt(a);
+		for(int i = 2 ; i * i <= n ; i++)
+			if(a%i==0)return false;
+		return true;
+	}
+
+}
+
+/*
+题目描述
+一个N X M的由非负整数构成的数字矩阵，你需要在其中取出若干个数字，使得取出的
+任意两个数字不相邻(若-个数字在另外-个数字相邻8个格子中的一个即认为这两个数
+字相邻)，求取出数字和最大是多少。
+输入格式
+第1行有一个正整数T,表示了有T组数据。
+对于每一组数据，第-行有两个正整数N和M,示了数字矩阵为N行M列。
+接下来N行，每行M个负整数,描述了这个数字矩阵。
+输出格式.
+T行，行一个负整数,输出所求得的答案。
+*/
+
+ 
+//package P1123;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+	
+	static FastScanner cin = new FastScanner(System.in);
+	static PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+	
+	static int N , M , res = 0 , ans = 0;
+	static int[][] matrix , dir = {{1,0},{-1,0},{0,1},{0,-1},{1,1},{-1,1},{1,-1},{-1,-1},{0,0}};
+	static int[][] vis;
+	
+	public static void main(String[] args) {
+		int T = cin.nextInt();
+		while(T-->0) {
+			N = cin.nextInt() ; M = cin.nextInt() ; matrix = new int[8][8]; res = 0 ; ans = 0; vis = new int[8][8];
+			for(int i = 1 ; i <= N ; i++)
+				for(int j = 1 ; j <= M ; j++)
+					matrix[i][j] = cin.nextInt();
+			DFS(1,1);
+			System.out.println(res);
+		}
+	}
+	
+	public static void DFS(int x ,int y) {
+		if(y==M+1) {
+			res = Math.max(res,ans);
+			return ;
+		}
+		if(x==N+1) {
+			DFS(1,y+1);
+			return ;
+		}
+		DFS(x+1,y);
+		
+		if(vis[x][y]==0) {
+			for(int i = 0 ; i <= 8 ; i++)
+				vis[x+dir[i][0]][y+dir[i][1]]++;
+			ans+=matrix[x][y];
+			DFS(x+1,y);
+			for(int i = 0 ; i <= 8 ; i++)
+				vis[x+dir[i][0]][y+dir[i][1]]--;
+			ans-=matrix[x][y];
+		}
+	}
+	
+	static class FastScanner{
+		BufferedReader br;
+		StringTokenizer st;
+		public FastScanner(InputStream in) {
+			br = new BufferedReader(new InputStreamReader(in),16384);
+			st = new StringTokenizer("");
+		}
+		public String nextLine() {
+			try {
+				return br.readLine();
+			}catch(IOException e) {
+				return null;
+			}
+		}
+		public boolean hasNext() {
+			while(!st.hasMoreTokens()) {
+				String s = nextLine();
+				if(s==null)return false;
+				st = new StringTokenizer(s);
+			}
+			return true;
+		}
+		public String next() {
+			hasNext();
+			return st.nextToken();
+		}
+		public int nextInt() {
+			return Integer.parseInt(next());
+		}
+	}
+
+}

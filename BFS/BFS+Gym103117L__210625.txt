@@ -1,0 +1,91 @@
+/*
+https://codeforces.com/gym/103117/problem/L
+L. Spicy Restaurant
+time limit per test2.0 s
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+There are n hotpot restaurants numbered from 1 to n in Chengdu and the i-th restaurant serves hotpots of a certain spicy value wi. A higher spicy value indicates a hotter taste, while a lower spicy value is more gentle (still need to be very careful, though).
+
+We can consider these n restaurants as nodes on an undirected graph with m edges. Now we have q tourists who want to give the hotpots a try. Given the current positions of the tourists and the maximum spicy value they can bear, your task is to calculate the shortest distance between a tourist and the closest restaurant he can accept.
+
+In this problem we define the distance of a path as the number of edges in the path.
+
+Input
+There is only one test case in each test file.
+
+The first line contains three integers n, m and q (1≤n,m≤105,1≤q≤5×105) indicating the number of restaurants, the number of edges and the number of tourists.
+
+The second line contains n integers w1,w2,⋯,wn (1≤wi≤100) where wi indicates the spicy value of the i-th restaurant.
+
+For the following m lines, the i-th line contains two integers ui and vi (1≤ui,vi≤n, ui≠vi) indicating an edge connecting restaurant ui and vi.
+
+For the following q lines, the i-th line contains two integers pi and ai (1≤pi≤n, 1≤ai≤100) indicating that the i-th tourist is currently at restaurant pi and that the maximum spicy value he can accept is ai.
+
+Output
+Output q lines where the i-th line contains one integer indicating the shortest distance between the i-th tourist and the closest restaurant he can accept. If there is no such restaurant, output '-1' instead.
+*/
+
+/*
+ * 进行100次BFS
+ */
+
+#include <cstdio>
+#include <queue>
+
+using namespace std;
+
+const int MAXN = 100005, MAXW = 105;
+int head[MAXN], tot;
+
+struct Edge{
+	int to, next;
+}G[MAXN<<1];
+
+inline void addEdge(int u, int v){
+	G[++tot].to = v;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+int n, m, q, spi[MAXN], dis[MAXN][MAXW];
+
+int main(){
+	scanf("%d %d %d",&n,&m,&q);
+	for(int i = 1 ; i <= n ; ++i) scanf("%d",&spi[i]);
+	for(int i = 1, u, v ; i <= m ; ++i){
+		scanf("%d %d",&u,&v);
+		addEdge(u,v);
+		addEdge(v,u);
+	}
+	
+	for(int i = 1 ; i <= 100 ; ++i){
+		queue<int> q;
+		for(int j = 1 ; j <= n ; ++j){
+			if(spi[j]==i){
+				q.push(j);
+				dis[j][i] = 1;
+			}
+		}
+		while(!q.empty()){
+			int np = q.front(); q.pop();
+			for(int j = head[np], to ; j ; j = G[j].next){
+				to = G[j].to;
+				if(!dis[to][i]){
+					dis[to][i] = dis[np][i] + 1;
+					q.push(to);
+				}
+			}
+		}
+	}
+	
+	for(int i = 1, p, a ; i <= q ; ++i){
+		scanf("%d %d",&p,&a);
+		int ans = 0x3f3f3f3f;
+		for(int j = 1 ; j <= a ; ++j){
+			if(dis[p][j]) ans = min(ans,dis[p][j]-1);
+		}
+		printf("%d\n",(ans==0x3f3f3f3f)?-1:ans);
+	}
+	return 0;
+}

@@ -1,0 +1,113 @@
+/*
+http://lx.lanqiao.cn/problem.page?gpid=T116
+问题描述
+C村住着n户村民，由于交通闭塞，C村的村民只能通过信件与外界交流。为了方便村民们发信，C村打算在C村建设k个邮局，这样每户村民可以去离自己家最近的邮局发信。
+现在给出了m个备选的邮局，请从中选出k个来，使得村民到自己家最近的邮局的距离和最小。其中两点之间的距离定义为两点之间的直线距离。
+输入格式
+输入的第一行包含三个整数n, m, k，分别表示村民的户数、备选的邮局数和要建的邮局数。
+接下来n行，每行两个整数x, y，依次表示每户村民家的坐标。
+接下来m行，每行包含两个整数x, y，依次表示每个备选邮局的坐标。
+在输入中，村民和村民、村民和邮局、邮局和邮局的坐标可能相同，但你应把它们看成不同的村民或邮局。
+输出格式
+输出一行，包含k个整数，从小到大依次表示你选择的备选邮局编号。（备选邮局按输入顺序由1到m编号）
+样例输入
+5 4 2
+0 0
+2 0
+3 1
+3 3
+1 1
+0 1
+1 0
+2 1
+3 2
+样例输出
+2 4
+数据规模和约定
+对于30%的数据，1<=n<=10，1<=m<=10，1<=k<=5；
+对于60%的数据，1<=m<=20；
+对于100%的数据，1<=n<=50，1<=m<=25，1<=k<=10。
+*/
+
+/*
+ * 枚举可能建的邮局的编号,再计算村民与邮局的距离和,找到更小的就更新答案
+ * 两个小优化：①在读入时计算邮局与每个村民的距离②DFS途中记录邮局与每个居民的最小值,而不是选够了邮局再计算（避免重复计算距离）
+ */
+ 
+//package PREV_24;
+
+import java.io.*;
+import java.util.*;
+
+public class Main {
+	
+	static int vilWarp[][], chosen[], ans[];
+	static int n, m, k, cnt;
+	static double min, sum;
+	static double postDis[][], minDis[][];
+	
+	public static void main(String[] args) throws IOException {
+		StreamTokenizer st = new StreamTokenizer(new BufferedReader(new InputStreamReader(System.in)));
+		PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+		st.nextToken(); n = (int)st.nval;
+		st.nextToken(); m = (int)st.nval;
+		st.nextToken(); k = (int)st.nval;
+		init();
+		for(int i = 1 ; i <= n ; i++) {
+			st.nextToken(); vilWarp[i][0] = (int)st.nval;
+			st.nextToken(); vilWarp[i][1] = (int)st.nval;
+		}
+		int x, y;
+		for(int i = 1 ; i <= m ; i++) {
+			st.nextToken(); x = (int)st.nval;
+			st.nextToken(); y = (int)st.nval;
+			//optimization1
+			for(int j = 1 ; j <= n ; j++)
+				postDis[i][j] = Math.sqrt((vilWarp[j][0]-x)*(vilWarp[j][0]-x)+(vilWarp[j][1]-y)*(vilWarp[j][1]-y));
+//			System.out.println(Arrays.toString(postDis[i]));
+		}
+		DFS(1,0);
+		StringBuilder sb = new StringBuilder();
+		for(int i = 1 ; i <= k ; i++)
+			sb.append(ans[i]).append(" ");
+		out.println(sb.toString());
+		out.flush();
+	}
+	
+	public static void DFS(int x, int amount) {
+		if(amount==k) {
+			sum = minDis[k][1];
+			for(int i = 2 ; i <= n ; i++)
+				sum += minDis[k][i];
+			if(sum<min) {
+				for(int i = 1 ; i <= k ; i++)
+					ans[i] = chosen[i];
+				min = sum;
+			}
+//			System.out.println("sum="+sum);
+//			System.out.println(Arrays.toString(chosen));
+//			System.out.println(Arrays.toString(minDis));
+			return ;
+		}
+		if(x>m)
+			return ;
+		chosen[++cnt] = x;
+		//optimization 
+		for(int i = 1 ; i <= n ; i++)
+			minDis[cnt][i] = (minDis[cnt-1][i]<postDis[chosen[cnt]][i]?minDis[cnt-1][i]:postDis[chosen[cnt]][i]);
+		DFS(x+1,amount+1);
+		cnt--;
+		DFS(x+1,amount);
+	}
+	
+	public static void init() {
+		vilWarp = new int[n+1][2];
+		minDis = new double[k+1][n+1];
+		postDis = new double[m+1][n+1];
+		chosen = new int[k+1];
+		ans = new int[k+1];
+		min = 0x7fffffff;
+		Arrays.fill(minDis[0],0x7fffffff);
+	}
+
+}

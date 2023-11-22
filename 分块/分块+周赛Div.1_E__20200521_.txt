@@ -1,0 +1,140 @@
+/*
+小枫太喜欢字符串了,因而她时常会对某个字符串进行一些操作。
+首先小枫有一一个初始的字符串str,之后小枫会进行若干操作，操作分为两种类型:
+①1 pos ch:将字符串的第pos(从1开始)位的字符替换为ch.
+②2 l r :统计字符串第l位到第r位中不同的字符有几个.
+小枫只喜欢1操作,不喜欢需要计数的2操作,因此她向你求救，每次进行2操作时你都需要帮小枫统计不同字符个数.
+输入描述:
+第一行为初始字符串str, str只包含小写字母，(0<=|str|<=10e5)
+第二行为一个整数m，表示小枫要进行m(1<=m<=10e5)次操作
+每个操作只属于题述两种类型:
+①1 pos ch:将字符串的第pos(从1开始)位的字符替换为ch.
+②2 l r :统计字符串第l位到第r位中不同的字符有几个.
+(1 <= pos <= |str| , 1 <= l <= r <= |str|)
+*/
+
+/*
+ * 分块，维护每个区块每个小写字母出现的个数(appear)
+ * 创建区块时初始化每个小写字母出现的个数，1操作维护每个小写字母出现的个数
+ * 2操作时统计区块中每个小写字母出现多少次(appearTemp)，左右碎块暴力处理，大块直接相加appear，appearTemp只要大于等于1，ans++
+ * 要小心两个点在同一区块时的情况
+ */
+ 
+//package ZS13Div1_E;
+
+import java.io.*;
+import java.util.*;
+
+public class Main {
+
+	static FastScanner cin = new FastScanner(System.in);
+	
+	//字符串长度，区块数量，区块长度。
+	static int n , len , block;
+	//区块的左右边界，每个点所属区块
+	static int[] l , r , belong ;
+	//区块中每个小写字母出现个数
+	static int[][] appear;
+	//字符串
+	static char[] ch;
+	
+	public static void main(String[] args) {
+		ch = (" "+cin.next()).toCharArray();
+		build();
+		int m = cin.nextInt();
+		while(m-->0) {
+			int cmd = cin.nextInt();
+			if(cmd==1) {
+				int pos = cin.nextInt() , swap = cin.next().charAt(0);
+				change(pos,swap);
+			}else{
+				int begin = cin.nextInt() , end = cin.nextInt();
+				System.out.println(Query(begin,end));
+			}
+		}
+	}
+	
+	public static void build() {
+		n = ch.length - 1 ; len = (int)Math.sqrt(n); block = n / len;
+		l = new int[block+5] ; r = new int[block+5] ; belong = new int[n+5]; appear = new int[block+5][26];
+		if(n%len!=0)block++;
+		
+		for(int i = 1 ; i <= block ; i++) {
+			l[i] = (i-1)*len + 1; r[i] = i * len;
+		}
+		r[block] = n;
+		
+		for(int i = 1 ; i <= block ; i++)
+			for(int j = l[i] ; j <= r[i] ; j++)
+				belong[j] = i;
+				
+		for(int i = 1 ; i <= n ; i++)
+			appear[belong[i]][ch[i]-'a']++;
+	}
+	
+	public static void change(int pos , int c) {
+		appear[belong[pos]][c-'a']++;
+		appear[belong[pos]][ch[pos]-'a']--;
+		ch[pos] = (char)c;
+	}
+	
+	public static int Query(int begin ,int end) {
+		int ans = 0 ;
+		//检测过的字符
+		int[] appearTemp = new int[26];
+		
+		if(belong[begin]==belong[end]) {
+			for(int i = begin ; i <= end ; i++)
+				appearTemp[ch[i]-'a']++;
+			for(int i = 0 ; i < 26 ; i++)
+				if(appearTemp[i]>0)ans++;
+			return ans;
+		}
+		
+		for(int i = begin ; i <= r[belong[begin]] ; i++)
+			appearTemp[ch[i]-'a']++;
+		for(int i = l[belong[end]] ; i <= end ; i++)
+			appearTemp[ch[i]-'a']++;
+		
+		for(int j = belong[begin] + 1 ; j < belong[end] ; j++)
+			for(int i = 0 ; i < 26 ; i++) appearTemp[i] += appear[j][i];
+		
+		for(int i = 0 ; i < 26 ; i++)
+			if(appearTemp[i]>0)ans++;
+			
+		return ans;
+	}
+	
+	//java快读
+	static class FastScanner{
+		BufferedReader br ;
+		StringTokenizer st;
+		public FastScanner(InputStream in) {
+			br = new BufferedReader(new InputStreamReader(in),16384);
+			st = new StringTokenizer("");
+		}
+		public String nextLine() {
+			try {
+				return br.readLine();
+			}catch(Exception e) {
+				return null;
+			}
+		}
+		public boolean hasNext() {
+			while(!st.hasMoreTokens()) {
+				String s = nextLine();
+				if(s==null) return false;
+				st = new StringTokenizer(s);
+			}
+			return true;
+		}
+		public String next() {
+			hasNext();
+			return st.nextToken();
+		}
+		public int nextInt() {
+			hasNext();
+			return Integer.parseInt(next());
+		}
+	}
+}

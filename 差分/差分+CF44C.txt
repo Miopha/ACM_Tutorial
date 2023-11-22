@@ -1,0 +1,44 @@
+/*
+	statement:
+	School holidays come in Berland. The holidays are going to continue for n days. The students of school N are having the time of their lives and the IT teacher Marina Sergeyevna, who has spent all the summer busy checking the BSE (Berland State Examination) results, has finally taken a vacation break! Some people are in charge of the daily watering of flowers in shifts according to the schedule. However when Marina Sergeyevna was making the schedule, she was so tired from work and so lost in dreams of the oncoming vacation that she perhaps made several mistakes. In fact, it is possible that according to the schedule, on some days during the holidays the flowers will not be watered or will be watered multiple times. Help Marina Sergeyevna to find a mistake.
+	input:
+	The first input line contains two numbers nn and m ( 1<=n,m<=100 1<=n,m<=100 ) — the number of days in Berland holidays and the number of people in charge of the watering respectively. The next mm lines contain the description of the duty schedule. Each line contains two integers ai and bi(1<=ai<=bi<=n), meaning that the i-th person in charge should water the flowers from the ai-th to the bi-th day inclusively,once a day.The duty shifts are described sequentially,i.e.bi<=ai+1 for i from 1 to n-1 inclusively.
+	output:
+	Print "OK" (without quotes), if the schedule does not contain mistakes. Otherwise you have to find the minimal number of a day when the flowers will not be watered or will be watered multiple times, and output two integers — the day number and the number of times the flowers will be watered that day.
+	题目大意:
+	有n(1<=n<=100)天,有m(1<=m<=100)人分别在[ai,bi](1<=ai<=bi<=n)天为花浇水
+	如果n天中每天都仅有一人浇水，输出“OK”
+	否则，输出“a b”,第a天最早出现“否则”情况,第a天有b人浇水。
+	思路:
+	差分，遍历数组发现“否则”(DE != 1)的那一天，没发现就输出OK
+
+*/
+
+//package CF44C;
+
+import java.util.Scanner;
+
+public class Main {
+
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		int n = sc.nextInt() , m = sc.nextInt() , DE = 0;
+		int[] days = new int[n+5];
+		while(m-->0) {
+			days[sc.nextInt()]++;days[sc.nextInt()+1]--;
+		}
+		sc.close();
+		for(int i = 1 ; i <= n ; i++) {
+			DE += days[i];
+			if(DE != 1) {
+				System.out.println(i + " " + DE);
+				return ;
+			}
+		}
+		System.out.println("OK");
+
+	}
+
+}
+
+

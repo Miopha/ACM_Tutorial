@@ -1,0 +1,78 @@
+/*
+https://codeforces.com/contest/1501/problem/C
+C. Going Home
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+It was the third month of remote learning, Nastya got sick of staying at dormitory, so she decided to return to her hometown. In order to make her trip more entertaining, one of Nastya's friend presented her an integer array a.
+
+Several hours after starting her journey home Nastya remembered about the present. To entertain herself she decided to check, are there four different indices x,y,z,w such that ax+ay=az+aw.
+
+Her train has already arrived the destination, but she still hasn't found the answer. Can you help her unravel the mystery?
+
+Input
+The first line contains the single integer n (4≤n≤200000) — the size of the array.
+
+The second line contains n integers a1,a2,…,an (1≤ai≤2.5⋅106).
+
+Output
+Print "YES" if there are such four indices, and "NO" otherwise.
+
+If such indices exist, print these indices x, y, z and w (1≤x,y,z,w≤n).
+
+If there are multiple answers, print any of them.
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <algorithm>
+#include <cmath>
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, a[MAXN];
+vector<P> sum[5000005];
+
+int main(){
+	n = read();
+	for(int i = 1 ; i <= n ; ++i) a[i] = read();
+	for(int i = 1, s ; i <= n ; ++i)
+		for(int j = 1 ; j <= n - i ; ++j){
+			s = a[j] + a[i+j];
+			for(auto x:sum[s]){
+				if((j^x.first)&&(j^x.second)&&((i+j)^x.first)&&((i+j)^x.second)){
+					printf("YES\n%d %d %d %d\n",x.first,x.second,j,i+j);
+					return 0;
+				}
+			}
+			sum[s].pb(mp(j,i+j));
+		}
+	puts("NO");
+    return 0;
+}

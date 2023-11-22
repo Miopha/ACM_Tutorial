@@ -1,0 +1,186 @@
+/*
+题目描述 
+小明现在在玩一个游戏，游戏来到了教学关卡，迷宫是一个N*M的矩阵。
+小明的起点在地图中用“S”来表示，终点用“E”来表示，障碍物用“#”来表示，空地用“.”来表示。
+障碍物不能通过。小明如果现在在点（x，y）处，那么下一步只能走到相邻的四个格子中的某一个：（x+1，y），（x-1，y），（x，y+1），（x，y-1）；
+小明想要知道，现在他能否从起点走到终点。
+输入描述:
+本题包含多组数据。
+每组数据先输入两个数字N,M
+接下来N行，每行M个字符，表示地图的状态。
+数据范围：
+2<=N,M<=500
+保证有一个起点S，同时保证有一个终点E.
+输出描述:
+每组数据输出一行，如果小明能够从起点走到终点，那么输出Yes，否则输出No
+*/
+
+/*
+ * BFS,为了方便我们可以用一个数字y*m+x代表(x,y),用一个队列存储每次这次终点的(x,y)或者说下次起点的(x,y),用direction[4][2]来存储上下左右四个方向
+ * 遇到终点越界时，遇到地图上有障碍点时，已经走过时要跳过这个点，如果这个点是终点，直接return true
+ */
+ 
+#include <bits/stdc++.h>
+#define maxn 505
+using namespace std;
+
+int n,m,dis[maxn][maxn],mp[maxn][maxn],start,target;
+int direction[4][2] = {{1,0},{-1,0},{0,1},{0,-1}};
+queue<int> q;
+
+bool bfs(int a , int b){
+	
+    while(!q.empty()) q.pop();
+    q.push(a);
+    while(!q.empty()){
+        int temp = q.front();
+        q.pop();
+        int x = temp / m , y = temp % m;
+        for(int i = 0 ; i < 4 ; i++){
+            int dx = x+direction[i][0] , dy = y+direction[i][1];
+            if(dx<0||dy<0||dx>=n||dy>=m) continue;
+            if(mp[dx][dy]==0) continue;
+            if(dis[dx][dy]!=0) continue;
+            if(dx*m+dy==b) return true;
+            dis[dx][dy] = dis[x][y] + 1;
+            q.push(dx*m+dy);
+        }
+    }
+    return false;
+}
+
+int main(){
+    while(scanf("%d %d",&n,&m)!=EOF){
+        memset(mp,0,sizeof(mp));
+        memset(dis,0,sizeof(dis));
+        for(int i = 0 ; i < n ; i++)
+            for(int j = 0 ; j < m ; j++){
+                char c;
+                scanf(" %c",&c);
+                if(c=='S'){start=i*m+j;mp[i][j]=1;}
+                else if(c=='E'){target=i*m+j;mp[i][j]=1;}
+                else if(c=='.'){mp[i][j]=1;}
+                else if(c=='#'){mp[i][j]=0;}
+            }
+        if(bfs(start,target))printf("Yes\n");
+        else printf("No\n");
+    }
+    return 0;
+}
+
+/*
+题目描述
+一矩形阵列由数字 0 到 9 组成，数字 1 到 9 代表细胞，细胞的定义为沿细胞数字上下左右若还是细胞数字则为同一细胞，求给定矩形阵列的细胞个数。
+
+输入格式
+第一行两个整数代表矩阵大小 n 和 m。
+
+接下来 n 行，每行一个长度为 m 的只含字符 0 到 9 的字符串，代表这个 n×m 的矩阵。
+
+输出格式
+一行一个整数代表细胞个数。
+
+数据规模与约定
+对于100%的数据，保证1<=n,m<=100
+*/
+
+/*
+ * 遍历这几个字符串用BFS(没走过且值不为0的时候)，走过的路标记一下(went)，避免下次走过同一个细胞
+ */
+ 
+//package P1451;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+
+	static FastScanner cin = new FastScanner(System.in);
+	static PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+	
+	static LinkedList<Integer> q=new LinkedList<Integer>();
+	
+	static int maxn = 105 , ans = 0 , n , m;
+	static boolean[][] went = new boolean[maxn][maxn] , data = new boolean[maxn][maxn];
+	static int[][] direction = {{1,0},{-1,0},{0,1},{0,-1}};
+	
+	public static void main(String[] args) {
+		n = cin.nextInt() ; m = cin.nextInt();
+		//录入数据
+		for(int i = 0 ; i < n ; i++) {
+			String s = cin.next();
+			for(int j = 0 ; j < m ; j++)
+				data[i][j]= ('0'!=s.charAt(j));
+		}
+		//printArray(data);
+		for(int i = 0 ; i < n ; i++) {
+			for(int j = 0 ; j < m ; j++) {
+				if(!went[i][j] && data[i][j]) {
+					bfs(i,j);
+					//printArray(went);
+					ans++;
+				}
+			}
+		}
+		
+		out.println(ans);
+		out.flush();
+		
+	}
+	
+	public static void bfs(int a , int b) {
+		q.clear();
+		q.addFirst(a*m+b);
+		while(!q.isEmpty()) {
+			int temp = q.pollFirst();
+			int x = temp / m , y = temp % m;
+			for(int i = 0 ; i < 4 ; i++) {
+				int dx = x+direction[i][0] , dy = y+direction[i][1];
+				if(dx<0||dy<0||dx>=n||dy>=m) continue;
+				if(!data[dx][dy]||went[dx][dy]) continue;
+				went[dx][dy]=true;
+				q.addFirst(dx*m+dy);
+			}
+		}
+	}
+	
+	public static void printArray(boolean[][] a) {
+		for(int i = 0 ; i < n ; i++) {
+			for(int j = 0 ; j < m ; j++)
+				out.print((a[i][j]==true?1:0)+" ");
+			out.println();
+			out.flush();
+		}
+	}
+
+	static class FastScanner{
+		BufferedReader br;
+		StringTokenizer st;
+		public FastScanner(InputStream in) {
+			br = new BufferedReader(new InputStreamReader(in),16384);
+			st = new StringTokenizer("");
+		}
+		public String nextLine() {
+			try {
+				return br.readLine();
+			}catch(IOException e) {
+				return null;
+			}
+		}
+		public boolean hasNext() {
+			while(!st.hasMoreTokens()) {
+				String s = nextLine();
+				if(s==null)return false;
+				st = new StringTokenizer(s);
+			}
+			return true;
+		}
+		public String next() {
+			hasNext();
+			return st.nextToken();
+		}
+		public int nextInt() {
+			return Integer.parseInt(next());
+		}
+	}
+}

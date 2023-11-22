@@ -1,0 +1,108 @@
+/*
+https://codeforces.com/contest/1494/problem/D
+D. Dogeforces
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+The Dogeforces company has k employees. Each employee, except for lower-level employees, has at least 2 subordinates. Lower-level employees have no subordinates. Each employee, except for the head of the company, has exactly one direct supervisor. The head of the company is a direct or indirect supervisor of all employees. It is known that in Dogeforces, each supervisor receives a salary strictly more than all his subordinates.
+
+The full structure of the company is a secret, but you know the number of lower-level employees and for each pair of lower-level employees, the salary of their common supervisor is known (if there are several such supervisors, then the supervisor with the minimum salary). You have to restore the structure of the company.
+
+Input
+The first line contains a single integer n (2≤n≤500) — the number of lower-level employees.
+
+This is followed by n lines, where i-th line contains n integers ai,1,ai,2,…,ai,n (1≤ai,j≤5000) — salary of the common supervisor of employees with numbers i and j. It is guaranteed that ai,j=aj,i. Note that ai,i is equal to the salary of the i-th employee.
+
+Output
+In the first line, print a single integer k — the number of employees in the company.
+
+In the second line, print k integers c1,c2,…,ck, where ci is the salary of the employee with the number i.
+
+In the third line, print a single integer r — the number of the employee who is the head of the company.
+
+In the following k−1 lines, print two integers v and u (1≤v,u≤k) — the number of the employee and his direct supervisor.
+
+Note that the lower-level employees have numbers from 1 to n, and for the rest of the employees, you have to assign numbers from n+1 to k. If there are several correct company structures, you can print any of them.
+*/
+
+/*
+ * 维护一个叶子节点的vector，每次递归新建这些叶子节点的LCA，值为叶子节点LCA中的最大值
+ * 如果a[u][v]不等于最大值，那么u和v在同一子树中，按照这个特性可以判断哪些叶子节点属于哪个子树
+ * 递归退出条件为维护的vector大小为1，这时候只剩下叶子节点可以新建
+ */
+
+#include <cstdio>
+#include <vector>
+#define pb push_back
+#define mp make_pair
+
+using namespace std;
+const int MAXN = 505;
+typedef pair<int,int> P;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, a[MAXN][MAXN], cnt, val[MAXN<<3];
+std::vector<P> edge;
+
+int sol(std::vector<int> nsub){
+	if(nsub.size()==1) return nsub[0];
+	int mx = -1;
+	for(int i = 0 ; i < nsub.size() ; ++i)
+		for(int j = 0 ; j < i ; ++j)
+			mx = max(mx,a[nsub[i]][nsub[j]]);
+	std::vector<std::vector<int> > sub;
+	sub.pb({nsub[0]});
+	for(int i = 1 ; i < nsub.size() ; ++i){
+		int group = -1;
+		for(int j = 0 ; j < sub.size() ; ++j){
+			if(a[nsub[i]][sub[j][0]]^mx){
+				group = j;
+				break;
+			}
+		}
+		if(group==-1){
+			group = sub.size();
+			sub.pb({});
+		}
+		sub[group].pb(nsub[i]);
+	}
+	int root = ++cnt;
+	val[root] = mx;
+	for(auto x:sub){
+		int to = sol(x);
+		edge.pb(mp(to,root));
+	}
+	return root;
+}
+
+int main(){
+	cnt = n = read();
+	for(int i = 1 ; i <= n ; ++i)
+		for(int j = 1 ; j <= n ; ++j)
+			a[i][j] = read();
+	std::vector<int> sub;
+	for(int i = 1 ; i <= n ; ++i) val[i] = a[i][i], sub.pb(i);
+	int root = sol(sub);
+	printf("%d\n",cnt);
+	for(int i = 1; i <= cnt ; ++i)
+		printf("%d%c",val[i]," \n"[i==cnt]);
+	printf("%d\n",root);
+	for(auto x:edge)
+		printf("%d %d\n",x.first,x.second);
+    return 0;
+}

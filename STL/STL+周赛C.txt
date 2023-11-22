@@ -1,0 +1,123 @@
+/*
+https://vjudge.net/contest/409171#problem/C
+因为是树和不重边, 可以用倍增LCA来求最大流
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <string.h>
+#include <algorithm>
+#include <cmath>
+#define re register
+#define pb push_back
+#define cl clear
+#define MAXN 300005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int head[MAXN], tot;
+
+struct Edge{
+    int u, to, val, next;
+}G[MAXN<<1];
+
+inline void addEdge(int u, int v, int val){
+    G[++tot].u = u;
+    G[tot].to = v;
+    G[tot].val = val;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+int n, m, q, lg2[MAXN], depth[MAXN], f[MAXN][20], flow[MAXN][20];
+
+void swap(int *a, int *b){
+    int tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+inline void DFS(int cur, int fat){
+    depth[cur] = depth[fat]  + 1;
+    f[cur][0] = fat;
+    for(re int i = 1 ; i <= lg2[depth[cur]] ; ++i){
+        f[cur][i] = f[f[cur][i-1]][i-1];
+        flow[cur][i] = min(flow[cur][i-1],flow[f[cur][i-1]][i-1]);
+    }
+    for(re int i = head[cur] ; i ; i = G[i].next){
+        if(G[i].to!=fat){
+            flow[G[i].to][0] = G[i].val;
+            DFS(G[i].to,cur);
+        }
+    }
+}
+
+int LCA(int x, int y){
+    int res = INF;
+    if(depth[x]<depth[y])
+        swap(&x,&y);
+    for(re int i = 19 ; i >= 0 ; --i)
+        if(depth[y]<=depth[f[x][i]]){
+            res = min(res,flow[x][i]);
+            x = f[x][i];
+        }
+    if(x==y) return res;
+    for(re int i = 19 ; i >= 0 ; --i){
+        if(f[x][i]!=f[y][i]){
+            res = min(res,flow[x][i]);
+            res = min(res,flow[y][i]);
+            x = f[x][i];
+            y = f[y][i];
+        }
+    }
+    return min(res,min(flow[x][0],flow[y][0]));
+}
+
+void solve(){
+    n = read(); m = read();
+    for(re int i = 1, u, v, w ; i <= m ; ++i){
+        u = read();
+        v = read();
+        w = read();
+        addEdge(u,v,w);
+        addEdge(v,u,w);
+    }
+    DFS(1,0);
+    for(re int i = 1, q = read(), u, v, ans ; i <= q ; ++i){
+        u = read();
+        v = read();
+        ans = LCA(u,v);
+        printf("%d\n",ans);
+    }
+}
+
+int main(){
+    for(re int i = 2 ; i <= 300000 ; ++i)
+        lg2[i] = lg2[i-1] + (1<<(lg2[i-1]+1)==i);
+    int t = 1;
+    // t = read();
+    while(t--) solve();
+    return 0;
+}
+

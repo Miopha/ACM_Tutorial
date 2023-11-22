@@ -1,0 +1,102 @@
+/*
+题目背景
+若某个家族人员过于庞大，要判断两个是否是亲戚，确实还很不容易，现在给出某个亲戚关系图，求任意给出的两个人是否具有亲戚关系。
+
+题目描述
+规定：x和y是亲戚，y和z是亲戚，那么x和z也是亲戚。如果x,y是亲戚，那么x的亲戚都是y的亲戚，y的亲戚也都是x的亲戚。
+
+输入格式
+第一行：三个整数n,m,p，（n<=5000,m<=5000,p<=5000），分别表示有n个人，m个亲戚关系，询问p对亲戚关系。
+
+以下m行：每行两个数Mi，Mj，1<=Mi，Mj<=N，表示Mi和Mj具有亲戚关系。
+
+接下来p行：每行两个数Pi，Pj，询问Pi和Pj是否具有亲戚关系。
+
+输出格式
+P行，每行一个’Yes’或’No’。表示第i个询问的答案为“具有”或“不具有”亲戚关系。
+*/
+
+/*
+ * 并查集模板
+ */
+ 
+//package P1551;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+
+	static FastScanner cin = new FastScanner(System.in);
+	static PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+	static int maxn = 5005 , n , m , p;
+	static int[] parent  = new int[maxn];
+	
+	public static void main(String[] args) {
+		n = cin.nextInt() ; m = cin.nextInt() ; p = cin.nextInt();
+		init();
+		while(m-->0) {
+			union(cin.nextInt(),cin.nextInt());
+		}
+		while(p-->0) {
+			int[] x_root = find_root(cin.nextInt()) , y_root = find_root(cin.nextInt());
+			if(x_root[0]==y_root[0])
+				out.println("Yes");
+			else
+				out.println("No");
+			out.flush();
+		}
+	}
+	
+	public static void init() {
+		for(int i = 0 ; i < maxn ; i++)
+			parent[i] = -1;
+	}
+	
+	public static int[] find_root(int a) {
+		int[] ans = {a,0};
+		while(parent[ans[0]]!=-1) {
+			ans[0] = parent[ans[0]];
+			ans[1]++;
+		}
+		return ans;
+	}
+	
+	public static void union(int a , int b) {
+		int[] a_root = find_root(a) , b_root = find_root(b);
+		if(a_root[0]==b_root[0]) return ;
+		if(a_root[1]<b_root[1]) parent[a_root[0]] = b_root[0];
+		else parent[b_root[0]] = a_root[0];
+	}
+	
+	static class FastScanner{
+		BufferedReader br;
+		StringTokenizer st;
+		public FastScanner(InputStream in) {
+			br = new BufferedReader(new InputStreamReader(in),16384);
+			st = new StringTokenizer("");
+		}
+		public String nextLine() {
+			try {
+				return br.readLine();
+			}catch(Exception e) {
+				return null;
+			}
+		}
+		public boolean hasNext() {
+			while(!st.hasMoreTokens()) {
+				String s = nextLine();
+				if(s==null)return false;
+				st = new StringTokenizer(s);
+			}
+			return true;
+		}
+		public String next() {
+			hasNext();
+			return st.nextToken();
+		}
+		public int nextInt() {
+			return Integer.parseInt(next());
+		}
+	}
+}

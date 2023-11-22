@@ -1,0 +1,65 @@
+/*
+题目描述
+设有一棵二叉树，如图：
+		13(1)
+	   /     \
+	  2(4)   12(3)
+	         /   \
+		  20(4) 40(5)
+其中，圈中的数字表示结点中居民的人口。圈边上数字表示结点编号，现在要求在某个结点上建立一个医院，使所有居民所走的路程之和为最小，同时约定，相邻接点之间的距离为1。如上图中，若医院建在1处，则距离和=4+12+2x20+2x40=136；若医院建在 33 处，则距离和=4*2+13+20+40=81
+
+输入格式
+第一行一个整数 n，表示树的结点数。
+
+接下来的 n 行每行描述了一个结点的状况，包含三个整数 w, u, v，其中 w 为居民人口数，u 为左链接（为 0 表示无链接），v 为右链接（为 0 表示无链接）。
+
+输出格式
+一个整数，表示最小距离和。
+*/
+
+/*
+ * 1.先初始化每条路的权值为1,用Floyd算出任意节点到任意节点距离
+ * 2.枚举终点,算出最终距离,加权乘节点的人口数量,最小值就是答案
+ */
+ 
+//package P1364;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+	
+	public static void main(String[] args) throws IOException {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		int n = Integer.parseInt(br.readLine()), ws[] = new int[n+1], value[][] = new int[n+1][n+1], ans = 0x7fffffff;
+		
+		for(int i = 1 ; i <= n ; i++)
+			for(int j = 1 ; j <= n ; j++)
+				value[i][j] = 101;
+		
+		for(int i = 1 ; i <= n ; i++) {
+			String tmp[] = br.readLine().split(" ");
+			ws[i] = Integer.parseInt(tmp[0]);
+			int u = Integer.parseInt(tmp[1]), v = Integer.parseInt(tmp[2]);
+			value[i][u] = value[i][v] = value[u][i] = value[v][i] = 1;
+		}
+		
+		//Floyd
+		for(int k = 1 ; k <= n ; k++)
+			for(int i = 1; i <= n ; i++)
+				for(int j = 1 ; j <= n ; j++)
+					value[i][j] = Math.min(value[i][j],value[i][k] + value[k][j]);
+		
+		for(int i = 1 ; i <= n ; i++) {
+			int tmp = 0;
+			for(int j = 1 ; j <= n ; j++)
+				if(i!=j)
+					tmp += value[i][j] * ws[j];
+			ans = Math.min(ans,tmp);
+		}
+		
+		System.out.println(ans);
+		
+	}
+
+}

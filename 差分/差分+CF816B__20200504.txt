@@ -1,0 +1,78 @@
+/*
+	题意翻译：
+	可怜是咖啡的狂热爱好者,她去看了n本食谱,每本上面写着在[l,r]两个温度之间煮咖啡会使咖啡有最好的口感.可怜认为若大于或者等于k本食谱上面都认为a度有最好的口感,则她认为a度是一个推荐温度.她有q个询问,每个询问给出a,b,询问[a,b]之间有多少个推荐温度.
+	输入格式：
+	The first line of input contains three integers, n,k( 1 <= k <= n <= 200000), and q( 1 <= q <= 200000),the number of recipes, the minimum number of recipes a certain temperature must be recommended by to be admissible, and the number of questions Karen has, respectively.
+	The next n lines describe the recipes. Specifically, the i-th line among these contains two integersli andri (1 <=li <= ri <= 200000 ), describing that the i-th recipe suggests that the coffee be brewed between li and ri degrees, inclusive.
+	输出格式：
+	For each question, output a single integer on a line by itself, the number of admissible integer temperatures between a and b degrees, inclusive.
+	思路：
+	差分+分块，不用维护数组，不用写修改的方法，先用差分确定每个温度的出现次数是否大于等于k，进而得到每个区块中每个温度的出现次数大于等于k的个数。
+*/
+
+#include <iostream>
+#include <math.h>
+#include <stdio.h>
+
+using namespace std;
+
+int n , k , q , degree[200005] , len , block , l[200005] , r[200005] , belong[200005] , maxn[200005];
+
+void Build(){
+    len = sqrt(200000); block = 200000 / len;
+    if(200000 % len)block++;
+    for(int i = 1 ; i <= block ; i++){
+        l[i]=(i-1)*len+1;r[i]=i*len;
+    }
+    r[block]=200000;
+    for(int i = 1 ; i <= block ; i++)
+        for(int j = l[i] ; j <= r[i] ; j++)
+            belong[j]=i;
+    int DE = 0;
+    for(int i = 1 ; i <= 200000 ; i++){
+        //printf("%d ",DE);
+        DE+=degree[i];
+        degree[i]+=(DE-degree[i]);
+        if(degree[i]>=k)maxn[belong[i]]++;
+    }
+}
+
+int Query(int x , int y){
+    int res = 0;
+    if(belong[x]==belong[y]){
+        for(int i = x ; i <= y ; i++)
+            if(degree[i]>=k)
+                res++;
+        return res;
+    }
+    for(int i = x ; i <= r[belong[x]] ; i++)
+        if(degree[i]>=k)
+            res++;
+    for(int i = belong[x] + 1 ; i < belong[y] ; i++)
+        res+=maxn[i];
+    for(int i = l[belong[y]] ; i <= y ; i++)
+        if(degree[i]>=k)
+            res++;
+    return res;
+}
+
+int main()
+{
+    cin>>n>>k>>q;
+    while(n--){
+        int x , y;
+        cin>>x>>y;
+        degree[x]++;degree[y+1]--;
+    }
+    //for(int i = 1 ; i <= 100 ; i++)printf("%d ",degree[i]);
+    //printf("\n");
+    Build();
+    //for(int i = 1 ; i <= 100 ; i++)printf("%d ",degree[i]);
+    //printf("\n");
+    while(q--){
+        int x , y;
+        cin>>x>>y;
+        printf("%d\n",Query(x,y));
+    }
+    return 0;
+}

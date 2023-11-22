@@ -1,0 +1,68 @@
+/*
+https://www.luogu.com.cn/problem/P6207
+题目描述
+本题使用 Special Judge。
+
+Farmer John 把农场划分为了一个 r 行 c 列的矩阵，并发现奶牛们无法通过其中一些区域。此刻，Bessie 位于坐标为 (1,1) 的区域，并想到坐标为 (r,c)的牛棚享用晚餐。她知道，以她所在的区域为起点，每次移动至相邻的四个区域之一，总有一些路径可以到达牛棚。
+
+这样的路径可能有无数种，请你输出任意一种，并保证所需移动次数不超过 100000。
+
+输入格式
+第一行两个整数 r,c。
+
+接下来 r 行，每行 c 个字符，表示 Bessie 能否通过相应位置的区域。字符只可能是 . 或 *。
+
+. 表示 Bessie 可以通过该区域。
+* 表示 Bessie 无法通过该区域。
+输出格式
+若干行，每行包含两个用空格隔开的整数，表示 Bessie 依次通过的区域的坐标。
+
+显然，输出的第一行是 1 1 ，最后一行是 r c。
+
+相邻的两个坐标所表示的区域必须相邻。
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <math.h>
+#define re register
+
+using namespace std;
+
+int r, c, dx[] = {1,0,0,-1}, dy[] = {0,1,-1,0}, ans[100005][2];
+bool mp[120][120], vis[120][120], A;
+
+inline void DFS(int x, int y, int step){
+    ans[step][0] = x;
+    ans[step][1] = y;
+    if(step>100001||A)
+        return ;
+    if(step<=100001&&x==r&&y==c){
+        A = true;
+        for(re int i = 1 ; i <= step ; ++i){
+            printf("%d %d\n",ans[i][0],ans[i][1]);
+        }
+        return ;
+    }
+    vis[x][y] = true;
+    for(re int i = 0 ; i < 4 ; ++i){
+        int x1 = x + dx[i], y1 = y + dy[i];
+        if(!A&&x1>=1&&y1>=1&&x1<=r&&y1<=c&&!vis[x1][y1]&&mp[x1][y1]){
+            DFS(x1,y1,step+1);
+            vis[x1][y1] = false;
+        }
+    }
+}
+
+int main(){
+    scanf("%d %d",&r,&c); getchar();
+    char s[120];
+    for(re int i = 1 ; i <= r ; ++i){
+        cin>>s+1;
+        for(re int j = 1 ; j <= c ; ++j){
+            mp[i][j] = (s[j]=='*'?false:true);
+        }
+    }
+    DFS(1,1,1);
+    return 0;
+}

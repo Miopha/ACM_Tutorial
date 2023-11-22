@@ -1,0 +1,77 @@
+/*
+https://www.luogu.com.cn/problem/P1801
+题目描述
+Black Box 是一种原始的数据库。它可以储存一个整数数组，还有一个特别的变量 i。最开始的时候 Black Box 是空的．而 i=0。这个 Black Box 要处理一串命令。
+命令只有两种：
+
+ADD(x)：把 x 元素放进 Black Box;
+
+GET：i 加 1，然后输出 Black Box 中第 i 小的数。
+
+记住：第 i 小的数，就是 Black Box 里的数的按从小到大的顺序排序后的第 i 个元素。（如下表所示）
+
+输入格式
+第一行两个整数 m 和 n，表示元素的个数和 GET 命令的个数。
+
+第二行共 m 个整数，从左至右第 i 个整数为 ai ，用空格隔开。
+
+第三行共 n 个整数，从左至右第 i 个整数为 ui ，用空格隔开。
+
+输出格式
+输出 Black Box 根据命令串所得出的输出串，一个数字一行。
+
+说明/提示
+数据规模与约定
+对于100%的数据,1<=n,m<=2e5,|ai|<=2e9,保证u序列单调不降
+*/
+
+/*
+ * 定义两个堆（优先队列）
+ * 大根堆:降序,保证大根堆元素数量为i-1,且里面元素小于小根堆的顶部,元素超过i-1个的时候将元素弹入小根堆
+ * 小根堆:升序,那么小根堆的顶部就是答案（第i小的元素）
+ */
+ 
+#include <bits/stdc++.h>
+#define re register
+#define MAXN 200005
+
+using namespace std;
+
+inline int read(){
+	int x = 0 , f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+    }
+    return x*f;
+}
+
+int m, n, a[MAXN];
+priority_queue<int> mx;
+priority_queue<int,vector<int>,greater<int>> mn;
+
+int main(){
+    m = read(); n = read();
+    for(re int i = 1 ; i <= m ; ++i)
+        a[i] = read();
+    int r = 1, q;
+    for(re int i = 1 ; i <= n ; ++i){
+        q = read();
+        for(re int j = r ; j <= q; ++j){
+            mx.push(a[j]);
+            if(mx.size()==i){
+                mn.push(mx.top()); mx.pop();
+            }
+        }
+        r = q + 1;
+        printf("%d\n",mn.top());
+        mx.push(mn.top()); mn.pop();
+    }
+    return 0;
+}

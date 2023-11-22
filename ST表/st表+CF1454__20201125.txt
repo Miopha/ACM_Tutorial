@@ -1,0 +1,63 @@
+/*
+https://codeforces.com/problemset/problem/1454/F
+F. Array Partition
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You are given an array a consisting of n integers.
+
+Let min(l,r) be the minimum value among al,al+1,…,ar and max(l,r) be the maximum value among al,al+1,…,ar.
+
+Your task is to choose three positive (greater than 0) integers x, y and z such that:
+
+x+y+z=n;
+max(1,x)=min(x+1,x+y)=max(x+y+1,n).
+In other words, you have to split the array a into three consecutive non-empty parts that cover the whole array and the maximum in the first part equals the minimum in the second part and equals the maximum in the third part (or determine it is impossible to find such a partition).
+
+Among all such triples (partitions), you can choose any.
+
+You have to answer t independent test cases.
+
+Input
+The first line of the input contains one integer t (1≤t≤2⋅104) — the number of test cases. Then t test cases follow.
+
+The first line of the test case contains one integer n (3≤n≤2⋅105) — the length of a.
+
+The second line of the test case contains n integers a1,a2,…,an (1≤ai≤109), where ai is the i-th element of a.
+
+It is guaranteed that the sum of n does not exceed 2⋅105 (∑n≤2⋅105).
+
+Output
+For each test case, print the answer: NO in the only line if there is no such partition of a that satisfies the conditions from the problem statement. Otherwise, print YES in the first line and three integers x, y and z (x+y+z=n) in the second line.
+
+If there are several answers, you can print any.
+*/
+
+/*
+ * 用st表查询区间最大值和最小值，建表O(nlogn)，查询O(1);
+ * 枚举x, 二分答案查y, z的值，O(nlogn)
+ * 最终时间复杂度O(nlogn)
+ */
+ 
+#include <iostream>
+#include <cmath>
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#define re register
+#define MAXN 200005
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}

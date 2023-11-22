@@ -1,0 +1,75 @@
+/*
+题目描述
+我们Aqours的成员共有N+1人，他们会列成一队。他们的唱功以A[0]到A[N]表示，A[i](0 ≤i≤N )均给出。
+学园都市的机器可以改变队列中连续多个成员的唱功值，并将其加上一个数Z, 当然当Z是负数的时候就变成减去了。
+我打算一共使用这个机器Q次，每次把第X到第Y号(1 < X,Y < 1e6) 的成员都加上Z点唱功值。而我们队伍的魅力值B，是这么算的:
+一开始B=0,然后从第1号到第N号成员,
+●当Ai-1< A;: B= B- S|Ai-1- Ai|
+●当Ai-1> Ai: B=B+T|Ai-1- Ai|其中S和T是LoveLive组委会给我们的常数。
+果然，我是八力于力(笨蛋千歌)呢，所以作为领导我永远排在队伍的开头,唱功永远是0,机器也不会改到我头上呢。
+你能帮我们算算，我每次使用完这 个机器之后，成员的魅力B是多少吗?
+输入格式
+第一行4个整数, N, Q, S, T,各个变量在描述中已经解释
+接下来N+1行，每行一个数整数Ai,其中A0=0
+接下来O行，每行3个整数， X， Y. Z各 个变量在描沭中已经解释
+*/
+
+#include <iostream>
+#include <stdio.h>
+#define int long long
+
+using namespace std;
+
+inline int read(){
+	int x = 0 , f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+}
+while(ch>='0'&&ch<='9'){
+	x=(x<<1)+(x<<3)+(ch^48);
+	ch = getchar();
+}
+return x*f;
+}
+
+
+signed main(){
+    int n = read() , q = read() , s = read() , t = read() , b = 0 , data[n+1] , dif[n+1] , x , y , z;
+    for(int i = 0 ; i <= n ; i++)
+        data[i] = read();
+    for(int i = 1 ; i <= n ; i++){
+        dif[i] = data[i] - data[i-1];
+        if(dif[i]>0)
+            b+=-s*dif[i];
+        else
+            b+=-t*dif[i];
+    }
+    while(q--){
+        x = read() , y = read() , z = read();
+        if(dif[x]>0)
+            b+=s*dif[x];
+        else
+            b+=t*dif[x];
+        dif[x]+=z;
+        if(dif[x]>0)
+            b+=-s*dif[x];
+        else
+            b+=-t*dif[x];
+        if(y!=n){
+        if(dif[y+1]>0)
+            b+=s*dif[y+1];
+        else
+            b+=t*dif[y+1];
+        dif[y+1]-=z;
+        if(dif[y+1]>0)
+            b+=-s*dif[y+1];
+        else
+            b+=-t*dif[y+1];
+        }
+        printf("%lld\n",b);
+    }
+    return 0;
+}

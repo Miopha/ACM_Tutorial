@@ -1,0 +1,101 @@
+/*
+https://vjudge.net/problem/Gym-102307A/origin
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <string.h>
+#include <map>
+#include <algorithm>
+#include <cmath>
+#define re register
+#define pb push_back
+#define cl clear
+#define MAXN 100005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+inline int gcd(int a, int b){
+    return b==0?a:gcd(b,a%b);
+}
+
+struct Line{
+    int a, b, mark;
+    Line() {}
+    Line(int i, int j, int k){
+        a = i;
+        b = j;
+        mark = k;
+    }
+    bool operator < (const Line & o) const{
+        if(o.a!=a) return a < o.a;
+        if(o.b!=b) return b < o.b;
+        return mark < o.mark;
+    }
+    bool operator == (const Line & o) const{
+        return (a==o.a)&&(b==o.b)&&(mark==o.mark);
+    }
+};
+
+int n, ans;
+
+void solve(){
+    n = read();
+    ans = 0;
+    vector<Line> vec;
+    map<pair<short, short>, int> mp;
+    for(re int i = 1, x1, y1, x2, y2, a, b, div, m ; i <= n ; ++i){
+        x1 = read(); y1 = read();
+        x2 = read(); y2 = read();
+        a = y2 - y1; b = x2 - x1;
+        div = gcd(a,b);
+        a /= div; b /= div;
+        if(b<0){a = -a; b = -b;}
+        else if(!b) a = abs(a);
+        m = b * y1 - a * x1;
+        Line cur = Line(a,b,m);
+        vec.pb(cur);
+    }
+    sort(vec.begin(),vec.end());
+    // STL去重
+    vec.erase(unique(vec.begin(),vec.end()),vec.end());
+    /* TLE
+    for(re int i = 0 ; i < vec.size() ; ++i){
+        while(vec[i]==vec[i-1]&&i<vec.size()){
+            vec.erase(vec.begin()+i);
+        }
+    }
+    */
+    for(re int i = 0 ; i < vec.size() ; ++i){
+        ans += mp[make_pair(vec[i].a, -vec[i].b)];
+        ++mp[make_pair(vec[i].b, vec[i].a)];
+    }
+    printf("%d\n",ans);
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}

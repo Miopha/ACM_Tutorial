@@ -1,0 +1,63 @@
+/*
+题目描述
+A line on the plane is described by an equation Ax+By+C=0 . You are to find any point on this line, whose coordinates are integer numbers from -5*10^18 to 5*10^18 inclusive, or to find out that such points do not exist.
+
+输入格式
+The first line contains three integers A , B and C (-2*10^9<=A,B,C<=2*10^9) corresponding coefficients of the line equation. It is guaranteed that A^2+B^2>0
+
+输出格式
+If the required point exists, output its coordinates, otherwise output -1.
+
+题目大意
+给三个数A,B,C(-2*10^9<=A,B,C<=2*10^9)求出Ax+By+C=0的一组解(-5*10^18<=x,y<=5*10^18)
+*/
+
+/*
+ * 移项得Ax+By=-C,可以先用exgcd求出Ax+By=gcd(A,B)
+ * 在由两边除gcd(A,B)再乘-C得出原方程的一组解
+ * 不满足 gcd(a,b) | c 时方程无解
+ */
+ 
+//package CF7C;
+
+import java.util.Scanner;
+
+public class Main {
+
+	static long x , y;
+	
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		long A = sc.nextInt() , B = sc.nextInt() , C = -sc.nextInt() , D = gcd(A,B);
+		sc.close();
+		//无解时
+		if(C%D!=0)
+			System.out.println(-1);
+		else {
+			A/=D;B/=D;
+			exgcd((int)A,(int)B);
+			x=C*x;y=C*y;
+			System.out.println(x+" "+y);
+		}
+		
+
+	}
+	
+	public static long gcd(long a, long b) {
+		if(b==0)return a;
+		return gcd(b,a%b);
+	}
+	
+	public static void exgcd(int a , int b) {
+		if(b==0) {
+			x=1; y=0;
+		}else {
+			long p;
+			exgcd(b,a%b);
+			p=x;
+			x=y;
+			y=p-(a/b)*y;
+		}
+	}
+
+}

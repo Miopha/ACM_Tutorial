@@ -1,0 +1,81 @@
+/*
+https://www.acwing.com/problem/content/2070/
+给定一个长度为 n 的数组 A1,A2,⋅⋅⋅,An。
+
+你可以从中选出两个数 Ai 和 Aj(i 不等于 j)，然后将 Ai 和 Aj 一前一后拼成一个新的整数。
+
+例如 12 和 345 可以拼成 12345 或 34512。
+
+注意交换 Ai 和 Aj 的顺序总是被视为 2 种拼法，即便是 Ai=Aj 时。
+
+请你计算有多少种拼法满足拼出的整数是 K 的倍数。
+
+输入格式
+第一行包含 2 个整数 n 和 K。
+
+第二行包含 n 个整数 A1,A2,⋅⋅⋅,An。
+
+输出格式
+一个整数代表答案。
+
+数据范围
+1≤n≤105,
+1≤K≤105,
+1≤Ai≤109
+输入样例：
+4 2
+1 2 3 4
+输出样例：
+6
+*/
+
+/*
+ * (a % k + b % k) % k = (a+b)%k
+ * 所以只要算出a[i]加0~9个后导0的余数，记录a[i]的位数就可以算出前i-1个数对答案的贡献
+ * 用map O(nlogn)会超时(，改成数组就好了
+ */
+
+#include <cstdio>
+#include <map>
+#include <algorithm>
+#include <iostream>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+
+using namespace std;
+typedef long long ll;
+typedef pair<int,int> P;
+const int MAXN = 100005;
+
+int n, k, a[MAXN], digits[MAXN];
+ll digit[11] = {0,10,100,1000,10000,100000,1000000,10000000,100000000,1000000000,10000000000};
+ll ans;
+// map<pair<int,int>,int> vis1, vis2;
+
+int vis1[11][MAXN], vis2[11][MAXN];
+
+int main(){
+	scanf("%d %d",&n,&k);
+	for(int i = 1 ; i <= n ; ++i){
+		scanf("%d",&a[i]);
+		digits[i] = -1;
+		for(int j = 1 ; j <= 10 ; ++j){
+			int left = k - 1ll * a[i] % k * digit[j] % k;
+			left %= k;
+			// ans += vis2[make_pair(j,left)];
+			ans += vis2[j][left];
+			if(digits[i]==-1&&!(a[i]/digit[j])) digits[i] = j;
+		}
+		int left = k - a[i] % k;
+		left %= k;
+		// ans += vis1[make_pair(digits[i],left)];
+		ans += vis1[digits[i]][left];
+		for(int j = 1 ; j <= 10 ; ++j){
+			// ++vis1[make_pair(j,1ll*a[i]%k*digit[j]%k)];
+			++vis1[j][1ll*a[i]%k*digit[j]%k];
+		}
+		// ++vis2[make_pair(digits[i],a[i]%k)];
+		++vis2[digits[i]][a[i]%k];
+	}
+	printf("%lld\n",ans);
+	return 0;
+}

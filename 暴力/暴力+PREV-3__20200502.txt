@@ -1,0 +1,36 @@
+/*
+	问题描述：
+	100 可以表示为带分数的形式：100 = 3 + 69258 / 714。
+	还可以表示为：100 = 82 + 3546 / 197。
+	类似这样的带分数，100 有 11 种表示法。
+	输入格式：
+	从标准输入读入一个正整数N (N<1000*1000)
+	输出格式：
+	程序输出该数字用数码1~9不重复不遗漏地组成带分数表示的全部种数。
+	思路：
+	暴力枚举，等式后面分为i,a,j三块，枚举i,j就可以算出a，再判断是否符合题目要求。
+*/
+import java.util.Scanner;
+
+public class Main {
+
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		int n = sc.nextInt() , count = 0;
+		for(int i = 1 ; i < n ; i++)
+			for(int j = 2 ; j < 10000 ; j++) {
+				int a = (n-i)*j;
+				String str = ""+i+j+a;
+				if(str.length()!=9)continue;
+				else {
+					boolean coun = true;
+					for(int k = 1 ; k <= 9 ; k++) 
+						if(str.indexOf(k+'0')!=str.lastIndexOf(k+'0') || str.indexOf('0')!=-1) { coun = false ;break;}
+					if(coun) count++;
+				}
+			}
+		System.out.println(count);
+	}
+	
+
+}

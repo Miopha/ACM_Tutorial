@@ -1,0 +1,52 @@
+/*
+https://www.luogu.com.cn/problem/P1168
+给出一个长度为N的非负整数序列Ai，对于所有1≤k≤(N+1)/2,输出A1,A1~A3,……,A1~A2K-1的中位数。即前1,3, 5,...个数的中位数。
+输入格式
+第1行为一个正整数N,示了序列长度。
+第2行包含N个非负整数Ai(Ai≤1e9)。
+输出格式
+共(N+ 1)/2行，第行为A1, A3,..... A2k-1的中位数。
+说明/提示
+对于20%的数据，N ≤ 100
+
+对于40%的数据，N ≤ 3000
+
+对于100%的数据，N ≤ 100000
+*/
+
+/*
+ * 用vector和lowerbound()动态维护数列单调性
+ * 输出时输出(n-1)/2位数
+ */
+ 
+#include <bits/stdc++.h>
+#define re register
+
+using namespace std;
+
+inline int read(){
+    int x = 0, f  = 1;
+    char ch = getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-')
+            f = -1;
+        ch = getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x=(x<<1)+(x<<3)+(ch^48);
+        ch = getchar();
+    }
+    return x*f;
+}
+
+int main(){
+    int n = read();
+    vector<int> nums;
+    for(re int i = 1, x ; i <= n ; i++){
+        x = read();
+        nums.insert(lower_bound(nums.begin(),nums.end(),x),x);
+        if(i%2)
+            printf("%d\n",nums[(i-1)/2]);
+    }
+    return 0;
+}

@@ -1,0 +1,53 @@
+
+// 2^18 = 262144
+int n, stMx[MAXN][19], stMn[MAXN][19];
+
+int queryMx(int l, int r){
+	int k = log2(r-l+1);
+	return max(stMx[l][k],stMx[r-(1<<k)+1][k]);
+}
+
+int queryMn(int l, int r){
+	int k = log2(r-l+1);
+	return min(stMn[l][k],stMn[r-(1<<k)+1][k]);
+}
+
+void solve(){
+	n = read();
+	for(re int i = 1 ; i <= n ; ++i)
+		stMx[i][0] = stMn[i][0] = read();
+	// st
+	for(re int i = 1 ; (1<<i)<=n ; ++i){
+		for(re int j = 1 ; j+(1<<i)-1<=n ; ++j){
+			stMx[j][i] = max(stMx[j][i-1],stMx[j+(1<<(i-1))][i-1]);
+			stMn[j][i] = min(stMn[j][i-1],stMn[j+(1<<(i-1))][i-1]);
+		}
+	}
+	for(re int x = 1, l, r ; x < n - 1 ; ++x){
+		int a = queryMx(1,x);
+		l = x + 1; r = n;
+		while(l<=r){
+			int m = (l+r)>>1;
+			if(m+1>n) break;
+			int b = queryMn(x+1,m), c = queryMx(m+1,n);
+			// printf("l=%d r=%d m=%d a=%d b=%d c=%d\n",l,r,m,a,b,c);
+			if(b<a||c<a){
+				r = m - 1;
+			}else if(b>a||c>a){
+				l = m + 1;
+			}else{
+				printf("YES\n%d %d %d\n",x,m-x,n-m);
+				return ;
+			}
+			
+		}
+	}
+	printf("NO\n");
+}
+
+int main(){
+	int t = 1;
+	t = read();
+	while(t--) solve();
+	return 0;
+}

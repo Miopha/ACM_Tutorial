@@ -1,0 +1,67 @@
+/*
+https://codeforces.com/contest/1443/problem/D
+*/
+
+/*
+ * 1操作的结果对差分数组的影响是DE[1]--, DE[i+1]++
+ * 2操作的结果对差分数组的影响是DE[i]--
+ * 由于数组中不能出现负数, 判断DE[1]是否大于差分数组中负数和的绝对值即可
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cmath>
+#include <string.h>
+#include <algorithm>
+#define re register
+#define pb push_back
+#define cl clear
+#define MAXN 30005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int arr[MAXN], DE[MAXN], n, offset;
+
+void solve(){
+    memset(DE,0,sizeof(DE));
+    offset = 0;
+    n = read();
+    for(re int i = 1 ; i <= n ; ++i){
+        arr[i] = read();
+        DE[i] = arr[i] - arr[i-1];
+        if(DE[i]<0) offset += abs(DE[i]);
+    }
+    if(DE[1]>=offset){
+        printf("YES\n");
+    }else{
+        printf("NO\n");
+    }
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}

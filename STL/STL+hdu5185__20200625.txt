@@ -1,0 +1,57 @@
+/*
+Problem Description
+Nowadays we use content of PM2.5 to discribe the quality of air. The lower content of PM2.5 one city have, the better quality of air it have. So we sort the cities according to the content of PM2.5 in asending order.
+
+Sometimes one city’s rank may raise, however the content of PM2.5 of this city may raise too. It means that the quality of this city is not promoted. So this way of sort is not rational. In order to make it reasonable, we come up with a new way to sort the cityes. We order this cities through the diffrence between twice measurement of content of PM2.5 (first measurement – second measurement) in descending order, if there are ties, order them by the second measurement in asending order , if also tie, order them according to the input order.
+ 
+
+Input
+Multi test cases (about 100), every case contains an integer n which represents there are n cities to be sorted in the first line.
+Cities are numbered through 0 to n−1.
+In the next n lines each line contains two integers which represent the first and second measurement of content of PM2.5
+The ith line describes the information of city i−1
+Please process to the end of file.
+
+[Technical Specification]
+all integers are in the range [1,100]
+ 
+
+Output
+For each case, output the cities’ id in one line according to their order.
+*/
+
+#include <bits/stdc++.h>
+
+using namespace std;
+
+struct data{
+    int dif , secoundPM , num;
+};
+
+bool cmp(data d1 , data d2){
+    if(d1.dif!=d2.dif)
+        return d1.dif>d2.dif;
+    if(d1.secoundPM!=d2.secoundPM)
+        return d1.secoundPM<d2.secoundPM;
+    return d1.num<d2.num;
+}
+
+int main(){
+    int n;
+    while(~scanf("%d",&n)){
+        data d[n];
+        int tmp;
+        for(int i = 0 ; i < n ; i++){
+            scanf("%d %d",&tmp,&d[i].secoundPM);
+            d[i].dif = tmp - d[i].secoundPM;
+            d[i].num = i;
+        }
+		
+        sort(d,d+n,cmp);
+	
+        for(int i = 0 ; i < n-1 ; i++)
+            printf("%d ",d[i].num);
+        printf("%d\n",d[n-1].num);
+    }
+    return 0;
+}

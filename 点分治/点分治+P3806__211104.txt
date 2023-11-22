@@ -1,0 +1,134 @@
+/*
+https://www.luogu.com.cn/problem/P3806
+题目背景
+感谢 hzwer 的点分治互测。
+
+题目描述
+给定一棵有 nn 个点的树，询问树上距离为 kk 的点对是否存在。
+
+输入格式
+第一行两个数 n,mn,m。
+
+第 22 到第 nn 行，每行三个整数 u, v, wu,v,w，代表树上存在一条连接 uu 和 vv 边权为 ww 的路径。
+
+接下来 mm 行，每行一个整数 kk，代表一次询问。
+
+输出格式
+对于每次询问输出一行一个字符串代表答案，存在输出 AYE，否则输出 NAY。
+*/
+
+#include <cstdio>
+#include <algorithm>
+#include <iostream>
+#define CHECK(x) cout << (#x) << " is " << (x) << endl;
+
+using namespace std;
+const int MAXN = 10005;
+
+int head[MAXN], tot, cnt;
+
+struct Edge{
+	int to, val, next;
+}G[MAXN<<1];
+
+struct path{
+	int to, from, dis;
+}route[MAXN];
+
+inline void addEdge(int u, int v, int w){
+	G[++tot].to = v;
+	G[tot].val = w;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+int n, m, a[MAXN], sz[MAXN], mxp[MAXN], root;
+bool ok[MAXN], vis[MAXN];
+
+bool cmp(path a, path b){
+	return a.dis < b.dis;
+}
+
+void get_root(int np, int fat, int tot){
+	sz[np] = 1;
+	mxp[np] = 0;
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(to==fat||vis[to]) continue;
+		get_root(to,np,tot);
+		sz[np] += sz[to];
+		mxp[np] = max(mxp[np],sz[to]);
+	}
+	mxp[np] = max(mxp[np],tot-sz[np]);
+	if(!root||mxp[np]<mxp[root]) root = np;
+}
+
+void get_dis(int np, int fat, int ndis, int nfrom){
+	route[++cnt].from = nfrom;
+	route[cnt].dis = ndis;
+	route[cnt].to = np;
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(vis[to]||to==fat) continue;
+		get_dis(to,np,ndis+G[i].val,nfrom);
+	}
+}
+
+void calc(int np){
+	cnt = 0;
+	route[++cnt].from = np;
+	route[cnt].dis = 0;
+	route[cnt].to = np;
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(vis[to]) continue;
+		get_dis(to,np,G[i].val,to);
+	}
+	sort(route+1,route+1+cnt,cmp);
+	for(int i = 1 ; i <= m ; ++i){
+		if(ok[i]) continue;
+		int l = 1, r = cnt;
+		while(l<r){
+			if(route[l].dis+route[r].dis>a[i]) --r;
+			else if(route[l].dis+route[r].dis<a[i]) ++l;
+			else if(route[l].dis+route[r].dis==a[i]){
+				if(route[l].from!=route[r].from){
+					ok[i] = true;
+					break;
+				}else r--;
+			}
+		}
+	}
+} 
+
+void solve(int np){
+	vis[np] = true;
+	calc(np);
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(vis[to]) continue;
+		root = 0;
+		get_root(to,0,sz[to]);
+		solve(root);
+	}
+}
+
+int main(){
+	scanf("%d %d",&n,&m);
+	for(int i = 1, u, v, w ; i < n ; ++i){
+		scanf("%d %d %d",&u,&v,&w);
+		addEdge(u,v,w);
+		addEdge(v,u,w);
+	}
+	for(int i = 1 ; i <= m ; ++i){
+		scanf("%d",&a[i]);
+		if(!a[i]) ok[i] = 1;
+	}
+	get_root(1,0,n);
+	solve(root);
+	for(int i  = 1 ; i <= m ; ++i){
+		if(ok[i]) puts("AYE");
+		else puts("NAY");
+	}
+	return 0;
+}

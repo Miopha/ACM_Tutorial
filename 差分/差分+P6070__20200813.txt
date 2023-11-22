@@ -1,0 +1,90 @@
+/*
+https://www.luogu.com.cn/problem/P6070
+题目描述
+给定一个 n×n 的矩阵，你可以进行若干次操作。
+
+每次操作，你可以将一个 kxk 的 连续 子矩阵里的所有数全都加上 1 或者全都减去 1。
+
+初始时，矩阵中有 m 个位置上的数不为 0，其它位置上的数均为 0。
+
+请你求出至少需要多少次操作，可以将矩形中所有数都变为 0。
+
+输入格式
+第一行三个整数 n,m,k，分别表示矩阵大小，非 0 格数和每次修改的连续子矩阵大小。
+
+接下来 m 行，每行三个整数 x,y,z，表示初始时矩阵的第 x 行第 y 列上的数为 z。
+
+输出格式
+一行一个整数，表示最少操作次数。
+
+特别地，如果无法使矩阵中所有数都变为 0，输出 -1。
+*/
+
+/*
+ * 枚举矩阵的左上角端点进行修改
+ * 算出二维的差分数组，每次修改的时候修改矩阵两边的点就行
+ */
+ 
+#include <iostream>
+#include <cstdio>
+#include <math.h>
+#define re register
+#define MAXN 5005
+
+using namespace std;
+typedef long long ll;
+
+inline int read(){
+	int x = 0 , f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+    }
+    return x*f;
+}
+
+
+int data[MAXN][MAXN], dif[MAXN][MAXN], n, m, k, border, modify;
+ll ans;
+
+int main(){
+    n = read(); m = read(); k = read();
+    int x, y;
+    for(re int i = 1 ; i <= m ; ++i){
+        x = read(); y = read();
+        data[x][y] = read();
+    }
+    //different
+    for(re int i = 1 ; i <= n ; ++i){
+        for(re int j = 1 ; j <= n ; ++j){
+            dif[i][j] = data[i][j] - data[i][j-1];
+        }
+    }
+    border = n - k + 1;
+    for(re int i = 1 ; i <= border ; ++i){
+        for(re int j = 1; j <= border ; ++j){
+            modify = dif[i][j];
+            if(modify){
+                ans += abs(modify);
+                for(re int tmp = i ; tmp <= i + k - 1 ; ++tmp){
+                    dif[tmp][j] -= modify; dif[tmp][j+k] += modify;
+                }
+            }
+        }
+    }
+    //check
+    for(re int i = 1 ; i <= n ; ++i)
+        for(re int j = 1 ; j <= n ; ++j)
+            if(dif[i][j]){
+                printf("-1\n");
+                return 0;
+            }
+    printf("%lld\n",ans);
+    return 0;
+}

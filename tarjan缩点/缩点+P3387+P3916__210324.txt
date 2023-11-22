@@ -1,0 +1,233 @@
+/*
+https://www.luogu.com.cn/problem/P3387
+题目背景
+缩点+DP
+
+题目描述
+给定一个 nn 个点 mm 条边有向图，每个点有一个权值，求一条路径，使路径经过的点权值之和最大。你只需要求出这个权值和。
+
+允许多次经过一条边或者一个点，但是，重复经过的点，权值只计算一次。
+
+输入格式
+第一行两个正整数 n,mn,m
+
+第二行 nn 个整数，依次代表点权
+
+第三至 m+2m+2 行，每行两个整数 u,vu,v，表示一条 u\rightarrow vu→v 的有向边。
+
+输出格式
+共一行，最大的点权之和。
+*/
+
+/*
+ * 先用tarjan求出强通量，再用强通量建新图，并记录每个点的入度，便于后面用拓扑排序DP
+ */
+
+#include <stack>
+#include <cstdio>
+#include <queue>
+#include <iostream>
+#define time tm
+#define CHECK(x) cout << (#x) << " is " << (x) << endl
+
+using namespace std;
+const int MAXN = 10005, MAXM = 100005;
+
+stack<int> stk;
+queue<int> pt;
+int val[MAXN], head[MAXN<<1], tot, time, id[MAXN], dfn[MAXN], low[MAXN], cnt, newVal[MAXN], deg[MAXN<<1], ans, dp[MAXN<<1];
+bool inStack[MAXN];
+
+// 10001 ~ 20000, new graph
+struct Edge{
+    int u, to, next;
+}G[MAXM<<1];
+
+inline void addEdge(int u, int v){
+    G[++tot].u = u;
+    G[tot].to = v;
+    G[tot].next = head[u];
+    head[u] = tot;
+}
+
+int n, m;
+
+inline void tarjan(int np){
+	stk.push(np);
+	inStack[np] = true;
+	dfn[np] = low[np] = ++time;
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(!dfn[to]){ 
+			tarjan(to);
+			low[np] = min(low[np],low[to]); 
+		}else if(inStack[to]){ 
+			low[np] = min(low[np],low[to]); 
+		}
+	}
+	if(low[np]==dfn[np]){
+		int k;
+		++cnt;
+		do{
+			k = stk.top(); stk.pop();
+			inStack[k] = false;
+			id[k]=cnt; 
+			newVal[cnt] += val[k];
+		}while(np^k);
+	}
+}
+
+int main(){
+	scanf("%d %d",&n,&m);
+	for(int i = 1 ; i <= n ; ++i) scanf("%d",&val[i]);
+	for(int i = 1, u, v ; i <= m ; ++i){
+		scanf("%d %d",&u,&v);
+		addEdge(u,v);
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		if(!dfn[i]){
+			tarjan(i);
+		}
+	}
+	for(int i = 1 ; i <= m ; ++i){
+		if(id[G[i].u]==id[G[i].to]) continue;
+		addEdge(id[G[i].u]+1e4,id[G[i].to]+1e4);
+		++deg[id[G[i].to]+10000];
+	}
+	for(int i = 1 ; i <= cnt ; ++i) newVal[i+10000] = newVal[i];
+	for(int i = 1e4 + 1 ; i <= 1e4 + cnt ; ++i){
+		if(!deg[i]){
+			pt.push(i);
+			dp[i] = newVal[i];
+			ans = max(ans,dp[i]);
+		}
+	}
+	while(!pt.empty()){
+		int np = pt.front(); pt.pop();
+		for(int i = head[np], to ; i ; i = G[i].next){
+			to = G[i].to;
+			dp[to] = max(dp[to],dp[np]+newVal[to]);
+			ans = max(ans,dp[to]);
+			if(!--deg[to]) pt.push(to);
+		}
+	}
+	cout<<ans<<endl;
+	return 0;
+}
+
+/*
+https://www.luogu.com.cn/problem/P3916
+题目描述
+给出NN个点，MM条边的有向图，对于每个点vv，求A(v)A(v)表示从点vv出发，能到达的编号最大的点。
+
+输入格式
+第1 行，2 个整数N,MN,M。
+
+接下来MM行，每行2个整数U_i,V_iU 
+i
+​	
+ ,V 
+i
+​	
+ ，表示边(U_i,V_i)(U 
+i
+​	
+ ,V 
+i
+​	
+ )。点用1, 2,\cdots,N1,2,⋯,N编号。
+
+输出格式
+N 个整数A(1),A(2),\cdots,A(N)A(1),A(2),⋯,A(N)。
+*/
+
+/*
+ * 容易想到用搜索来做，但只搜索无法解决图里存在环的情况
+ * 所以在搜索前用tarjan强通量化环为点，新建一个DAG图，就可以愉快地记搜了
+ */
+
+#include <stack>
+#include <cstdio>
+#include <queue>
+#include <iostream>
+#define time tm
+#define CHECK(x) cout << (#x) << " is " << (x) << endl
+
+using namespace std;
+const int MAXN = 100005, MAXM = 100005;
+
+int head[MAXN<<1], tot;
+
+struct Edge{
+	int u, to, next;
+}G[MAXM<<1];
+
+inline void addEdge(int u, int v){
+	G[++tot].u = u;
+	G[tot].to = v;
+	G[tot].next = head[u];
+	head[u] = tot;
+}
+
+stack<int> stk;
+int n, m, id[MAXN], dfn[MAXN], time, low[MAXN], cnt, mxPt[MAXN<<1], ans[MAXN<<1];
+bool inStack[MAXN];
+
+inline void tarjan(int np){
+	stk.push(np);
+	inStack[np] = true;
+	dfn[np] = low[np] = ++time;
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		if(!dfn[to]){ 
+			tarjan(to);
+			low[np] = min(low[np],low[to]); 
+		}else if(inStack[to]){ 
+			low[np] = min(low[np],low[to]); 
+		}
+	}
+	if(low[np]==dfn[np]){
+		int k;
+		++cnt;
+		do{
+			k = stk.top(); stk.pop();
+			inStack[k] = false;
+			id[k]=cnt;
+			mxPt[cnt] = max(mxPt[cnt],k);
+		}while(np^k);
+	}
+}
+
+inline int DFS(int np){
+	if(ans[np]) return ans[np];
+	ans[np] = mxPt[np];
+	for(int i = head[np], to ; i ; i = G[i].next){
+		to = G[i].to;
+		ans[np] = max(ans[np],DFS(to));
+	}
+	return ans[np];
+}
+
+int main(){
+	scanf("%d %d",&n,&m);
+	for(int i = 1, u, v ; i <= m ; ++i){
+		scanf("%d %d",&u,&v);
+		addEdge(u,v);
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		if(!dfn[i]) tarjan(i);
+	}
+	for(int i = 1 ; i <= m ; ++i){
+		if(id[G[i].u]^id[G[i].to]){
+			addEdge(id[G[i].u]+1e5,id[G[i].to]+1e5);
+		}
+	}
+	for(int i = 1 ; i <= cnt ; ++i) mxPt[i+100000] = mxPt[i];
+	for(int i = 100001 ; i <= 100000+cnt ; ++i){
+		if(!ans[i]) DFS(i);
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		printf("%d%c",(ans[id[i]+100000])," \n"[i==n]);
+	}
+	return 0;
+}

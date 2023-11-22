@@ -1,0 +1,150 @@
+/*
+https://www.luogu.com.cn/problem/P1503?contestId=51333
+题目背景
+小卡正在新家的客厅中看电视。电视里正在播放放了千八百次依旧重播的《亮剑》，剧中李云龙带领的独立团在一个县城遇到了一个鬼子小队，于是独立团与鬼子展开游击战。
+
+题目描述
+县城里有 nn 个用地道相连的房子，第 ii 个只与第 i-1i−1 和第 i+1i+1 个相连。这时有 mm 个消息依次传来：
+
+若消息为 D x：鬼子将 xx 号房子摧毁了，地道被堵上。
+
+若消息为 R ：村民们将鬼子上一个摧毁的房子修复了。
+
+若消息为 Q x：有一名士兵被围堵在 xx 号房子中。
+
+李云龙收到信息很紧张，他想知道每一个被围堵的士兵能够到达的房子有几个。
+
+输入格式
+第一行两个整数 n,mn,m。
+
+接下来 mm 行，有如题目所说的三种信息共 mm 条。
+
+输出格式
+对于每一个被围堵的士兵，输出该士兵能够到达的房子数。
+*/
+
+/*
+ * 这题的数据我也是醉了，同样的分块换成注释掉的读入就TLE，未知原因。。
+ * 以为是算法问题还换了权值线段树做了一遍
+ */
+ 
+#include <cstdio>
+#include <cmath>
+#include <vector>
+#include <algorithm>
+#include <iostream>
+
+using namespace std;
+const int MAXN =  5e4 + 5;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+
+int n, m, len, blocks, l[MAXN], r[MAXN], belong[MAXN], destoryed[MAXN];
+bool a[MAXN];
+vector<int> vec;
+
+void build(){
+	len = (int)sqrt(n);
+	blocks = n / len + !!(n%len);
+	for(int i = 1 ; i <= blocks ; ++i) l[i] = 1 + len * (i-1), r[i] = len * i;
+	r[blocks] = n;
+	for(int i = 1 ; i <= blocks ; ++i)
+		for(int j = l[i] ; j <= r[i] ; ++j) belong[j] = i;
+}
+
+void D(int x){
+	a[x] = true;
+	++destoryed[belong[x]];
+	vec.emplace_back(x);
+}
+
+void R(){
+	if(vec.empty()) return ;
+	int x = vec.back(); vec.pop_back();
+	a[x] = false;
+	--destoryed[belong[x]];
+}
+
+int Q_l(int x){
+	if(destoryed[belong[x]]){
+		for(int i = x ; i >= l[belong[x]] ; --i){
+			if(a[i]) return i;
+		}
+	}
+	for(int i = belong[x] - 1 ; i >= 1 ; --i){
+		if(destoryed[i]){
+			for(int j = r[i] ; j >= l[i] ; --j){
+				if(a[j]) return j;
+			}
+		}
+	}
+	return 0;
+}
+
+int Q_r(int x){
+	if(destoryed[belong[x]]){
+		for(int i = x ; i <= r[belong[x]] ; ++i){
+			if(a[i]) return i;
+		}
+	}
+	for(int i = belong[x] + 1 ; i <= blocks ; ++i){
+		if(destoryed[i]){
+			for(int j = l[i] ; j <= r[i] ; ++j){
+				if(a[j]) return j;
+			}
+		}
+	}
+	return n+1;
+}
+
+int main(){
+	// for(int i = 1 ; i <= 5e4 ; ++i) printf("Q %d\n",i);
+	scanf("%d %d\n",&n,&m);
+	build();
+	
+	while(m--){
+		char cmd[5];
+		scanf("%s",cmd);
+		if(cmd[0]=='D'){
+			int x = read();
+			if(!a[x]) D(x);
+		}else if(cmd[0]=='R'){	
+			R();
+		}else{
+			int x = read(), l = Q_l(x), r = Q_r(x);
+			if(a[x]) puts("0");
+			else printf("%d\n",r-l-1);
+		}
+	}
+	/*
+	while(m--){
+		char cmd = getchar();
+		getchar();
+		if(cmd=='D'){
+			int x = read();
+			if(!a[x]) D(x);
+		}else if(cmd=='R'){	
+			R();
+		}else{
+			int x = read(), l = Q_l(x), r = Q_r(x);
+			if(a[x]) puts("0");
+			else printf("%d\n",r-l-1);
+		}
+	}
+	*/
+	return 0;
+}

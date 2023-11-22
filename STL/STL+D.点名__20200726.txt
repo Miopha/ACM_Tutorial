@@ -1,0 +1,93 @@
+/*
+http://oj.saikr.com/contest/7/problem/D
+Description
+
+体育课上，同学们有不少人会迟到，但老师从来不会让点名迟到。
+
+老师只关注同学的身高，他会从最矮，第二矮，第三矮等等......依次询问。在每次的询问过程中，有时候有人会插进队伍里。你需要回答每次询问。
+
+
+Input
+第一行有两个整数n和m，表示一共有 n 个人进队，询问了 m 次
+
+第二行有 n 个整数，第 i 个整数 Ai 代表第 i 个进入队伍的同学的身高为 Ai
+​	
+ 
+第三行有 m 个整数，第 j 个整数 Bj 代表老师在第 Bj 个同学进入队伍后询问了一次
+Output
+m 行，每行一个整数，依次表示老师每次询问的答案。数据保证正确。
+Hint
+1 <= m <= n <= 30000; 0<=Ai<2^32
+*/
+
+/*
+ * 如何保持数列递增？如果每进队一人就sort()一次,时间复杂度太大了,可以用vector存储队列,再用lower_bound()将要进队的插入到对应位置,以保持数列单调递增
+ * 询问时用Bj升序排列得到答案,再用i升序排列进行输出
+ */
+ 
+#include <bits/stdc++.h>
+#define MAXN 30005
+#define ll long long
+#define re register
+
+using namespace std;
+
+inline ll read(){
+	ll x = 0 , f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+    }
+    return x*f;
+}
+
+using namespace std;
+
+ll line[MAXN];
+
+struct B{
+    ll idx, num, ans;
+}b[MAXN];
+
+bool cmp1(const B &a,const B &b){
+    return (a.num<b.num);
+}
+
+bool cmp2(const B &a,const B &b){
+    return (a.idx<b.idx);
+}
+
+
+int main(){
+    int n = read(), m = read();
+    for(re int i = 1 ; i <= n ; i++){
+        line[i] = read();
+    }
+    for(re int i = 1 ; i <= m ; i++){
+        b[i].idx = i;
+        b[i].num = read();
+    }
+    sort(b+1,b+m+1,cmp1);
+    vector<long> q;
+    for(re int i = 1, j = 1 ; i <= n ; i++){
+        q.insert(lower_bound(q.begin(),q.end(),line[i]),line[i]);
+        while(b[j].num==i){
+            if(b[j].idx>i)
+                b[j].ans=q[i-1];
+            else
+                b[j].ans=q[b[j].idx-1];
+            j++;
+        }
+    }
+    sort(b+1,b+m+1,cmp2);
+    for(re int i = 1 ; i <= m ; i++)
+        printf("%lld\n",b[i].ans);
+    return 0;
+}
+

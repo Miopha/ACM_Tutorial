@@ -1,0 +1,121 @@
+/*
+https://codeforces.com/problemset/problem/1461/D
+D. Divide and Summarize
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+Mike received an array a of length n as a birthday present and decided to test how pretty it is.
+
+An array would pass the i-th prettiness test if there is a way to get an array with a sum of elements totaling si, using some number (possibly zero) of slicing operations.
+
+
+An array slicing operation is conducted in the following way:
+
+assume mid=⌊max(array)+min(array)2⌋, where max and min — are functions that find the maximum and the minimum array elements. In other words, mid is the sum of the maximum and the minimum element of array divided by 2 rounded down.
+Then the array is split into two parts left and right. The left array contains all elements which are less than or equal mid, and the right array contains all elements which are greater than mid. Elements in left and right keep their relative order from array.
+During the third step we choose which of the left and right arrays we want to keep. The chosen array replaces the current one and the other is permanently discarded.
+You need to help Mike find out the results of q prettiness tests.
+
+Note that you test the prettiness of the array a, so you start each prettiness test with the primordial (initial) array a. Thus, the first slice (if required) is always performed on the array a.
+
+Input
+Each test contains one or more test cases. The first line contains the number of test cases t (1≤t≤100).
+
+The first line of each test case contains two integers n and q (1≤n,q≤105) — the length of the array a and the total number of prettiness tests.
+
+The second line of each test case contains n integers a1,a2,...,an (1≤ai≤106) — the contents of the array a.
+
+Next q lines of each test case contain a single integer si (1≤si≤109) — the sum of elements which Mike wants to get in the i-th test.
+
+It is guaranteed that the sum of n and the sum of q does not exceed 105 (∑n,∑q≤105).
+
+Output
+Print q lines, each containing either a "Yes" if the corresponding prettiness test is passed and "No" in the opposite case.
+*/
+
+/*
+ * 用分治模拟过程，最后O(1)离线查询
+ */
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#include <map>
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#define pb push_back
+#define cl clear
+#define mp make_pair
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+ll n, q, arr[MAXN], prefix[MAXN];
+map<ll,bool> OK;
+
+void div(int l, int r, int len){
+	// printf("l=%d r=%d lne=%d\n",l,r,len);
+	ll average = (arr[r]+arr[l]) / 2;
+	// printf("l=%d r=%d average=%d\n",l,r,average);
+	int mid = lower_bound(arr+l,arr+1+r,average+1) - arr;
+	// printf("l=%d r=%d len=%d average=%d mid=%d\n",l,r,len,average,mid);
+	if(mid-l==len||r-mid+1==len||mid>r||mid-1<l) return ;
+	// printf("1\n");
+	OK.insert(mp(prefix[mid-1]-prefix[l-1],true));
+	div(l,mid-1,mid-l);
+	OK.insert(mp(prefix[r]-prefix[mid-1],true));
+	div(mid,r,r-mid+1);
+}
+
+void solve(){
+	OK.clear();
+	n = read();
+	q = read();
+	for(int i = 1 ; i <= n ; ++i){
+		arr[i] = read();
+	}
+	sort(arr+1,arr+1+n);
+	for(int i = 1 ; i <= n ; ++i){
+		prefix[i] = prefix[i-1] + arr[i];
+	}
+	OK.insert(mp(prefix[n],true));
+	div(1,n,n);
+	for(int i = 1 ; i <= q ; ++i){
+		if(OK.count(read())){
+			printf("Yes\n");
+		}else{
+			printf("No\n");
+		}
+	}
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}

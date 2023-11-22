@@ -1,0 +1,120 @@
+/*
+https://www.acwing.com/problem/content/1235/
+*/
+
+//package acwing1233;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+
+	static int n, dirX[] = new int[] {1,-1,0,0}, dirY[] = new int[] {0,0,1,-1}, ans;
+	static boolean mp[][], mpAft[][], vis[][], flag;
+	static Scanner sc = new Scanner(System.in);
+	
+	public static void main(String[] args) throws IOException {
+		n = sc.nextInt();
+		sc.nextLine();
+		mp = new boolean[n+1][n+1];
+		mpAft = new boolean[n+1][n+1];
+		vis = new boolean[n+1][n+1];
+		String tmp;
+		for(int i = 1 ; i <= n ; ++i) {
+			tmp = " " + sc.nextLine();
+			for(int j = 1 ; j <= n ; ++j) {
+				mp[i][j] = mpAft[i][j] = (tmp.charAt(j)=='#');
+			}
+		}
+		for(int i = 1 ; i <= n ; ++i) {
+			for(int j = 1 ; j <= n ; ++j) {
+				if(!vis[i][j]) {
+					DFS(i,j);
+				}
+			}
+		}
+		for(int i = 1 ; i <= n ; ++i) {
+			for(int j = 1 ; j <= n ; ++j) {
+				if(!vis[i][j]&&mp[i][j]) {
+					flag = true;
+					DFSCheck(i,j);
+					ans += (flag?1:0);
+				}
+			}
+		}
+		System.out.println(ans);
+	}
+	
+	public static void DFSCheck(int x, int y) {
+		vis[x][y] = true;
+		if(mpAft[x][y]) flag = false;
+		for(int i = 0, aftX, aftY ; i < 4 ; ++i) {
+			aftX = x + dirX[i];
+			aftY = y + dirY[i];
+			if(aftX>n||aftY>n||aftX<1||aftY<1||vis[aftX][aftY]||!mp[aftX][aftY]) continue;
+			DFSCheck(aftX,aftY);
+		}
+	}
+	
+	public static void DFS(int x, int y) {
+		vis[x][y] = true;
+		for(int i = 0, aftX, aftY ; i < 4 ; ++i) {
+			aftX = x + dirX[i];
+			aftY = y + dirY[i];
+			if(aftX>n||aftY>n||aftX<1||aftY<1) continue;
+			if(!mp[aftX][aftY]) {
+				mpAft[x][y] = false;
+				break;
+			}
+		}
+		for(int i = 0, aftX, aftY ; i < 4 ; ++i) {
+			aftX = x + dirX[i];
+			aftY = y + dirY[i];
+			if(aftX>n||aftY>n||aftX<1||aftY<1||vis[aftX][aftY]||!mp[aftX][aftY]) continue;
+			DFS(aftX,aftY);
+		}
+		vis[x][y] = false;
+	}
+
+}
+
+/*
+https://www.acwing.com/problem/content/2069/
+*/
+
+//package acwing2067;
+
+import java.io.*;
+import java.util.Arrays;
+
+public class Main {
+
+	static int n, m, dp[][];
+	
+	public static void main(String[] args) throws IOException {
+		n = nextInt();
+		m = nextInt();
+		dp = new int[n+1][m+1];
+		Arrays.fill(dp[1],1);
+		for(int i = 2 ; i <= n ; ++i)
+			dp[i][1] = 1;
+		for(int i = 2 ; i <= n ; ++i) {
+			for(int j = 2 ; j <= m ; ++j) {
+				if((i&1)==0&&(j&1)==0) continue;
+				dp[i][j] = dp[i][j-1] + dp[i-1][j];
+			}
+		}
+		System.out.println(dp[n][m]);
+	}
+
+	static StringBuilder print = new StringBuilder();
+	static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	static StreamTokenizer st = new StreamTokenizer(br);
+	static PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+	public static int nextInt() throws IOException {
+		st.nextToken();
+		return (int)st.nval;
+	}
+	
+}
+

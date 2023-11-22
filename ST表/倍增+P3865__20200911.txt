@@ -1,0 +1,97 @@
+/*
+https://www.luogu.com.cn/problem/P3865
+这是一道ST表经典题——静态区间最大值
+
+请注意最大数据时限只有0.8s，数据强度不低，请务必保证你的每次查询复杂度为 O(1)。若使用更高时间复杂度算法不保证能通过。
+
+如果您认为您的代码时间复杂度正确但是 TLE，可以尝试使用快速读入：
+
+inline int read()
+{
+	int x=0,f=1;char ch=getchar();
+	while (!isdigit(ch)){if (ch=='-') f=-1;ch=getchar();}
+	while (isdigit(ch)){x=x*10+ch-48;ch=getchar();}
+	return x*f;
+}
+题目描述
+给定一个长度为 N 的数列，和 M 次询问，求出每一次询问的区间内数字的最大值。
+
+输入格式
+第一行包含两个整数 N, M ，分别表示数列的长度和询问的个数。
+
+第二行包含 N 个整数（记为 ai），依次表示数列的第 i 项。
+
+接下来 M行，每行包含两个整数 l_i, r_i ，表示查询的区间为 [l_i, r_i]
+
+输出格式
+输出包含 M行，每行一个整数，依次表示每一次询问的结果。
+
+输入输出样例
+*/
+
+/*
+ * ST表,f[i][j]代表第i位开始共2^j位(包括i)最大的数字
+ * 用f[][j-1]可以求出f[i][j](2^(j-1)+2^(j-1))=2^j)
+ */
+
+#include <iostream>
+#include <cstdio>
+#define re register
+#define MAXN 100005
+
+using namespace std;
+
+inline int read(){
+    int x = 0, f = 1;
+    char ch = getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-')
+            f = -1;
+        ch = getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x = (x<<3)+(x<<1)+(ch^48);
+        ch = getchar();
+    }
+    return x*f;
+}
+
+//2^17>100000
+int N, M, f[MAXN][18], lg2[MAXN];
+
+void init(){
+    int nw = 2, cnt = 0;
+    for(int i = 2 ; i <= N ; ++i){
+        if(i==nw){
+            lg2[i] = ++cnt;
+            nw = nw<<1;
+        }else{
+            lg2[i] = cnt;
+        }
+    }
+}
+
+inline int query(int l, int r){
+    int k = lg2[r-l+1];
+    return max(f[l][k],f[r-(1<<k)+1][k]);
+    //maximum at interval [l,l+2^k] and [r-(1<<k)+1,r]
+}
+
+int main(){
+    N = read();
+    M = read();
+    init();
+    for(re int i = 1 ; i <= N ; ++i)
+        f[i][0] = read();
+    for(re int i = 1 ; i <= 17 ; ++i){
+        for(re int j = 1 ; j+(1<<(i-1))<=N ; ++j){
+            f[j][i] = max(f[j][i-1],f[j+(1<<(i-1))][i-1]);
+        }
+    }
+    for(re int i = 1 ; i <= M ; ++i){
+        int l = read(), r = read();
+        printf("%d\n",query(l,r));
+    }
+    return 0;
+}
+

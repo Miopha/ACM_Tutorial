@@ -1,0 +1,48 @@
+/*
+任何一个正整数都可以用 2 的幂次方表示。例如 137=2^7+2^3+2^0
+
+同时约定方次用括号来表示，即 a^b 可表示为 a(b)
+
+由此可知，137137 可表示为 2(7)+2(3)+2(0)
+
+进一步：
+
+7 = 2^2+2+2^0=2 ( 2^1 用 2 表示)，并且 3=2+2^0
+
+所以最后 137 可表示为 2(2(2)+2+2(0))+2(2+2(0))+2(0)
+
+又如 1315=2^10 + 2^8 +2^5 + 2 + 1 
+
+所以 1315 最后可表示为 2(2(2+2(0))+2)+2(2(2+2(0)))+2(2(2)+2(0))+2+2(0)
+*/
+
+/*
+ * 递归，注意加号的数量等于二进制01中1的数量
+ */
+ 
+//package P1010;
+
+import java.util.Scanner;
+
+public class Main {
+
+	public static void main(String[] args) {
+		System.out.println(toSol(new Scanner(System.in).nextInt()));
+	}
+	
+	public static String toSol(int a) {
+		if(a==0)return "0";
+		int add = 0;
+		String s = "", binary = Integer.toString(a,2);
+		for(int i = 0 ; i < binary.length() ; i++)
+			if(binary.charAt(i)=='1')add++;
+		for(int i = 0 ; i < binary.length() ; i++) {
+			if(binary.charAt(i)=='0')continue;
+			else if(binary.length()-i-1==1)s = s + "2";
+			else s = s + "2" + "(" + toSol(binary.length()-i-1) + ")";
+			if(--add>0)s=s+"+";
+		}
+		return s;
+	}
+
+}

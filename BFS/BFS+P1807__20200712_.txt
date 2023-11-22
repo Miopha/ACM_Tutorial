@@ -1,0 +1,85 @@
+/*
+https://www.luogu.com.cn/problem/P1807
+题目描述
+设 G 为有 n 个顶点的带权有向无环图，G 中各顶点的编号为 1 到 n，请设计算法，计算图 G 中 <1,n> 间的最长路径。
+
+输入格式
+输入的第一行有两个整数，分别代表图的点数 n 和边数 m。
+
+第 2 到第 (m + 1)行，每行 3 个整数 u, v, w 代表存在一条从 u 到 v 边权为 w 的边。
+
+输出格式
+输出一行一个整数，代表 1 到 n 的最长路。
+
+若 1 与 n 不联通，请输出 -1。
+*/
+
+/*
+ * SPFA的松弛条件从大于改成小于即可
+ */
+ 
+//package P1807;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+
+	static int n, m, ws[][];
+	static ArrayList<Integer> node[];
+	
+	public static void main(String[] args) throws IOException{
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		String tmp[] = br.readLine().split(" ");
+		n = Integer.parseInt(tmp[0]); m = Integer.parseInt(tmp[1]);
+		init();
+		int x, y, z;
+		for(int i = 1 ; i <= m ; i++) {
+			tmp = br.readLine().split(" ");
+			x = Integer.parseInt(tmp[0]); y = Integer.parseInt(tmp[1]); z = Integer.parseInt(tmp[2]);
+			node[x].add(y);
+			if(ws[x][y]!=0x7fffffff)
+				ws[x][y] = Math.max(ws[x][y],z);
+			else
+				ws[x][y] = z;
+		}
+
+		int ans = BFS(1,n);
+		
+		if(ans==0x80000000)
+			System.out.println(-1);
+		else
+			System.out.println(ans);
+	}
+	
+	public static int BFS(int s, int t) {
+		Queue<Integer> q = new LinkedList();
+		boolean inq[] = new boolean[n+1];
+		int dis[] = new int[n+1];
+		Arrays.fill(dis,0x80000000);
+		q.add(s); inq[s] = true; dis[s] = 0;
+		while(!q.isEmpty()) {
+			int cur = q.poll();
+			inq[cur] = false;
+			for(int i = 0 ; i < node[cur].size() ; i++) {
+				int aft = node[cur].get(i);
+				if(dis[aft]<dis[cur]+ws[cur][aft]) {
+					dis[aft]=dis[cur]+ws[cur][aft];
+					if(!inq[aft]) q.add(aft);
+				}
+			}
+		}
+		return dis[n];
+	}
+	
+	public static void init() {
+		node = new ArrayList[n+1];
+		for(int i = 1 ; i <= n ; i++) {
+			node[i] = new ArrayList<Integer>();
+		}
+		ws = new int[n+1][n+1];
+		for(int i = 1 ; i <= n ; i++)
+			Arrays.fill(ws[i],0x7fffffff);
+	}
+
+}

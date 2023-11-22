@@ -1,0 +1,145 @@
+/*
+Byteasar loves trekking in the hills. During the hikes he explores all the ridges and valleys in vicinity.
+
+Therefore, in order to plan the journey and know how long it will last, he must know the number of ridgesand valleys in the area he is going to visit. And you are to help Byteasar.
+
+Byteasar has provided you with a map of the area of his very next expedition. The map is in the shape of a n×n square. For each field (i,j) belonging to the square(for i,j∈{1,...,n}), its height w(i,j) is given.
+
+We say two fields are adjacent if they have a common side or a common vertex (i.e. the field (i,j) is adjacent to the fields(i-1, j-1),(i-1,j),(i-1,j+1),(i,j-1),(i,j+1),(i+1,j-1),(i+1,j),(i+1,j+1)）, provided that these fields are on the map).
+
+We say a set of fields S forms a ridge (valley) if:
+
+all the fields in S have the same height,the set S forms a connected part of the map (i.e. from any field in S it is possible to reach any other field in S while moving only between adjacent fields and without leaving the set S),if s ∈ S and the field s' / Ss is adjacent to s, then ws>ws' (for a ridge) or ws<ws' (for a valley).
+
+In particular, if all the fields on the map have the same height, they form both a ridge and a valley.
+
+Your task is to determine the number of ridges and valleys for the landscape described by the map.
+
+TaskWrite a programme that:
+
+reads from the standard input the description of the map, determines the number of ridges and valleys for the landscape described by this map, writes out the outcome to the standard output.
+
+给定一张地势图，求山峰和山谷的数量
+
+输入格式
+In the first line of the standard input there is one integer n(2 <= n <= 1 000)denoting the size of themap. Ineach of the following n lines there is the description of the successive row of the map. In(i + 1)'th line(for i∈{1,.. ,n}) there are n integers w(i,1)，. ,W(i,n)(0≤Wi≤1 000 000 000), separated by single spaces. Thesedenote the heights of the successive fields of the i'th row of the map.
+
+
+输出格式
+The first and only line of the standard output should contain two integers separated by a single space -thenumber of ridges followed by the number of valleys for the landscape described by the map.
+
+题意翻译
+给定一个地图，为小朋友想要旅行的区域，地图被分为n*n的网格，每个格子(i,j)的高度w(i,j)是给定的。若两个格子有公共顶点，那么他们就是相邻的格子。（所以与(i,j)相邻的格子有(i-1,j-1),(i-1,j),(i-1,j+1),(i,j-1),(i,j+1),(i+1,j-1),(i+1,j),(i+1,j+1)）。我们定义一个格子的集合S为山峰（山谷）当且仅当：
+
+1.S的所有格子都有相同的高度。
+
+2.S的所有格子都联通3.对于s属于S，与s相邻的s’不属于S。都有ws > ws’（山峰），或者ws < ws’（山谷）。
+
+你的任务是，对于给定的地图，求出山峰和山谷的数量，如果所有格子都有相同的高度，那么整个地图即是山峰，又是山谷。
+
+输入 第一行包含一个正整数n，表示地图的大小（1<=n<=1000）。接下来一个n*n的矩阵，表示地图上每个格子的高度。(0<=w<=1000000000)
+
+输出 应包含两个数，分别表示山峰和山谷的数量。
+
+感谢@Blizzard 提供的翻译
+*/
+
+/*
+ * BFS,这里的连通块是指周围八个连通而不是四个(调了半天),可以用BFS来判断山谷和山峰的数量
+ * 特判：注意地图高度都是一个值时山谷和山峰都有一个
+ * BFS来判断山谷和山峰的数量时一旦判断了是山谷或是山峰就不能改变,矛盾的话那么这个连通块既不是山谷也不是山峰
+ */
+ 
+#include <bits/stdc++.h>
+#define maxn 1005
+using namespace std;
+
+struct warp{
+    int x, y;
+    warp(int i=0,int j=0){
+        x=i;y=j;
+    }
+};
+
+//ans1山峰, ans2山谷
+int ans1 = 0, ans2 = 0;
+int data[maxn][maxn], n, dir[8][2] = {{1,0},{-1,0},{0,1},{0,-1},{1,1},{-1,1},{1,-1},{-1,-1}};
+bool vis[maxn][maxn], flag1, flag2, flag3, special = true;
+//flag2 = true 为山顶
+queue<warp> l;
+
+inline int read(){
+	int x = 0 , f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x=(x<<1)+(x<<3)+(ch^48);
+        ch = getchar();
+    }
+    return x*f;
+}
+
+void BFS(int x ,int y){
+    //flag1 = 1表示已经判断过是山峰还是山谷,flag=ture表示不是山峰也不是山谷
+    flag1 = flag2 = flag3 = false;
+    vis[x][y]=true;
+    l.push(warp(x,y));
+    while(!l.empty()){
+        warp cur = l.front(); l.pop();
+        for(int i = 0 ; i < 8 ; i++){
+            warp j = {cur.x+dir[i][0],cur.y+dir[i][1]};
+            if(j.x<1||j.y<1||j.y>n||j.x>n) continue;
+            //是山谷
+            if(data[cur.x][cur.y]<data[j.x][j.y]){
+                if(flag1&&flag2)
+                    flag3 = true;
+                else{
+                    flag1 = true;flag2 = false;
+                }
+            }else if(data[cur.x][cur.y]>data[j.x][j.y]){//是山顶
+                if(flag1&&!flag2)
+                    flag3 = true;
+                else
+                    flag1 = flag2 = true;
+            }
+        }
+        for(int i = 0 ; i < 8 ; i++){
+            warp aft = {cur.x+dir[i][0],cur.y+dir[i][1]};
+            if(vis[aft.x][aft.y]||aft.x<1||aft.y<1||aft.y>n||aft.x>n||data[aft.x][aft.y]!=data[cur.x][cur.y]) continue;
+            vis[aft.x][aft.y] = true;
+            l.push(aft);
+        }
+    }
+    if(flag1&&!flag3){
+        if(flag2)
+            ans1++;
+        else
+            ans2++;
+    }
+}
+
+int main(){
+    n = read();
+    for(int i = 1 ; i <= n ; i++)
+        for(int j = 1 ; j <= n ; j++)
+            data[i][j] = read();
+
+    for(int i = 1 ; i <= n ; i++)
+        for(int j = 2 ; j <= n ; j++)
+            if(data[i][j]!=data[i][j-1]) special=false;
+    if(special){
+        printf("1 1\n");
+        return 0;
+    }
+    for(int i = 1 ; i <= n ; i++)
+        for(int j = 1 ; j <= n ; j++)
+            if(!vis[i][j])
+                BFS(i,j);
+
+    printf("%d %d",ans1,ans2);
+    return 0;
+}

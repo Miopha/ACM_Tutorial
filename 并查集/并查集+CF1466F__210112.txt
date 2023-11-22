@@ -1,0 +1,63 @@
+/*
+https://codeforces.com/problemset/problem/1466/F
+F. Euclid's nightmare
+time limit per test2 seconds
+memory limit per test256 megabytes
+inputstandard input
+outputstandard output
+You may know that Euclid was a mathematician. Well, as it turns out, Morpheus knew it too. So when he wanted to play a mean trick on Euclid, he sent him an appropriate nightmare.
+
+In his bad dream Euclid has a set S of n m-dimensional vectors over the Z2 field and can perform vector addition on them. In other words he has vectors with m coordinates, each one equal either 0 or 1. Vector addition is defined as follows: let u+v=w, then wi=(ui+vi)mod2.
+
+Euclid can sum any subset of S and archive another m-dimensional vector over Z2. In particular, he can sum together an empty subset; in such a case, the resulting vector has all coordinates equal 0.
+
+Let T be the set of all the vectors that can be written as a sum of some vectors from S. Now Euclid wonders the size of T and whether he can use only a subset S′ of S to obtain all the vectors from T. As it is usually the case in such scenarios, he will not wake up until he figures this out. So far, things are looking rather grim for the philosopher. But there is hope, as he noticed that all vectors in S have at most 2 coordinates equal 1.
+
+Help Euclid and calculate |T|, the number of m-dimensional vectors over Z2 that can be written as a sum of some vectors from S. As it can be quite large, calculate it modulo 109+7. You should also find S′, the smallest such subset of S, that all vectors in T can be written as a sum of vectors from S′. In case there are multiple such sets with a minimal number of elements, output the lexicographically smallest one with respect to the order in which their elements are given in the input.
+
+Consider sets A and B such that |A|=|B|. Let a1,a2,…a|A| and b1,b2,…b|B| be increasing arrays of indices elements of A and B correspondingly. A is lexicographically smaller than B iff there exists such i that aj=bj for all j<i and ai<bi.
+
+Input
+In the first line of input, there are two integers n, m (1≤n,m≤5⋅105) denoting the number of vectors in S and the number of dimensions.
+
+Next n lines contain the description of the vectors in S. In each of them there is an integer k (1≤k≤2) and then follow k distinct integers x1,…xk (1≤xi≤m). This encodes an m-dimensional vector having 1s on coordinates x1,…xk and 0s on the rest of them.
+
+Among the n vectors, no two are the same.
+
+Output
+In the first line, output two integers: remainder modulo 109+7 of |T| and |S′|. In the second line, output |S′| numbers, indices of the elements of S′ in ascending order. The elements of S are numbered from 1 in the order they are given in the input.
+*/
+
+#include <iostream>
+#include <cstdio>
+
+using namespace std;
+const int MAXN = 500005, MOD = 1e9+7;
+
+int n, m, cnt, v[MAXN], parent[MAXN], s[MAXN];
+
+int Find(int x){
+	return parent[x]==x?x:parent[x]=Find(parent[x]);
+}
+
+int main(){
+	scanf("%d %d",&n,&m);
+	v[0] = 1;
+	for(int i = 1 ; i <= max(n,m) ; ++i) v[i] = (v[i-1]<<1)%MOD;
+	for(int i = 1 ; i <= m + 1 ; ++i) parent[i] = i;
+	for(int i = 1, k, x, y ; i <= n ; ++i){
+		scanf("%d %d",&k,&x);
+		if(k==1)
+			y = m + 1;
+		else
+			scanf("%d",&y);
+		int nx = Find(x), ny = Find(y);
+		if(nx==ny) continue;
+		parent[nx] = ny;
+		s[++cnt] = i;		
+	}
+	printf("%d %d\n",v[cnt],cnt);
+	for(int i = 1 ; i <= cnt ; ++i) printf("%d ",s[i]);
+	printf("\n");
+	return 0;
+}

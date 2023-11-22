@@ -1,0 +1,111 @@
+/*
+https://www.luogu.com.cn/problem/P2196
+题目描述
+在一个地图上有N个地窖(N≤20)，每个地窖中埋有一定数量的地雷。同时，给出地窖之间的连接路径。当地窖及其连接的数据给出之后，某人可以从任一处开始挖地雷，然后可以沿着指出的连接往下挖（仅能选择一条路径），当无连接时挖地雷工作结束。设计一个挖地雷的方案，使某人能挖到最多的地雷。
+
+输入格式
+有若干行。
+
+第1行只有一个数字，表示地窖的个数N。
+
+第2行有N个数，分别表示每个地窖中的地雷个数。
+
+第3行至第N+行表示地窖之间的连接情况：
+
+第3行有n-1个数（0或1），表示第一个地窖至第2个、第3个、…、第n个地窖有否路径连接。如第3行为 011000…0，则表示第1个地窖至第2个地窖有路径，至第3个地窖有路径，至第4个地窖、第5个、…、第n个地窖没有路径。
+
+第4行有n-2个数，表示第二个地窖至第3个、第4个、…、第n个地窖有否路径连接。
+
+第n+1行有1个数，表示第n-1个地窖至第n个地窖有否路径连接。（为0表示没有路径，为1表示有路径）。
+
+输出格式
+有两行
+
+第一行表示挖得最多地雷时的挖地雷的顺序，各地窖序号间以一个空格分隔，不得有多余的空格。
+
+第二行只有一个数，表示能挖到的最多地雷数。
+*/
+
+/*
+ * DFS,要注意边是单向边(?)(根据题目应该是双向)
+ * 如果数据大了要用记忆化搜索
+ */
+
+//package P2196;
+
+import java.util.*;
+import java.io.*;
+
+public class Main {
+	
+	static int n, bombs[], mxBombs, nwBombs, nwPath[], cnt;
+	static ArrayList<Integer> node[];
+	static boolean vis[];
+	static StringBuilder ans;
+
+	public static void main(String[] args) throws IOException {
+		n = nextInt();
+		init();
+		for(int i = 1 ; i <= n ; ++i)
+			bombs[i] = nextInt();
+		for(int i = 1 ; i <= n ; ++i) 
+			for(int j = 1 + i ; j <= n ; ++j) 
+				if(nextInt()==1)
+					node[i].add(j);
+//		for(int i = 1 ; i <= n ; ++i)
+//			System.out.println("node " + i + " can go: " + node[i].toString());
+		for(int i = 1 ; i <= n ; ++i) {
+			go(i);
+			DFS(i);
+			back(i);
+		}
+		System.out.print(ans.toString());
+	}
+	
+	public static void DFS(int nw) {
+		for(int i = 0 ; i < node[nw].size() ; ++i) {
+			int to = node[nw].get(i);
+			if(!vis[to]) {
+				go(to);
+				DFS(to);
+				back(to);
+			}
+		}
+		if(nwBombs>mxBombs) {
+			mxBombs = nwBombs;
+			ans.delete(0,ans.length());
+			for(int i = 1 ; i <= cnt ; ++i)
+				ans.append(nwPath[i]).append(' ');
+			ans.append('\n').append(mxBombs).append('\n');
+		}
+	}
+	
+	public static void go(int x) {
+		vis[x] = true;
+		nwBombs += bombs[x];
+		nwPath[++cnt] = x;
+	}
+	
+	public static void back(int x) {
+		vis[x] = false;
+		nwBombs -= bombs[x];
+		--cnt;
+	}
+
+	public static void init() {
+		bombs = new int[n+1];
+		node = new ArrayList[n+1];
+		for(int i = 1 ; i <= n ; ++i)
+			node[i] = new ArrayList<Integer>();
+		ans = new StringBuilder();
+		vis = new boolean[n+1];
+		nwPath = new int[n+1];
+	}
+	
+	static StreamTokenizer st = new StreamTokenizer(new BufferedReader(new InputStreamReader(System.in)));
+	public static int nextInt() throws IOException {
+		st.nextToken();
+		return (int)st.nval;
+	}
+}
+

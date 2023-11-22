@@ -1,0 +1,81 @@
+/*
+炎炎夏日还没有过去，Agent们没有一个想出去外面搞事情的。每当ENLIGHTENED总部组织活动时，人人都说有空，结果到了活动日，却一个接着一个咕咕咕了。只有不咕鸟Lyn_king一个人冒着太阳等了半个多小时，然后居然看到连ENLIGHTENED行动参谋都咕咕咕了，果然咕咕咕是人类的本性啊。
+题目描述
+作为一个ENLIGHTENED行动指挥，自然不想看到这一点，于是他偷取到了那些经常咕咕咕的Agent的在下来NN天的活动安排表，并且叫上了你来整理。在整理过程中，ENLIGHTENED行动指挥对你说了MM条命令，命令操作如下。
+1.输入0,a,b,a,b，这代表在第a天到第b天，有一名Agent要咕咕咕。
+2.输入1 a，这代表ENLIGHTENED行动指挥询问你根据目前的信息，在第a天有多少名Agent会咕咕咕。
+作为同是不咕鸟的你，也想要惩戒那些经常咕咕咕的人，所以，请协助完成ENLIGHTENED行动指挥完成整理，并且在他每次询问时，输出正确的答案。
+输入格式
+第一行输入两个整数输N,M下来M行,每行输入一个命令，命令格式见题目描述。
+输出格式
+对于每一次询问的操作，都要输出询问的答案。答案之间用换行隔开。
+*/
+
+/*
+ * 差分+分块,维护两个值add和data,add代表整块有几个人要咕,query操作时要加上,0操作时维护data和add.
+ */
+ 
+#include <iostream>
+#include <stdio.h>
+#include <math.h>
+
+using namespace std;
+
+int N , M , len , block , cmd , a , b , l[10000] , r[10000] , belong[10000005] , add[10000] , data[10000005];
+
+
+inline int read(){
+   int s=0,w=1;
+   char ch=getchar();
+   while(ch<'0'||ch>'9'){if(ch=='-')w=-1;ch=getchar();}
+   while(ch>='0'&&ch<='9') s=s*10+ch-'0',ch=getchar();
+   return s*w;
+}
+
+void build(){
+    len = sqrt(N); block = N / len;
+    if(N%len)block++;
+
+    for(int i = 1 ; i <= block ; i++) {
+        l[i] = (i-1)*len+1 ; r[i] = i*len;
+    }
+    r[block] = N;
+
+    for(int i = 1 ; i <= block ; i++)
+        for(int j = l[i] ; j <= r[i] ; j++)
+            belong[j]=i;
+}
+
+void gu(int a , int b){
+    if(belong[a]==belong[b]) {
+        data[a]+=1;
+        if(b+1<=r[belong[b]])data[b+1]-=1;
+        return ;
+    }
+
+    data[a]+=1;data[l[belong[b]]]+=1;
+    if(b+1<=r[belong[b]])data[b+1]-=1;
+        for(int i = belong[a] + 1 ; i < belong[b] ; i++)
+            add[i]+=1;
+}
+
+int query(int a){
+    int ans = 0;
+    for(int i = l[belong[a]] ; i <= a ; i++ ) ans += data[i];
+    return ans + add[belong[a]];
+}
+
+int main(){
+    N=read();M=read();
+    build();
+    while(M--){
+        cmd=read(),a=read();
+        if(cmd==0){
+            b=read();
+            gu(a,b);
+        }else{
+            printf("%d\n",query(a));
+        }
+    }
+    return 0;
+}

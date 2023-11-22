@@ -1,0 +1,175 @@
+/*
+输入格式
+第一行一个整数n，代表数列中数的个数。
+
+第二行n个正整数，表示初始状态下数列中的数。
+
+第三行一个整数m，表示有m次操作。
+
+接下来m行每行三个整数k,l,r，
+
+k=0表示给[l,r]中的每个数开平方(下取整)
+k=1表示询问[l,r]中各个数的和。
+数据中有可能l>r，所以遇到这种情况请交换l和r。
+
+输出格式
+对于询问操作，每行输出一个回答。
+*/
+
+/*
+ * 分块,1的开方还是1,所以一区块全是1的时候标记,下次开方跳过这个区块就行
+ * 查到已标记的区块时直接加区块长度
+ * 数据量太大记得用BufferedReader读入,用StringBuilder存储答案后再输出
+ */
+ 
+//package P4145;
+
+import java.io.*;
+import java.util.*;
+
+public class Main {
+
+	static long data[], sum[];
+	static int l[], r[], belong[], block, len, n;
+	static boolean isOne[];
+
+	public static void main(String[] args) throws IOException {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		StringBuilder ans = new StringBuilder();
+		n = Integer.parseInt(br.readLine());
+		String tmp[] = br.readLine().split(" ");
+		data = new long[n + 1];
+		for (int i = 0; i < n; i++)
+			data[i + 1] = Long.parseLong(tmp[i]);
+		build();
+		
+		int m = Integer.parseInt(br.readLine());
+		while (m-- > 0) {
+			tmp = br.readLine().split(" ");
+			int a = Integer.parseInt(tmp[1]), b = Integer.parseInt(tmp[2]);
+			if (a > b) {
+				int t = a;
+				a = b;
+				b = t;
+			}
+			if (tmp[0].equals("0"))
+				sqrt(a, b);
+			else
+				ans.append(query(a, b)).append("\n");
+		}
+		System.out.println(ans.toString());
+	}
+
+	public static void build() {
+		len = (int) Math.sqrt(n);
+		block = n / len;
+		if (n % len != 0)
+			block++;
+		l = new int[block + 1];
+		r = new int[block + 1];
+		sum = new long[block + 1];
+		belong = new int[n + 1];
+		isOne = new boolean[block + 1];
+		for (int i = 1; i <= block; i++) {
+			l[i] = (i - 1) * len + 1;
+			r[i] = i * len;
+		}
+		r[block] = n;
+		for (int i = 1; i <= block; i++)
+			for (int j = l[i]; j <= r[i]; j++) {
+				belong[j] = i;
+				sum[i] += data[j];
+			}
+	}
+
+	public static void sqrt(int a, int b) {
+		if (belong[a] == belong[b]) {
+			if (isOne[belong[a]])
+				return ;
+			for (int i = a; i <= b; i++) {
+					sum[belong[i]] -= data[i];
+					data[i] = (int) Math.sqrt(data[i]);
+					sum[belong[i]] += data[i];
+			}
+			return ;
+		}
+		//left
+		boolean willBeOne = true;
+		if (!isOne[belong[a]]) {
+			if(l[belong[a]]!=a)
+				willBeOne = false;
+			for (int i = a; i <= r[belong[a]]; i++) {
+				sum[belong[i]] -= data[i];
+				data[i] = (int) Math.sqrt(data[i]);
+				sum[belong[i]] += data[i];
+				if (willBeOne && data[i] != 1)
+					willBeOne = false;
+			}
+		}
+		if (willBeOne)
+			isOne[belong[a]] = true;
+		else
+			willBeOne = true;
+
+		//mid
+		for (int i = belong[a] + 1; i < belong[b]; i++) {
+			if (!isOne[i]) {
+				for (int j = l[i]; j <= r[i]; j++) {
+					sum[i] -= data[j];
+					data[j] = (int) Math.sqrt(data[j]);
+					sum[i] += data[j];
+					if (willBeOne && data[j] != 1)
+						willBeOne = false;
+				}
+				if (willBeOne)
+					isOne[i] = true;
+				else
+					willBeOne = true;
+			}
+		}
+
+		//right
+		if (!isOne[belong[b]]) {
+			if(r[belong[b]] != b)
+				willBeOne = false;
+			for (int i = l[belong[b]]; i <= b; i++) {
+				sum[belong[i]] -= data[i];
+				data[i] = (int) Math.sqrt(data[i]);
+				sum[belong[i]] += data[i];
+				if (willBeOne && data[i] != 1)
+					willBeOne = false;
+			}
+		if (willBeOne)
+			isOne[belong[b]] = true;
+		}
+	}
+
+	public static long query(int a, int b) {
+		long ans = 0;
+		if (belong[a] == belong[b]) {
+			if (isOne[belong[a]])
+				return b - a + 1;
+			for (int i = a; i <= b; i++)
+				ans += data[i];
+			return ans;
+		}
+		// left
+		if (isOne[belong[a]])
+			ans += r[belong[a]] - a + 1;
+		else
+			for (int i = a; i <= r[belong[a]]; i++)
+				ans += data[i];
+		// mid
+		for (int i = belong[a] + 1; i < belong[b]; i++)
+				ans += sum[i];
+		// right
+		if (isOne[belong[b]])
+			ans += b - l[belong[b]] + 1;
+		else
+			for (int i = l[belong[b]]; i <= b; i++)
+				ans += data[i];
+
+		return ans;
+	}
+
+}

@@ -1,0 +1,278 @@
+/*
+https://codeforces.com/contest/1453/problem/A
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <string.h>
+#include <algorithm>
+#include <cmath>
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#define pb push_back
+#define cl clear
+#define MAXN 100005
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, m, ans;
+bool hasTrain[MAXN]; 
+
+void solve(){
+	for(int i = 1 ; i <= 105 ; ++i) hasTrain[i] = false;
+	n = read();
+	m = read();
+	ans = 0;
+	for(int i = 1 ; i <= n ; ++i){
+		hasTrain[read()] = true;
+	}
+	for(int i = 1 ; i <= m ; ++i){
+		if(hasTrain[read()]) ++ans;
+	}
+	printf("%d\n",ans);
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://codeforces.com/contest/1453/problem/B
+B. Suffix Operations
+time limit per test1 second
+memory limit per test512 megabytes
+inputstandard input
+outputstandard output
+Gildong has an interesting machine that has an array a with n integers. The machine supports two kinds of operations:
+
+Increase all elements of a suffix of the array by 1.
+Decrease all elements of a suffix of the array by 1.
+A suffix is a subsegment (contiguous elements) of the array that contains an. In other words, for all i where ai is included in the subsegment, all aj's where i<j≤n must also be included in the subsegment.
+
+Gildong wants to make all elements of a equal — he will always do so using the minimum number of operations necessary. To make his life even easier, before Gildong starts using the machine, you have the option of changing one of the integers in the array to any other integer. You are allowed to leave the array unchanged. You want to minimize the number of operations Gildong performs. With your help, what is the minimum number of operations Gildong will perform?
+
+Note that even if you change one of the integers in the array, you should not count that as one of the operations because Gildong did not perform it.
+
+Input
+Each test contains one or more test cases. The first line contains the number of test cases t (1≤t≤1000).
+
+Each test case contains two lines. The first line of each test case consists of an integer n (2≤n≤2⋅105) — the number of elements of the array a.
+
+The second line of each test case contains n integers. The i-th integer is ai (−5⋅108≤ai≤5⋅108).
+
+It is guaranteed that the sum of n in all test cases does not exceed 2⋅105.
+
+Output
+For each test case, print one integer — the minimum number of operations Gildong has to perform in order to make all elements of the array equal.
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#define pb push_back
+#define cl clear
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> P;
+const int INF = 1e9;
+const int MAXN = 200005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, a[MAXN], de[MAXN];
+ll ans, ans1, tmp;
+
+void solve(){
+	n = read();
+	ans = 0;
+	ans1 = INF*INF;
+	for(int i = 1 ; i <= n ; ++i){
+		a[i] = read();
+		de[i] = a[i] - a[i-1];
+	}
+	de[n+1] = 0;
+	for(int i = 2 ; i <= n ; ++i) ans += abs(de[i]);
+	for(int i = 2 ; i <= n ; ++i){
+		tmp = ans - abs(de[i]) - abs(de[i+1]);
+		tmp = tmp + abs(de[i+1]+de[i]);
+		ans1 = min(ans1,tmp);
+	}
+	tmp = ans - abs(de[n]);
+	ans1 = min(ans1,tmp);
+	tmp = ans - abs(de[2]);
+	ans1 = min(ans1,tmp);
+	printf("%lld\n",ans1);
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}
+
+/*
+https://codeforces.com/contest/1453/problem/C
+C. Triangles
+time limit per test3 seconds
+memory limit per test512 megabytes
+inputstandard input
+outputstandard output
+Gildong has a square board consisting of n rows and n columns of square cells, each consisting of a single digit (from 0 to 9). The cell at the j-th column of the i-th row can be represented as (i,j), and the length of the side of each cell is 1. Gildong likes big things, so for each digit d, he wants to find a triangle such that:
+
+Each vertex of the triangle is in the center of a cell.
+The digit of every vertex of the triangle is d.
+At least one side of the triangle is parallel to one of the sides of the board. You may assume that a side of length 0 is parallel to both sides of the board.
+The area of the triangle is maximized.
+Of course, he can't just be happy with finding these triangles as is. Therefore, for each digit d, he's going to change the digit of exactly one cell of the board to d, then find such a triangle. He changes it back to its original digit after he is done with each digit. Find the maximum area of the triangle he can make for each digit.
+
+Note that he can put multiple vertices of the triangle on the same cell, and the triangle can be a degenerate triangle; i.e. the area of the triangle can be 0. Also, note that he is allowed to change the digit of a cell from d to d.
+
+Input
+Each test contains one or more test cases. The first line contains the number of test cases t (1≤t≤1000).
+
+The first line of each test case contains one integer n (1≤n≤2000) — the number of rows and columns of the board.
+
+The next n lines of each test case each contain a string of n digits without spaces. The j-th digit of the i-th line is the digit of the cell at (i,j). Each digit is one of the characters from 0 to 9.
+
+It is guaranteed that the sum of n2 in all test cases doesn't exceed 4⋅106.
+
+Output
+For each test case, print one line with 10 integers. The i-th integer is the maximum area of triangle Gildong can make when d=i−1,
+*/
+
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <queue>
+#include <string.h>
+#include <algorithm>
+#include <cmath>
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#define pb push_back
+#define cl clear
+
+using namespace std;
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<short,short> P;
+const int INF = 1e9;
+const int MAXN = 2005;
+
+inline int read(){
+	int x = 0, f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+	}
+	while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+	}
+	return x*f;
+}
+
+int n, ans[10], mp[MAXN][MAXN], mnX[10], mnY[10], mxX[10], mxY[10];
+
+void solve(){
+	n = read();
+	for(int i = 0 ; i < 10 ; ++i){
+	    ans[i] = mxX[i] = mxY[i] = 0;
+		mnX[i] = mnY[i] = INF;
+	}
+	for(int i = 1, c ; i <= n ; ++i){
+		for(int j = 1 ; j <= n ; ++j){
+			c = getchar()-'0';
+			mxX[c] = max(mxX[c],j);
+			mxY[c] = max(mxY[c],i);
+			mnX[c] = min(mnX[c],j);
+			mnY[c] = min(mnY[c],i);
+			mp[i][j] = c;
+		}
+		getchar();
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		int vis[10] = {0,0,0,0,0,0,0,0,0};
+		for(int j = 1 ; j <= n ; ++j){
+			if(!vis[mp[i][j]]) vis[mp[i][j]] = j;
+			else{
+				int d = j - vis[mp[i][j]], h = max(abs(1-i),abs(n-i));
+				ans[mp[i][j]] = max(ans[mp[i][j]],d*h);
+			}
+		}
+	}
+	for(int j = 1 ; j <= n ; ++j){
+		int vis[10] = {0,0,0,0,0,0,0,0,0};
+		for(int i = 1 ; i <= n ; ++i){
+			if(!vis[mp[i][j]]) vis[mp[i][j]] = j;
+			else{
+				int d = j - vis[mp[i][j]], h = max(abs(1-j),abs(n-j));
+				ans[mp[i][j]] = max(ans[mp[i][j]],d*h);
+			}
+		}
+	}
+	for(int i = 1 ; i <= n ; ++i){
+		for(int j = 1 ; j <= n ; ++j){
+			int d = max(abs(1-i),abs(n-i)), h = max(abs(mxX[mp[i][j]]-j),abs(mnX[mp[i][j]]-j));
+			ans[mp[i][j]] = max(ans[mp[i][j]],d*h);
+			d = max(abs(1-j),abs(n-j)); h = max(abs(mxY[mp[i][j]]-i),abs(mnY[mp[i][j]]-i));
+			ans[mp[i][j]] = max(ans[mp[i][j]],d*h);
+		}
+	}
+	for(int i = 0 ; i < 10 ; ++i) printf("%d%c",ans[i],i==9?'\n':' ');
+}
+
+int main(){
+    int t = 1;
+    t = read();
+    while(t--) solve();
+    return 0;
+}

@@ -1,0 +1,146 @@
+/*
+题目描述:
+前缀和(prefix sum) Si=a1+a2+...+ak
+前前缀和(preprefix sum) 则把Si作为原序列再进行前缀和。记再次求得前缀和第i个是SSi
+给一个长度n的序列a1,a2,...,an,有两种操作：
+1.Modify i x : 把ai改成x
+2.Query i : 查询SSi
+
+输入格式
+第一行给出两个整数N，M。分别表示序列长度和操作个数
+接下来一行有N个数，即给定的序列a1,a2,....an
+接下来M行，每行对应一个操作，格式见题目描述
+
+输出格式
+对于每个询问操作，输出一行，表示所询问的SSi的值。
+
+思路：
+SSi=S1+S2+S3+...+Si=(a1)+(a1+a2)+(a1+a2+a3)+...+(a1+a2+a3+...+ai)
+SS1=1*a1 ; SS2=2*a1+1*a2 ; SS3=3*a1+2*a2+1*a3 ;
+可推出SSj= (i Sigma j=1)((i-j+1)*aj)=(j+1)(i Sigma j=1)ai-(i Sigma j=1)i*ai
+用分块维护(i Sigma j=1)ai和(i Sigma j=1)(i*ai)
+*/
+
+#include <iostream>
+#include <stdio.h>
+#include <math.h>
+#include <string.h>
+#define T 100005
+typedef long long ll;
+using namespace std;
+
+ll nums[T] , L[T] , R[T] , belong[T] , aiSum [T] , iaiSum[T] , block , len , n , m ;
+
+void Build(){
+    len = sqrt(n);block = n / len;
+    if(n % len)block++;
+    for(int i = 1 ; i <= block ; i++ ) {
+        L[i] = (i-1)*len+1; R[i] = i*len;
+    }
+    R[block] = n;
+    for(int i = 1 ; i <= block ; i++ )
+        for(int j = L[i] ; j <= R[i] ; j++) belong[j] = i;
+    for(int i = 1 ; i <= block ; i++ ){
+        ll sum1 = 0 , sum2 = 0;
+        for(int j = L[i] ; j <= R[i] ; j++){
+            sum1 += nums[j];
+            sum2 += j*nums[j];
+        }
+        //printf("%d ",sum1);
+        aiSum[i] = sum1;
+        iaiSum[i] = sum2;
+    }
+}
+
+void Query(int j){
+    ll res = 0 , sum1 = 0 , sum2 = 0;
+    for(int i = 1 ; i < belong[j] ; i++){
+        sum1 += aiSum[i];
+        sum2 += iaiSum[i];
+    }
+    for(int i = L[belong[j]] ; i <= j ; i++) {
+        sum1 += nums[i]; sum2 += i*nums[i];
+    }
+    //printf("sum1=%lld\n",sum1);
+    res = (j+1)*sum1-sum2;
+    printf("%lld\n",res);
+}
+
+void Modify(ll a , ll b){
+    aiSum[belong[a]] += b-nums[a];
+	iaiSum[belong[a]] += a*(b-nums[a]);
+    nums[a] = b;
+}
+
+int main()
+{
+    cin>>n>>m;
+    for(int i = 1 ; i <= n ; i++)cin>>nums[i];
+    Build();
+    //for(int i = 1 ; i <= n ; i++)printf("%d ",iaiSum[i]);
+    while(m--){
+        string cmd;cin>>cmd;
+        if(cmd=="Query"){
+            ll a ;
+            cin>>a;
+            Query(a);
+        }else{
+            ll a , b;
+            cin>>a>>b;
+            Modify(a,b);
+        }
+    }
+    return 0;
+}
+
+
+
+/*
+	题目描述
+	我们可以用这样的方式来表示一个十进制数:将每个阿拉伯数字剩以一个以该数字所处位置为指数,以10为底数的幂之和的形式。例如123可表示为1*10^2+2*10^1+3*10^0这样的形式。与之相似的，对二进制数来说，也可表示成每个二进制数码乘以一个以该数字所处位置为指数,以2为底数的幂之和的形式。一般说来，任何一个正整数R或一个负整数-R都可以被选来作为一个数制系统的基数。如果是以R或-R为基数则需要用到的数码为0,1,..R- 1。例如当R = 7时,所需用到的数码是0,1,2,3,4,5,6,这与其是R或-R无关。如果作为基数的数绝对值超过10，则为了表示这些数码，通常使用英文字母来表示那些大于9的数码。例如对16进制数来说,用A表示10,用B示11,用C表示12,以此类推。在负进制数中是用-R作为基数，例如-15(十进制)相当于110001 (- 2进制)，組它可以被表示为2的幂级数的和数:
+	110001=1*(-2)^6+1*(-2)^4+0*(-2)^3+0*(-2)^2+0*(-2)^1+1*(-2)^0
+	设计一个程序,读入一个十进制数和一个负进制数的基数,并将此十进制数转换为此负进制下的数。
+	输入格式：
+	输入的每行有两个输入数据。
+	第一个是十进制数n。第二个题进制数的基数- R。
+	输出格式:
+	输出此负进制数及其基数,若此基数超过10,则参照16进制的方式处理。
+	思路:
+	都知道"除进制数取余，逆序排列"法转换进制，注意余数为负数时候要减进制数,商再+1.
+*/
+
+import java.util.Scanner;
+
+public class Main {
+
+	public static void main(String[] args) {
+		
+		Scanner myScanner = new Scanner(System.in);
+		
+		int num = myScanner.nextInt() , base = myScanner.nextInt() , temp;
+		
+		char[] can = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K'};
+		
+		if(num == 0) {
+			System.out.println(num + "=" + 0 + "(base" + base+ ")" );
+			return;
+		}
+		
+		System.out.print(num + "=");
+		
+		String res = "";
+		
+		while(num != 0) {
+			temp = num % base;
+			num /= base;
+			if(temp < 0) {
+				temp = temp - base ;
+				num++;
+			}
+			res = can[temp] + res;
+		}
+		
+		System.out.println(res+"(base"+base+")");
+	}
+
+}

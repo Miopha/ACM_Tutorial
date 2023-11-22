@@ -1,0 +1,58 @@
+/*
+题目描述:
+输出自然数 1 到 n 所有不重复的排列，即 n 的全排列，要求所产生的任一数字序列中不允许出现重复的数字。
+输入格式:
+一个整数 n。
+输出格式:
+又1~n组成的所有不重复的数字序列，每行一个序列。
+每个数字保留 5 个场宽。
+*/
+
+/*
+ * 用简单的递归居然不给过，原因是第五行和第六行要先输出第六行。
+ * DFS，vis存储结果ans中出现过的数字，递归退出条件step == n + 1，退出时输出结果，记得每弹一个栈时要回溯vis。
+ */
+ 
+//package P1706;
+
+import java.io.*;
+import java.util.*;
+
+public class Main {
+
+	static PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+	static int n ;
+	static int[] ans = new int[10];
+	static boolean[] vis = new boolean[10];
+	
+	public static void main(String[] args) {
+		Scanner cin = new Scanner(System.in);
+		n = cin.nextInt();
+		perm(1);
+		cin.close();
+	}
+	
+	public static void perm(int step) {
+		if(step == n + 1) {
+			arrryPrint(ans);
+			return;
+		}
+		for(int i = 1 ; i <= n ; i++ )
+			if(!vis[i]) {
+				vis[i] = true;
+				ans[step] = i;
+				perm(step+1);
+				vis[i] = false;
+			}
+	}
+	
+	public static void arrryPrint(int[] p) {
+		StringBuffer sb=new StringBuffer();
+		for(int i = 1 ; i <= n ; i++) {
+			sb.append("    "+p[i]);
+		}
+		out.println(sb);
+		out.flush();
+	}
+
+}

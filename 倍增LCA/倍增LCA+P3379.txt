@@ -1,0 +1,110 @@
+/*
+https://www.luogu.com.cn/problem/P3379
+题目描述
+如题，给定一棵有根多叉树，请求出指定两个点直接最近的公共祖先。
+
+输入格式
+第一行包含三个正整数 N,M,S，分别表示树的结点个数、询问的个数和树根结点的序号。
+
+接下来 N-1 行每行包含两个正整数 x, y，表示 x 结点和 y 结点之间有一条直接连接的边（数据保证可以构成树）。
+
+接下来 M 行每行包含两个正整数 a, b，表示询问 a 结点和 b 结点的最近公共祖先。
+
+输出格式
+输出包含 M 行，每行包含一个正整数，依次为每一个询问的结果。
+*/
+
+/*
+ * 节点深度用DFS计算
+ * 暴力算法每个节点一次一次向上跳显然会TLE,倍增LCA解决了这个问题
+ * 例如a和b节点向上跳23(0b10111)层就是LCA,倍增算法可以依次向上跳2^4,2^2,2^1层,那么跳完后的父节点就是两者的LCA,而不是暴力算法向上跳23次
+ * 我们新建一个f[a][b]数组,表示从a节点向上跳2^b层能到达f[a][b]节点,f可以通过递归式f[cur][i] = f[f[cur][i-1]][i-1]得到(当前节点的第2^i个父节点是第2^(i-1)个父节点的2^(i-1)父节点)
+ * 进行LCA的时候先把深度大的节点向上跳到同一深度之后再同时向上跳
+ */
+ 
+#include <bits/stdc++.h>
+#define _for(i,a,b) for(register int i = (a) ; i <= (b) ; ++i)
+#define __for(i,a,b) for(register int i = (a) ; i >= (b) ; --i)
+#define maxn 500005
+
+using namespace std;
+
+inline int read(){
+	int x = 0 , f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x=(x<<1)+(x<<3)+(ch^48);
+        ch = getchar();
+    }
+    return x*f;
+}
+
+
+vector<int> node[maxn];
+int n, m, s, lg2[maxn], depth[maxn], f[maxn][21];
+
+void init(){
+    _for(i,1,n)
+        lg2[i] = lg2[i-1] + (1<<lg2[i-1]==i);
+    memset(depth,0,sizeof(depth));
+    memset(f,0,sizeof(f));
+}
+
+void DFS(int cur, int father){
+    depth[cur] = depth[father] + 1;
+    f[cur][0] = father;
+    _for(i,1,lg2[depth[cur]]){
+        f[cur][i] = f[f[cur][i-1]][i-1];
+    }
+    for(register int i = 0 ; i < node[cur].size() ; i++){
+        if(node[cur][i]!=father){
+            DFS(node[cur][i],cur);
+        }
+    }
+}
+
+int LCA(int x, int y){
+    if(depth[x]<depth[y]){//保持x深度最大
+        int tmp = y;
+        y = x;
+        x = tmp;
+    }
+    //x向上跳
+    __for(i,20,0){
+        if(depth[y]<=depth[f[x][i]])
+            x = f[x][i];
+    }
+    if(x==y)
+        return x;
+    __for(i,20,0){
+        if(f[x][i]!=f[y][i]){
+            x = f[x][i];
+            y = f[y][i];
+        }
+    }
+    return f[x][0];
+}
+
+int main(){
+    n = read(); m = read(); s = read();
+    int x, y;
+    init();
+    _for(i,2,n){
+        x = read();
+        y = read();
+        node[x].push_back(y);
+        node[y].push_back(x);
+    }
+
+    DFS(s,0);
+
+    _for(i,1,m)
+        printf("%d\n",LCA(read(),read()));
+    return 0;
+}
+

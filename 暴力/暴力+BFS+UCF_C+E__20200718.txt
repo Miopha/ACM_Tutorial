@@ -1,0 +1,205 @@
+/*
+https://www.jisuanke.com/contest/10439/challenges
+Five random integers are placed at the corners of a pentagon. Typically, some of these numbers will be negative, but their sum is guaranteed to be positive. The goal is to get rid of all the negative numbers through a balanced process of subtraction and negation.
+
+Starting with the lowest of the negative numbers, we negate the number (thus making it positive), and then subtract that value from each of its two neighbors. The sum of the new numbers will remain the same as the original pentagon, so the pentagon is still “balanced.” This process (finding the lowest of the negative numbers, negating it, and subtracting it from its neighbors) is then repeated until all of the numbers are non-negative.image.pngDuring any step, if the lowest negative number appears at more than one corner, use the one that would be found first, if you started at the top corner and traversed in clockwise direction.
+
+The Problem: Given the original five numbers at the corners of a pentagon, output the Positive Pentagon that can be created by following this process. You may assume this process will always make a pentagon “pentastic” in at most 1000 steps.
+
+The Input:
+The first input line will contain only a single positive integer N, which is the number of pentagons to process. The next N lines will contain pentagon descriptions, one per line. Each pentagon description will consist of exactly 5 integers, which are in the range -999 to 999 (inclusive), and which sum up to a positive number less than 1000.
+
+There will be exactly one space between numbers, and no leading or trailing spaces on the input lines. Positive numbers in the input will not have a leading ‘+’ sign. The numbers are given in a clockwise order around the pentagon, starting from the top. This means that the 1^st and 3^st numbers are neighbors of the 2^number,the 5^th and 2^nd number are neighbors of the 1^st number, and so on.
+
+The Output:
+For each pentagon in the input, output the message “Pentagon #p:”, where p is the pentagon number (starting from 1). Then, for each pentagon, output the Positive Pentagon that results from applying the process described above. Output the numbers for each corner using the same ordering and method used in the input, with number for the top corner first, and the others following a clockwise order. Output one space between output numbers.
+
+Leave a blank line after the output for each test case. Follow the format illustrated in the Sample Output.
+
+样例输入
+2
+2 -1 5 7 -4
+99 -1 -1 4 0
+样例输出
+Pentagon #1:
+1 2 2 3 1
+
+Pentagon #2:
+97 1 1 2 0
+*/
+
+/*
+ * 有一个5个整数组成的环,这五个整数的和>=0,①每次选取最小的负数②令其两边的元素加上这个负数③这个负数取绝对值④重复①②③步骤直到没有负数为止
+ */
+ 
+#include <bits/stdc++.h>
+#define re register
+
+using namespace std;
+
+inline int read(){
+	int x = 0 , f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+    }
+    return x*f;
+}
+
+int main(){
+    int t = read(), data[6], minn, cnt, l, r;
+    for(int cases = 1 ; cases <= t ; cases++){
+        for(int i = 1 ; i <= 5 ; i++)
+            data[i] = read();
+        minn = data[1], cnt = 1;
+        for(int i = 2 ; i <= 5 ; i++){
+            if(minn>data[i]){
+                minn = data[i];
+                cnt = i;
+            }
+        }
+        while(minn<0){
+            l = cnt-1; r = cnt+1;
+			//if out of border
+            if(l==0) l=5;
+            if(r==6) r=1;
+            data[l]+=data[cnt];
+            data[r]+=data[cnt];
+            data[cnt]=abs(data[cnt]);
+            minn = data[1], cnt = 1;
+            for(int i = 2 ; i <= 5 ; i++){
+                if(minn>data[i]){
+                    minn = data[i];
+                    cnt = i;
+                }
+            }
+        }
+        printf("Pentagon #%d:\n",cases);
+        for(int i = 1 ; i <= 4 ; i++){
+            printf("%d ",data[i]);
+        }
+        printf("%d\n",data[5]);
+        if(cases!=t)
+            printf("\n");
+    }
+    return 0;
+}
+
+/*
+https://www.jisuanke.com/contest/10439/challenges
+You are writing an app for your friend’s new Phone, the newPhone. Since you grew up on Pac Man, you want to write a simplified version of the game. In this game, the board is a rectangular grid and Pac Man starts at the upper left-hand corner. His goal is to get to the lower right-hand corner. He always moves one square to the right or one square down. Each square he goes to has a “goody” that’s worth a particular amount of points. Your score is simply the sum of the scores of the goodies in each square you have visited.
+
+For example, if the game board looks like this (P indicates Pac Man’s starting location, and E indicates his ending location):
+image.png
+then Pac Man’s optimal strategy would be to move right, down, right, right again, then down to yield a score of 3 + 4 + 9 + 3 = 19.
+
+The Problem:
+Given a game board, determine the maximum possible score for Pac Man. 
+
+The Input:
+There will be multiple game boards in the input file. The first input line contains a positive integer n, indicating the number of game boards to be processed. The first line of each game board will contain two positive integers, r (0 < r < 100) and c (1 < c < 100), representing the number of rows and columns for this game board. (The example above has three rows and four columns.) Each of the following r input lines will contain c tokens, representing the contents of that row. The first item on the first of these lines will be the character ‘P’, representing Pac Man’s original location and the last item on the last line will be the character ‘E’, representing Pac Man’s goal location. The rest of the items will be positive integers less than 1000. Items will be separated by a single space on each line. 
+
+The Output: 
+At the beginning of each test case, output “Game Board #g:”, where g is the input board number (starting from 1). For each game board, simply print out the maximum possible score for the game.
+
+Leave a blank line after the output for each test case. Follow the format illustrated in Sample Output.
+
+样例输入
+2
+3 4
+P 3 2 8
+1 4 9 3
+6 2 2 E
+2 2
+P 5
+401 E
+样例输出
+Game Board #1: 19
+
+Game Board #2: 401
+*/
+
+/*
+ * 给一个大小r*c的图,从(1,1)(左上角)开始走,只能向下或向右走,终点为右下角(r,c),问从起点走到终点途中的数字加起来最大值为多少,(1,1)和(r,c)的值为0
+ * SPFA改一下松弛条件即可
+ */
+ 
+#include <bits/stdc++.h>
+#define re register
+
+using namespace std;
+
+inline int read(){
+	int x = 0 , f = 1;
+	char ch = getchar();
+	while(ch<'0'||ch>'9'){
+		if(ch=='-')
+			f = -1;
+		ch = getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+		x=(x<<1)+(x<<3)+(ch^48);
+		ch = getchar();
+    }
+    return x*f;
+}
+
+struct warp{
+    int x,y;
+    warp(int a, int b){
+        x = a; y = b;
+    }
+};
+
+int mp[105][105], r, c, dir[2][2] = {{0,1},{1,0}}, dis[105][105];
+bool vis[105][105];
+
+void SPFA(warp s){
+    for(re int i = 1 ; i <= r ; i++)
+        memset(dis[i],0,sizeof(dis[i]));
+    queue<warp> q;
+    q.push(s);
+    vis[s.x][s.y] = true;
+    dis[s.x][s.y] = 0;
+    while(!q.empty()){
+        warp cur = q.front(); q.pop();
+        vis[cur.x][cur.y] = false;
+        if(cur.x>r||cur.y>c) continue;
+        for(re int i = 0 ; i < 2 ; i++){
+            warp aft = warp(cur.x+dir[i][0],cur.y+dir[i][1]);
+            if(dis[aft.x][aft.y]<dis[cur.x][cur.y]+mp[aft.x][aft.y]){
+                dis[aft.x][aft.y]=dis[cur.x][cur.y]+mp[aft.x][aft.y];
+                if(!vis[aft.x][aft.y]){
+                    q.push(aft);
+                    vis[aft.x][aft.y]=true;
+                }
+            }
+        }
+    }
+}
+
+int main(){
+    int t = read(), cases = 0;
+    while(t--){
+        r = read(); c = read();
+        for(re int i = 1 ; i <= r ; i++){
+            for(re int j = 1 ; j <= c ; j++){
+                if(i==1&&j==1||i==r&&j==c){
+                    getchar();
+                    continue;
+                }
+                mp[i][j] = read();
+            }
+        }
+        mp[1][1] = mp[r][c] = 0;
+        SPFA(warp(1,1));
+        printf("Game Board #%d: %d\n\n",++cases,dis[r][c]);
+    }
+    return 0;
+}
